@@ -1,34 +1,45 @@
 'use client'
+export const dynamic = 'force-dynamic'   // force client‐only, no prerender
 
 import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 
 export default function LinkedInCallback() {
-  const qs = useSearchParams()
-  const code = qs.get('code')
   const router = useRouter()
   const { setUser } = useAuth()
 
   useEffect(() => {
-    if (!code) return
+    // 1️⃣ read the “code” query param from the real URL
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
 
+    if (!code) {
+      // no code → back home with error
+      router.replace('/?error=login')
+      return
+    }
+
+    // 2️⃣ call your API to exchange and fetch user
     fetch('/api/linkedin-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
     })
-      .then((r) => r.json())
+      .then((res) => res.json())
       .then((data) => {
         if (data.ok) {
-          setUser(data.user)        // 🟢 save user in context + localStorage
-          router.push('/dashboard') //    then off to dashboard
+          setUser(data.user)
+          router.replace('/dashboard')
         } else {
-          router.push('/?error=login')
+          router.replace('/?error=login')
         }
       })
-      .catch(() => router.push('/?error=login'))
-  }, [code])
+      .catch(() => {
+        router.replace('/?error=login')
+      })
+  }, [router, setUser])
 
+  // simple loading state
   return <p className="p-8 text-center">Finishing sign-in…</p>
 }
