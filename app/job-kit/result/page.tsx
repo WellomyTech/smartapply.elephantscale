@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut } from 'lucide-react'
+import { LogOut, ExternalLink } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function JobKitResultPage() {
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
+
+  // Get jobLink from localStorage (set in previous page)
+  const [jobLink, setJobLink] = useState<string | null>(null)
+  useEffect(() => {
+    const storedLink = localStorage.getItem('jobLink')
+    setJobLink(storedLink)
+  }, [])
 
   if (!isLoading && !user) {
     router.replace('/')
@@ -23,7 +31,7 @@ export default function JobKitResultPage() {
     )
   }
 
-  // Dummy data (put your real content here)
+  // Your dummy text (put your actual text here)
   const resumeText = `R U C H I T   R A K H O L I Y A
 -----------------------------------------------------------------------
 Upland, CA • Open to Relocation (Austin, TX – Hybrid) • Mobile: (909) 552-2660
@@ -116,6 +124,7 @@ ADDITIONAL INFORMATION
 Work Authorization: F‑1 OPT (STEM extension eligible); will require future employer sponsorship.
 Soft Skills: Analytical, methodical, deadline‑driven, articulate communicator, collaborative teammate, proactive troubleshooter.
 Interests: Cloud automation, aviation technology, data visualization, end‑user enablement.
+
 `
   const coverLetterText = `Ruchit Rakholiya
 1320 Kendra Ln
@@ -156,6 +165,7 @@ Thank you for your time and consideration. I look forward to speaking with you.
 Sincerely,
 
 Ruchit Rakholiya
+
 `
 
   const download = (name: string, txt: string) => {
@@ -172,16 +182,30 @@ Ruchit Rakholiya
     <div className="min-h-screen bg-[#eef5ff] m-12">
       {/* Top Bar */}
       <header className="flex items-center justify-between w-full mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Smart Job Kit Generator
-        </h1>
+        <div className="flex items-center gap-4">
+           <h1 className="text-2xl font-bold text-gray-900">
+            Smart Job Kit Generator
+          </h1>
+          {/* Job Link Button if jobLink exists */}
+
+        </div>
+                  {jobLink && (
+            <Button
+              variant="outline"
+              className="flex items-center"
+              onClick={() => window.open(jobLink, '_blank')}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Job Link
+            </Button>
+          )}
         <Button variant="outline" onClick={logout}>
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>
       </header>
 
-      {/* 2 Fixed Boxes (side by side, equal size) */}
+      {/* 2 Fixed Boxes (side by side, equal size, scrollable vertically, wrap lines) */}
       <main className="flex flex-row gap-8 w-full h-[calc(100vh-10rem)]">
         {/* Resume */}
         <Card className="flex-1 h-full flex flex-col shadow-lg">

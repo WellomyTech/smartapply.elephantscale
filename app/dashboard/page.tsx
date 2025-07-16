@@ -48,11 +48,25 @@ export default function Dashboard() {
   }
 
   const submitJobKit = () => {
-    const params = new URLSearchParams()
-    if (description.trim()) params.set('description', description.trim())
-    if (jobUrl.trim()) params.set('jobUrl', jobUrl.trim())
-    router.push(`/job-kit?${params.toString()}`)
+  // Save jobUrl in localStorage so result page can read it
+  if (jobUrl.trim()) {
+    localStorage.setItem('jobLink', jobUrl.trim())
+  } else {
+    localStorage.removeItem('jobLink')
   }
+
+  const params = new URLSearchParams()
+  if (description.trim()) params.set('description', description.trim())
+  if (jobUrl.trim()) params.set('jobUrl', jobUrl.trim())
+  router.push(`/job-kit?${params.toString()}`)
+}
+
+  // const submitJobKit = () => {
+  //   const params = new URLSearchParams()
+  //   if (description.trim()) params.set('description', description.trim())
+  //   if (jobUrl.trim()) params.set('jobUrl', jobUrl.trim())
+  //   router.push(`/job-kit?${params.toString()}`)
+  // }
 
   // Form is valid if resume is selected, at least one of description/jobUrl is provided,
   // and the jobUrl (if provided) is a valid URL
