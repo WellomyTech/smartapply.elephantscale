@@ -1,35 +1,32 @@
 'use client'
-export const dynamic = 'force-dynamic'  // ← add this
+export const dynamic = 'force-dynamic'
 
 import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import LinkedInLoginButton from '@/components/LinkedInButton'
 
-export default function LinkedInCallback() {
-  const searchParams = useSearchParams()
-  const code = searchParams.get('code')
+export default function HomePage() {
+  const { user, isLoading } = useAuth()
   const router = useRouter()
-  const { setUser } = useAuth()
 
   useEffect(() => {
-    if (!code) return
+    if (!isLoading && user) {
+      router.push('/dashboard')
+    }
+  }, [isLoading, user, router])
 
-    fetch('/api/linkedin-auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.ok) {
-          setUser(data.user)
-          router.push('/dashboard')
-        } else {
-          router.push('/?error=login')
-        }
-      })
-      .catch(() => router.push('/?error=login'))
-  }, [code, router, setUser])
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading…
+      </div>
+    )
+  }
 
-  return <p className="p-8 text-center">Finishing sign-in…</p>
+  return (
+    <main className="min-h-screen flex items-center justify-center">
+      <LinkedInLoginButton />
+    </main>
+  )
 }
