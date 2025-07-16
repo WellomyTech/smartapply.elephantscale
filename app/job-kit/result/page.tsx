@@ -1,13 +1,30 @@
 'use client'
+export const dynamic = 'force-dynamic'
 
-import { useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/components/AuthProvider'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { LogOut } from 'lucide-react'
 
 export default function JobKitResultPage() {
-  // Dummy content for now
-  const resumeText = `
-R U C H I T   R A K H O L I Y A
+  const router = useRouter()
+  const { user, isLoading, logout } = useAuth()
+
+  if (!isLoading && !user) {
+    router.replace('/')
+    return null
+  }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#eef5ff] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+      </div>
+    )
+  }
+
+  // Dummy data (put your real content here)
+  const resumeText = `R U C H I T   R A K H O L I Y A
 -----------------------------------------------------------------------
 Upland, CA • Open to Relocation (Austin, TX – Hybrid) • Mobile: (909) 552-2660
 Email: ruchitrakholiya878@gmail.com • LinkedIn: www.linkedin.com/in/ruchit878
@@ -99,10 +116,8 @@ ADDITIONAL INFORMATION
 Work Authorization: F‑1 OPT (STEM extension eligible); will require future employer sponsorship.
 Soft Skills: Analytical, methodical, deadline‑driven, articulate communicator, collaborative teammate, proactive troubleshooter.
 Interests: Cloud automation, aviation technology, data visualization, end‑user enablement.
-
 `
-  const coverLetterText = `
-Ruchit Rakholiya
+  const coverLetterText = `Ruchit Rakholiya
 1320 Kendra Ln
 Upland, CA 91784
 Mobile: (909) 552-2660
@@ -141,56 +156,61 @@ Thank you for your time and consideration. I look forward to speaking with you.
 Sincerely,
 
 Ruchit Rakholiya
-
 `
 
-  const downloadFile = useCallback((filename: string, content: string) => {
-    const blob = new Blob([content], { type: 'text/plain' })
+  const download = (name: string, txt: string) => {
+    const blob = new Blob([txt], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = filename
-    document.body.appendChild(a)
+    a.download = name
     a.click()
-    document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  }, [])
+  }
 
   return (
-    // changed from max-w-5xl to w-full so it fills the page
-    <div className="w-full px-4 py-8 space-y-8">
-      <h1 className="text-3xl font-bold text-center">
-        Your Generated Documents
-      </h1>
+    <div className="min-h-screen bg-[#eef5ff] m-12">
+      {/* Top Bar */}
+      <header className="flex items-center justify-between w-full mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Smart Job Kit Generator
+        </h1>
+        <Button variant="outline" onClick={logout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
+      </header>
 
-      {/* two-column grid that spans full width */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+      {/* 2 Fixed Boxes (side by side, equal size) */}
+      <main className="flex flex-row gap-8 w-full h-[calc(100vh-10rem)]">
         {/* Resume */}
-        <Card className="w-full shadow-lg">
-          <CardContent className="space-y-4">
-            <h2 className="text-2xl font-semibold">Resume</h2>
-            <pre className="bg-gray-50 p-4 rounded-md text-sm whitespace-pre-wrap">
-              {resumeText}
-            </pre>
-            <Button onClick={() => downloadFile('resume.txt', resumeText)}>
+        <Card className="flex-1 h-full flex flex-col shadow-lg">
+          <CardContent className="flex flex-col h-full">
+            <h2 className="text-2xl font-semibold mb-2">Resume</h2>
+            <div className="flex-1 bg-gray-50 rounded-md p-4 overflow-y-auto">
+              {/* Wrapped text inside fixed box, vertical scroll only */}
+              <pre className="text-sm whitespace-pre-wrap break-words">{resumeText}</pre>
+            </div>
+            <Button className="mt-4" onClick={() => download('resume.txt', resumeText)}>
               Download Resume
             </Button>
           </CardContent>
         </Card>
 
         {/* Cover Letter */}
-        <Card className="w-full shadow-lg">
-          <CardContent className="space-y-4">
-            <h2 className="text-2xl font-semibold">Cover Letter</h2>
-            <pre className="bg-gray-50 p-4 rounded-md text-sm whitespace-pre-wrap">
-              {coverLetterText}
-            </pre>
-            <Button onClick={() => downloadFile('cover-letter.txt', coverLetterText)}>
+        <Card className="flex-1 h-full flex flex-col shadow-lg">
+          <CardContent className="flex flex-col h-full">
+            <h2 className="text-2xl font-semibold mb-2">Cover Letter</h2>
+            <div className="flex-1 bg-gray-50 rounded-md p-4 overflow-y-auto">
+              {/* Wrapped text inside fixed box, vertical scroll only */}
+              <pre className="text-sm whitespace-pre-wrap break-words">{coverLetterText}</pre>
+            </div>
+            <Button className="mt-4" onClick={() => download('cover-letter.txt', coverLetterText)}>
               Download Cover Letter
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   )
 }
