@@ -1,38 +1,25 @@
 'use client'
 
-import { ChangeEvent, useRef, useState, useEffect } from 'react'
+import { ChangeEvent, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import { useResume } from '@/components/ResumeProvider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Upload, LogOut, Link as LinkIcon } from 'lucide-react'
+import { LogOut, Upload } from 'lucide-react'
 
 export default function Dashboard() {
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const resumeInputRef = useRef<HTMLInputElement | null>(null)
+  const coverLetterInputRef = useRef<HTMLInputElement | null>(null)
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [jobUrl, setJobUrl] = useState('')
-  const [description, setDescription] = useState('')
-  const [isJobUrlValid, setIsJobUrlValid] = useState(true)
-
-  // Validate URL whenever jobUrl changes
-  useEffect(() => {
-    if (jobUrl.trim() === '') {
-      setIsJobUrlValid(true)
-    } else {
-      try {
-        // Throws if invalid
-        new URL(jobUrl)
-        setIsJobUrlValid(true)
-      } catch {
-        setIsJobUrlValid(false)
-      }
-    }
-  }, [jobUrl])
+  // Use context for files
+  const {
+    resumeFile, setResumeFile,
+    coverLetterFile, setCoverLetterFile
+  } = useResume();
 
   // Redirect if not authenticated
   if (!isLoading && !user) {
@@ -43,37 +30,20 @@ export default function Dashboard() {
     return <p className="p-8">Loading…</p>
   }
 
-  const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSelectedFile(e.target.files?.[0] ?? null)
+  // Handlers
+const onResumeChange = (e: ChangeEvent<HTMLInputElement>) => {
+  setResumeFile(e.target.files?.[0] ?? null);
+  console.log("Setting resume file:", e.target.files?.[0]);
+};
+  const onCoverLetterChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setCoverLetterFile(e.target.files?.[0] ?? null)
   }
 
-  const submitJobKit = () => {
-  // Save jobUrl in localStorage so result page can read it
-  if (jobUrl.trim()) {
-    localStorage.setItem('jobLink', jobUrl.trim())
-  } else {
-    localStorage.removeItem('jobLink')
+  const onGetStarted = () => {
+    router.push('/job-kit')
   }
 
-  const params = new URLSearchParams()
-  if (description.trim()) params.set('description', description.trim())
-  if (jobUrl.trim()) params.set('jobUrl', jobUrl.trim())
-  router.push(`/job-kit?${params.toString()}`)
-}
-
-  // const submitJobKit = () => {
-  //   const params = new URLSearchParams()
-  //   if (description.trim()) params.set('description', description.trim())
-  //   if (jobUrl.trim()) params.set('jobUrl', jobUrl.trim())
-  //   router.push(`/job-kit?${params.toString()}`)
-  // }
-
-  // Form is valid if resume is selected, at least one of description/jobUrl is provided,
-  // and the jobUrl (if provided) is a valid URL
-  const isFormValid =
-    !!selectedFile &&
-    (description.trim() !== '' || jobUrl.trim() !== '') &&
-    isJobUrlValid
+  const isFormValid = !!resumeFile // Only resume is required!
 
   return (
     <div className="min-h-screen bg-[#eef5ff] px-4 py-6 space-y-8">
@@ -125,33 +95,17 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Description Field */}
-        <Card className="shadow-sm">
-          <CardContent className="p-6 space-y-2">
-            <h2 className="text-lg font-semibold text-gray-900">Description</h2>
-            <p className="text-sm text-gray-600">
-              Paste any additional details or a cover-letter snippet here.
-            </p>
-            <Textarea
-              placeholder="Enter description…"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={6}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Upload Resume & Job Posting */}
+        {/* Upload Resume & Cover Letter */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Resume Upload */}
           <Card className="shadow-sm">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center space-x-2 text-indigo-600">
                 <Upload className="h-5 w-5" />
-                <h2 className="text-lg font-semibold">Upload Resume (Required)*</h2>
+                <h2 className="text-lg font-semibold">Upload Resume (PDF) *</h2>
               </div>
               <p className="text-sm text-gray-600">
-                Upload your current resume in PDF format
+                Please upload your resume in PDF format. (Required)
               </p>
               <label
                 htmlFor="resume"
@@ -162,11 +116,11 @@ export default function Dashboard() {
                   type="file"
                   accept="application/pdf"
                   className="hidden"
-                  ref={fileInputRef}
-                  onChange={onFileChange}
+                  ref={resumeInputRef}
+                  onChange={onResumeChange}
                 />
-                {selectedFile ? (
-                  <p className="text-sm">{selectedFile.name}</p>
+                {resumeFile ? (
+                  <p className="text-sm">{resumeFile.name}</p>
                 ) : (
                   <p className="text-sm text-gray-500">
                     Click to upload PDF
@@ -176,39 +130,48 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Job Posting URL */}
+          {/* Cover Letter Upload */}
           <Card className="shadow-sm">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center space-x-2 text-indigo-600">
-                <LinkIcon className="h-5 w-5" />
-                <h2 className="text-lg font-semibold">Job Posting</h2>
+                <Upload className="h-5 w-5" />
+                <h2 className="text-lg font-semibold">Upload Cover Letter (PDF)</h2>
               </div>
               <p className="text-sm text-gray-600">
-                Paste the LinkedIn job posting URL you&apos;re applying for
+                Optional: You can upload a cover letter in PDF format.
               </p>
-              <Input
-                placeholder="https://www.linkedin.com/jobs/view/..."
-                value={jobUrl}
-                onChange={(e) => setJobUrl(e.target.value)}
-                className={!isJobUrlValid ? 'border-red-500' : ''}
-              />
-              {!isJobUrlValid && (
-                <p className="text-red-600 text-sm">
-                  Please enter a valid URL.
-                </p>
-              )}
+              <label
+                htmlFor="cover-letter"
+                className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-md h-40 cursor-pointer hover:bg-gray-50"
+              >
+                <Input
+                  id="cover-letter"
+                  type="file"
+                  accept="application/pdf"
+                  className="hidden"
+                  ref={coverLetterInputRef}
+                  onChange={onCoverLetterChange}
+                />
+                {coverLetterFile ? (
+                  <p className="text-sm">{coverLetterFile.name}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Click to upload PDF (optional)
+                  </p>
+                )}
+              </label>
             </CardContent>
           </Card>
         </div>
 
-        {/* Generate Job Kit Button */}
+        {/* Let's Get Started Button */}
         <Button
           size="lg"
           className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
           disabled={!isFormValid}
-          onClick={submitJobKit}
+          onClick={onGetStarted}
         >
-          Generate Job Kit
+          Let&apos;s Get Started
         </Button>
       </main>
     </div>

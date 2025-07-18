@@ -4,16 +4,100 @@ export const dynamic = 'force-dynamic'
 
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import { useResume } from '@/components/ResumeProvider'
 import { useState } from 'react'
-import jobKitData from '@/data/jobKit.json'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Check, X } from 'lucide-react'
-import { LogOut } from 'lucide-react'
+import { Check, X, LogOut, Loader2 } from 'lucide-react'
+import { useEffect } from 'react';
+
+
+// ---- API call for compare endpoint ----
+interface SkillsMatchItem {
+  skill: string;
+  in_job: boolean;
+  in_resume: boolean;
+}
+interface CompareApiResponse {
+  skills_match: SkillsMatchItem[];
+  gaps: string[];
+  bonus_points: string[];
+  recommendations: string[];
+  google_doc_link: string;
+  
+  raw?: string;      // <-- add this line
+  error?: string;    
+}
+
+async function compareResumeJob({
+  resumeFile,
+  jobDescription,
+  jobUrl
+}: {
+  resumeFile: File,
+  jobDescription: string,
+  jobUrl?: string,
+}) {
+const form = new FormData();
+form.append('resume_file', resumeFile);           // File object, not string
+form.append('job_description', jobDescription);   // String
+form.append('job_url', jobUrl || 'N/A');          // String
+
+
+console.log("jobDescription value before API:", jobDescription);
+
+// If you want to add headers like in curl:
+const res = await fetch('https://api-705060578323.us-central1.run.app/api/compare-resume-job', {
+  method: 'POST',
+  body: form,
+  credentials: 'include', // if your backend needs cookies/auth
+  headers: {
+    // DO NOT set Content-Type for FormData, browser will do it!
+    'accept': 'application/json',
+    'linkedin-id': '123', // replace with your logic or context!
+    'email': 'ruchitrakholiya878@gmail.com', // replace with user's email!
+  },
+});
+
+
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    throw new Error('Could not parse API response.');
+  }
+
+  if (!res.ok || data.error) {
+    // error from API
+    return { error: data.error || 'Unknown error', raw: data.raw, google_doc_link: data.google_doc_link };
+  }
+  return data
+}
 
 export default function JobKitPage() {
+  
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
+  //const { resumeFile } = useResume()
+  
+const { resumeFile } = useResume();
+
+  // UI states
+  const [jobUrl, setJobUrl] = useState('')
+  const [description, setDescription] = useState('')
+  const [email, setEmail] = useState(user?.email ?? '')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState<CompareApiResponse | null>(null)
+
+  const [workedOn, setWorkedOn] = useState<boolean[]>([]);
+
+  useEffect(() => {
+  if (result) {
+    setWorkedOn(result.skills_match.map(s => s.in_resume));
+  }
+}, [result]);
+
 
   // Redirect if not logged in
   if (!isLoading && !user) {
@@ -27,13 +111,54 @@ export default function JobKitPage() {
       </div>
     )
   }
+  if (!resumeFile) {
+    // If no resume uploaded, force user back to dashboard
+    router.replace('/dashboard')
+    return null
+  }
 
-  // Track “Have you worked on it?” answers
-  const [workedOn, setWorkedOn] = useState<boolean[]>(
-    () => jobKitData.skills_match.map((s) => s.in_resume)
-  )
-  const handleWorkedChange = (i: number, v: boolean) =>
-    setWorkedOn((arr) => { const t = [...arr]; t[i] = v; return t })
+  // Form handler
+  async function handleCompare(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setResult(null);
+    setLoading(true);
+    try {
+      
+      console.log("Submitting:", { jobDescription: description, resumeFile, jobUrl });
+
+      const compareResult = await compareResumeJob({
+        resumeFile,
+        jobUrl: jobUrl || undefined,
+        jobDescription: description || undefined, // <-- FIXED!
+        email,
+      });
+
+      if ('error' in compareResult) {
+  setError(compareResult.error);
+  setResult({
+    skills_match: [],
+    gaps: [],
+    bonus_points: [],
+    recommendations: [],
+    google_doc_link: compareResult.google_doc_link,
+    raw: compareResult.raw // <-- add this!
+  } as CompareApiResponse);
+} else {
+  setResult(compareResult);
+}
+
+      } catch (err: any) {
+        setError(err.message ?? 'An error occurred.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    const GeenrateResume = () => {
+    router.push('/job-kit/result')
+  }
+
 
   return (
     <div className="min-h-screen bg-[#eef5ff] px-4 py-6 space-y-8">
@@ -50,99 +175,217 @@ export default function JobKitPage() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto space-y-12">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-semibold">🔍 Job Requirements vs Your Resume</h2>
-          <p className="text-gray-600">
-            Here’s how your resume stacks up against the job requirements.
-          </p>
-        </div>
-
-        {/* Skills Table */}
+        {/* Form to enter Job Link / Description */}
         <Card className="shadow-lg">
-          <CardContent>
-            <h3 className="text-2xl font-semibold mb-4">Skills Comparison</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full table-auto border-collapse">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Skill</th>
-                    <th className="px-3 py-2 text-center">In Job</th>
-                    <th className="px-3 py-2 text-center">In Resume</th>
-                    <th className="px-3 py-2 text-center">
-                      Have You Worked On It?
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobKitData.skills_match.map(({ skill, in_job, in_resume }, i) => (
-                    <tr key={skill} className="even:bg-gray-50">
-                      <td className="px-3 py-2">{skill}</td>
-                      <td className="px-3 py-2 text-center">
-                        {in_job
-                          ? <Check className="inline h-5 w-5 text-green-600"/>
-                          : <X className="inline h-5 w-5 text-red-600"/>}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {in_resume
-                          ? <Check className="inline h-5 w-5 text-green-600"/>
-                          : <X className="inline h-5 w-5 text-red-600"/>}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {in_resume
-                          ? 'Yes'
-                          : (
-                            <div className="flex justify-center space-x-4">
-                              <label className="inline-flex items-center space-x-1">
-                                <input
-                                  type="radio"
-                                  name={`worked-${i}`}
-                                  checked={workedOn[i]}
-                                  onChange={() => handleWorkedChange(i, true)}
-                                  className="form-radio h-4 w-4"
-                                />
-                                <span>Yes</span>
-                              </label>
-                              <label className="inline-flex items-center space-x-1">
-                                <input
-                                  type="radio"
-                                  name={`worked-${i}`}
-                                  checked={!workedOn[i]}
-                                  onChange={() => handleWorkedChange(i, false)}
-                                  className="form-radio h-4 w-4"
-                                />
-                                <span>No</span>
-                              </label>
-                            </div>
-                          )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <CardContent className="p-6">
+            <form onSubmit={handleCompare} className="space-y-4">
+              <h2 className="text-xl font-semibold mb-2">Enter Job Info</h2>
+              <label className="block font-semibold">Job Link:</label>
+              <input
+                type="url"
+                value={jobUrl}
+                onChange={e => setJobUrl(e.target.value)}
+                placeholder="Paste job posting URL"
+                className="w-full border p-2 rounded"
+              />
+              <div className="text-center text-gray-400">or</div>
+              <label className="block font-semibold">Job Description:</label>
+              <textarea
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                rows={4}
+                className="w-full border p-2 rounded"
+                placeholder="Paste the job description"
+              />
+              <label className="block font-semibold">Your Email:</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className="w-full border p-2 rounded"
+              />
+              {error && <div className="text-red-600">{error}</div>}
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={loading || (!jobUrl && !description)}
+              >
+                {loading
+                  ? <><Loader2 className="animate-spin mr-2 h-4 w-4" /> Comparing...</>
+                  : 'Compare Resume'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+
+        {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <strong className="font-bold">Error:</strong> {error}
+              {result?.google_doc_link && (
+                <div className="mt-2">
+                  <a
+                    href={result.google_doc_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-blue-600 font-semibold"
+                  >
+                    View your document on Google Docs
+                  </a>
+                </div>
+              )}
+              {result?.raw && (
+                <pre className="mt-2 bg-gray-100 p-2 rounded text-xs overflow-x-auto">
+                  {result.raw}
+                </pre>
+              )}
             </div>
-          </CardContent>
-        </Card>
+          )}
+        {/* Results */}
+        {result && (
+          <div className="space-y-12">
+            {/* Skills Table */}
+            <Card className="shadow-lg">
+              <CardContent>
+                <h3 className="text-2xl font-semibold mb-4">Skills Comparison</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full table-auto border-collapse">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Skill</th>
+                        <th className="px-3 py-2 text-center">In Job</th>
+                        <th className="px-3 py-2 text-center">In Resume</th>
+                        <th className="px-3 py-2 text-center">Have You Worked On It?</th>
+                      </tr>
+                    </thead>
 
-        {/* Bonus Points */}
-        <Card className="shadow-lg">
-          <CardContent>
-            <h3 className="text-2xl font-semibold mb-4">Bonus Points</h3>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
-              {jobKitData.bonus_points.map((bp) => (
-                <li key={bp}>{bp}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+                   <tbody>
+                      {result.skills_match.map(({ skill, in_job, in_resume }, i) => (
+                        <tr key={skill} className="even:bg-gray-50">
+                          <td className="px-3 py-2">{skill}</td>
+                          <td className="px-3 py-2 text-center">
+                            {in_job
+                              ? <Check className="inline h-5 w-5 text-green-600"/>
+                              : <X className="inline h-5 w-5 text-red-600"/>}
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            {in_resume
+                              ? <Check className="inline h-5 w-5 text-green-600"/>
+                              : <X className="inline h-5 w-5 text-red-600"/>}
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            {in_job && in_resume ? (
+                              "" // empty cell when both are true
+                            ) : in_resume ? (
+                              "Yes"
+                            ) : (
+                              <div className="flex justify-center space-x-4">
+                                <label className="inline-flex items-center space-x-1">
+                                  <input
+                                    type="radio"
+                                    name={`worked-${i}`}
+                                    checked={workedOn[i] === true}
+                                    onChange={() =>
+                                      setWorkedOn(arr => {
+                                        const copy = [...arr];
+                                        copy[i] = true;
+                                        return copy;
+                                      })
+                                    }
+                                    className="form-radio h-4 w-4"
+                                  />
+                                  <span>Yes</span>
+                                </label>
+                                <label className="inline-flex items-center space-x-1">
+                                  <input
+                                    type="radio"
+                                    name={`worked-${i}`}
+                                    checked={workedOn[i] === false}
+                                    onChange={() =>
+                                      setWorkedOn(arr => {
+                                        const copy = [...arr];
+                                        copy[i] = false;
+                                        return copy;
+                                      })
+                                    }
+                                    className="form-radio h-4 w-4"
+                                  />
+                                  <span>No</span>
+                                </label>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
 
-        {/* Next Step */}
-        <div className="text-center">
-          <Button size="lg" onClick={() => router.push('/job-kit/result')}>
-            Generate Job Kit
-          </Button>
-        </div>
+
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Skill Gaps
+            <Card className="shadow-lg">
+              <CardContent>
+                <h3 className="text-2xl font-semibold mb-4">Skill Gaps</h3>
+                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                  {result.gaps.map((gap) => (
+                    <li key={gap}>{gap}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card> */}
+
+            {/* Bonus Points */}
+            <Card className="shadow-lg">
+              <CardContent>
+                <h3 className="text-2xl font-semibold mb-4">Bonus Points</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  {result.bonus_points.map((bp) => (
+                    <li key={bp}>{bp}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Recommendations */}
+            {/* <Card className="shadow-lg">
+              <CardContent>
+                <h3 className="text-2xl font-semibold mb-4">Recommendations</h3>
+                <ul className="list-decimal list-inside space-y-2 text-gray-700">
+                  {result.recommendations.map((rec) => (
+                    <li key={rec}>{rec}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card> */}
+
+            {/* Google Doc Link */}
+            {/* <div className="text-center mt-4">
+              <a
+                href={result.google_doc_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-blue-600 font-semibold"
+              >
+                View AI-tailored Resume (Google Doc)
+              </a>
+            </div> */}
+
+            <Button
+          size="lg"
+          className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
+          onClick={GeenrateResume}
+        >
+          Generate Resume and Cover Letter
+        </Button>
+          </div>
+        )}
       </main>
     </div>
+    
   )
 }
