@@ -29,7 +29,7 @@ export default function Dashboard() {
   // Fetch resume status from backend
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://127.0.0.1:8000/user-dashboard?user_email=${encodeURIComponent(user.email)}`)
+      fetch(`https://api-705060578323.us-central1.run.app/user-dashboard?user_email=${encodeURIComponent(user.email)}`)
         .then(res => res.json())
         .then(data => setHasResume(data.has_resume === 1))
         .catch(() => setHasResume(false))
@@ -56,7 +56,7 @@ export default function Dashboard() {
     if (coverLetterFile) formData.append('cover_letter', coverLetterFile)
     formData.append('user_email', user.email)
     try {
-      const res = await fetch('http://127.0.0.1:8000/upload-resume', {
+      const res = await fetch('https://api-705060578323.us-central1.run.app/upload-resume', {
         method: 'POST',
         body: formData,
       })

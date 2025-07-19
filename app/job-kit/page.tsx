@@ -41,7 +41,7 @@ async function compareResumeJob({
   form.append('job_link', jobUrl || '');
   form.append('user_email', email);
 
-  const res = await fetch('http://127.0.0.1:8000/compare-resume-job', {
+  const res = await fetch('https://api-705060578323.us-central1.run.app/compare-resume-job', {
     method: 'POST',
     body: form,
     headers: {
@@ -160,7 +160,7 @@ export default function JobKitPage() {
     setGenerating(true);
     setGeneratedResume(null);
     try {
-      const res = await fetch('http://127.0.0.1:8000/generate-resume', {
+      const res = await fetch('https://api-705060578323.us-central1.run.app/generate-resume', {
         method: 'POST',
         body: form,
         headers: { accept: 'application/json' },

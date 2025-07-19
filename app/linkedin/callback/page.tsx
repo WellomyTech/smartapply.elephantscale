@@ -33,7 +33,7 @@ export default function LinkedInCallback() {
 
           // --- Send to FastAPI backend ---
           try {
-            await fetch('http://127.0.0.1:8000/auth/user', {
+            await fetch('https://api-705060578323.us-central1.run.app/auth/user', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
