@@ -238,7 +238,7 @@ export default function JobKitPage() {
               >
                 {loading
                   ? <><Loader2 className="animate-spin mr-2 h-4 w-4" /> Comparing...</>
-                  : 'Compare Resume'}
+                  : 'Compare with Recruiter Job Scanner'}
               </Button>
             </form>
           </CardContent>
