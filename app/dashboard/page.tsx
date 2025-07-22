@@ -9,7 +9,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { LogOut, Upload } from 'lucide-react'
 
+import PricingButtons from '@/components/PricingButtons'
+
 export default function Dashboard() {
+
+  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE
+
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
   const resumeInputRef = useRef<HTMLInputElement | null>(null)
@@ -26,25 +31,52 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string>('')
 
-  // Fetch resume status from backend
+  // -------------- localStorage integration --------------
+
+  // Save hasResume to localStorage whenever it changes
+  useEffect(() => {
+    if (hasResume !== null) {
+      localStorage.setItem('has_resume', JSON.stringify(hasResume));
+    }
+  }, [hasResume])
+
+  // Save user email to localStorage
+  useEffect(() => {
+    if (user?.email) localStorage.setItem('user_email', user.email)
+  }, [user])
+
+  // Save resume/cover file name on change (can't store files)
+  const onResumeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setResumeFile(file)
+    setError('')
+    if (file) localStorage.setItem('resume_file_name', file.name)
+    else localStorage.removeItem('resume_file_name')
+  }
+  const onCoverLetterChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setCoverLetterFile(file)
+    setError('')
+    if (file) localStorage.setItem('cover_letter_file_name', file.name)
+    else localStorage.removeItem('cover_letter_file_name')
+  }
+
+  // Restore hasResume state from localStorage on mount
+  useEffect(() => {
+    const savedHasResume = localStorage.getItem('has_resume')
+    if (savedHasResume) setHasResume(JSON.parse(savedHasResume))
+    // (Optional: show filenames on reload if you want)
+  }, [])
+
+  // Fetch resume status from backend (still does network check)
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://api-705060578323.us-central1.run.app/user-dashboard?user_email=${encodeURIComponent(user.email)}`)
+      fetch(`${API_KEY}user-dashboard?user_email=${encodeURIComponent(user.email)}`)
         .then(res => res.json())
         .then(data => setHasResume(data.has_resume === 1))
         .catch(() => setHasResume(false))
     }
   }, [user])
-
-  // Handlers
-  const onResumeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setResumeFile(e.target.files?.[0] ?? null)
-    setError('')
-  }
-  const onCoverLetterChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setCoverLetterFile(e.target.files?.[0] ?? null)
-    setError('')
-  }
 
   // Upload resume & cover letter (API call)
   const handleUpload = async () => {
@@ -56,7 +88,7 @@ export default function Dashboard() {
     if (coverLetterFile) formData.append('cover_letter', coverLetterFile)
     formData.append('user_email', user.email)
     try {
-      const res = await fetch('https://api-705060578323.us-central1.run.app/upload-resume', {
+      const res = await fetch(`${API_KEY}upload-resume`, {
         method: 'POST',
         body: formData,
       })
@@ -65,6 +97,9 @@ export default function Dashboard() {
         setHasResume(true)
         setResumeFile(null)
         setCoverLetterFile(null)
+        // Remove file names since they're locked after upload
+        localStorage.removeItem('resume_file_name')
+        localStorage.removeItem('cover_letter_file_name')
       } else {
         setError(data.detail || 'Upload failed. Try again.')
       }
@@ -73,6 +108,15 @@ export default function Dashboard() {
     } finally {
       setUploading(false)
     }
+  }
+
+  // Custom logout handler to clear all localStorage data (optional, for privacy)
+  const handleLogout = () => {
+    logout()
+    
+    localStorage.clear(); // This clears all localStorage for this domain
+
+    // add any other keys you want to clear!
   }
 
   // Redirect if not authenticated
@@ -97,7 +141,7 @@ export default function Dashboard() {
             Create personalized job application materials
           </p>
         </div>
-        <Button variant="outline" onClick={logout}>
+        <Button variant="outline" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </Button>
       </header>
@@ -167,7 +211,11 @@ export default function Dashboard() {
                   <p className="text-sm">{resumeFile.name}</p>
                 ) : (
                   <p className={`text-sm ${hasResume ? "text-gray-400" : "text-gray-500"}`}>
-                    {hasResume ? "Resume uploaded" : "Click to upload PDF"}
+                    {hasResume
+                      ? "Resume uploaded"
+                      : localStorage.getItem('resume_file_name')
+                      ? `Last selected: ${localStorage.getItem('resume_file_name')}`
+                      : "Click to upload PDF"}
                   </p>
                 )}
               </label>
@@ -201,7 +249,11 @@ export default function Dashboard() {
                   <p className="text-sm">{coverLetterFile.name}</p>
                 ) : (
                   <p className={`text-sm ${hasResume ? "text-gray-400" : "text-gray-500"}`}>
-                    {hasResume ? "Cover letter uploaded" : "Click to upload PDF (optional)"}
+                    {hasResume
+                      ? "Cover letter uploaded"
+                      : localStorage.getItem('cover_letter_file_name')
+                      ? `Last selected: ${localStorage.getItem('cover_letter_file_name')}`
+                      : "Click to upload PDF (optional)"}
                   </p>
                 )}
               </label>
@@ -216,6 +268,7 @@ export default function Dashboard() {
 
         {/* Button logic */}
         <div>
+          {/* <PricingButtons /> */}
           {hasResume ? (
             <Button
               size="lg"

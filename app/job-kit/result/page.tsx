@@ -9,6 +9,8 @@ import { LogOut, ExternalLink } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function JobKitResultPage() {
+
+  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
 
@@ -41,6 +43,41 @@ export default function JobKitResultPage() {
   // Fallback dummy if nothing found (for dev/testing)
   const fallbackResume = `Your resume will appear here.`
   const fallbackCover = `Your cover letter will appear here.`
+
+  const downloadResumeDocx = async () => {
+  const resumeMarkdown = localStorage.getItem('generated_resume');
+  if (!resumeMarkdown) {
+    alert("No resume found in localStorage!");
+    return;
+  }
+  // Prepare form data for the backend
+  const formData = new FormData();
+  formData.append('resume_text', resumeMarkdown);
+
+  try {
+    const response = await fetch('http://localhost:8000/generate-resume-docx', {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error('Failed to generate resume DOCX');
+    }
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'resume.docx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Resume download failed!');
+    console.error(err);
+  }
+};
+
+
 
   const download = (name: string, txt: string) => {
     const blob = new Blob([txt], { type: 'text/plain' })
@@ -90,10 +127,10 @@ export default function JobKitResultPage() {
             </div>
             <Button
               className="mt-4"
-              onClick={() => download('resume.txt', resumeText || fallbackResume)}
+              onClick={downloadResumeDocx}
               disabled={!resumeText}
             >
-              Download Resume
+              Download Resume (.docx)
             </Button>
           </CardContent>
         </Card>

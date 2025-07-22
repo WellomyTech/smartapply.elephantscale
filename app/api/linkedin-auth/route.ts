@@ -6,6 +6,7 @@ export async function POST(req: Request) {
   const REDIRECT_URI   = process.env.NEXT_PUBLIC_REDIRECT_URI as string
   const CLIENT_ID      = process.env.LINKEDIN_CLIENT_ID      as string
   const CLIENT_SECRET  = process.env.LINKEDIN_CLIENT_SECRET  as string
+  const API_KEY = process.env.API_LINK
 
   // 1️⃣  Exchange authorization code for access token
   const tokenParams = new URLSearchParams({

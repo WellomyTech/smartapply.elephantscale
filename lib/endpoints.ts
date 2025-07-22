@@ -7,12 +7,16 @@ export interface SkillsMatchItem {
 }
 
 export interface CompareApiResponse {
+  report_id?: number; // <-- add this
   skills_match: SkillsMatchItem[];
   gaps: string[];
   bonus_points: string[];
   recommendations: string[];
   google_doc_link: string;
+  raw?: string;
+  error?: string;
 }
+
 
 export interface CompareApiInput {
   resume: File;

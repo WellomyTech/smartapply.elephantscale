@@ -16,6 +16,7 @@ interface SkillsMatchItem {
   in_resume: boolean;
 }
 interface CompareApiResponse {
+  report_id?: number;
   skills_match: SkillsMatchItem[];
   gaps: string[];
   bonus_points: string[];
@@ -29,19 +30,21 @@ async function compareResumeJob({
   resumeFile,
   jobDescription,
   jobUrl,
-  email
 }: {
   resumeFile: File,
   jobDescription: string,
   jobUrl?: string,
   email: string
 }) {
+  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE
+  const email = localStorage.getItem('user_email') || ''; // <- get from localStorage
+
   const form = new FormData();
   form.append('job_description', jobDescription);
   form.append('job_link', jobUrl || '');
   form.append('user_email', email);
 
-  const res = await fetch('https://api-705060578323.us-central1.run.app/compare-resume-job', {
+  const res = await fetch(`${API_KEY}compare-resume-job`, {
     method: 'POST',
     body: form,
     headers: {
@@ -63,6 +66,8 @@ async function compareResumeJob({
 }
 
 export default function JobKitPage() {
+  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE  as string
+
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
   const { resumeFile } = useResume();
@@ -78,13 +83,57 @@ export default function JobKitPage() {
   const [generating, setGenerating] = useState(false);
   const [generatedResume, setGeneratedResume] = useState<string | null>(null);
 
+  // ----- Restore from localStorage on mount -----
+  useEffect(() => {
+    const savedJobUrl = localStorage.getItem('job_url');
+    if (savedJobUrl) setJobUrl(savedJobUrl);
+
+    const savedDescription = localStorage.getItem('job_description');
+    if (savedDescription) setDescription(savedDescription);
+
+    const savedEmail = localStorage.getItem('user_email');
+    if (savedEmail) setEmail(savedEmail);
+
+    const savedResult = localStorage.getItem('compare_result');
+    if (savedResult) setResult(JSON.parse(savedResult));
+
+    const savedWorkedOn = localStorage.getItem('worked_on');
+    if (savedWorkedOn) setWorkedOn(JSON.parse(savedWorkedOn));
+
+    const savedResume = localStorage.getItem('generated_resume');
+    if (savedResume) setGeneratedResume(savedResume);
+
+  }, []);
+
+  // ----- Save to localStorage on state changes -----
+  useEffect(() => {
+    localStorage.setItem('job_url', jobUrl);
+  }, [jobUrl]);
+  useEffect(() => {
+    localStorage.setItem('job_description', description);
+  }, [description]);
+  useEffect(() => {
+    localStorage.setItem('user_email', email);
+  }, [email]);
+  useEffect(() => {
+    if (result) localStorage.setItem('compare_result', JSON.stringify(result));
+  }, [result]);
+  useEffect(() => {
+    localStorage.setItem('worked_on', JSON.stringify(workedOn));
+  }, [workedOn]);
+  useEffect(() => {
+    if (generatedResume) localStorage.setItem('generated_resume', generatedResume);
+  }, [generatedResume]);
+
   useEffect(() => {
     if (user?.email) setEmail(user.email)
   }, [user]);
 
   useEffect(() => {
     if (result) {
-      setWorkedOn(result.skills_match.map(s => s.in_resume));
+      setWorkedOn(
+        result.skills_match.filter(s => s.in_job).map(s => !!s.in_resume)
+      );
     }
   }, [result]);
 
@@ -100,10 +149,6 @@ export default function JobKitPage() {
       </div>
     )
   }
-  // if (!resumeFile) {
-  //   router.replace('/dashboard')
-  //   return null
-  // }
 
   // Form handler
   async function handleCompare(e: React.FormEvent) {
@@ -113,10 +158,9 @@ export default function JobKitPage() {
     setLoading(true);
     try {
       const compareResult = await compareResumeJob({
-        resumeFile,
+        
         jobUrl: jobUrl || undefined,
         jobDescription: description || undefined,
-        email,
       });
 
       if ('error' in compareResult) {
@@ -153,14 +197,23 @@ export default function JobKitPage() {
       return;
     }
 
+    const jobInfoToSend = jobUrl ? jobUrl : description;
     const form = new FormData();
-    form.append('user_email', user.email);
-    form.append('skills', selectedSkills.join(', '));
+
+    const email = localStorage.getItem('user_email') || '';
+
+    form.append('user_email', email);
+    form.append('additional_skills', selectedSkills.join(', '));
+    form.append('job_description', jobInfoToSend);
+
+    if (result.report_id) {
+      form.append('report_id', result.report_id.toString());
+    }
 
     setGenerating(true);
     setGeneratedResume(null);
     try {
-      const res = await fetch('https://api-705060578323.us-central1.run.app/generate-resume', {
+      const res = await fetch(`${API_KEY}generate-resume`, {
         method: 'POST',
         body: form,
         headers: { accept: 'application/json' },
@@ -168,11 +221,17 @@ export default function JobKitPage() {
 
       const data = await res.json();
       if (data.updated_resume) {
-        
         localStorage.setItem('generated_resume', data.updated_resume);
         setGeneratedResume(data.updated_resume);
+        // In your generate-resume handler (previous page, for completeness)
+      if (data.updated_resume) {
+        localStorage.setItem('generated_resume', data.updated_resume);
+      }
+      if (data.cover_letter) {
+        localStorage.setItem('generated_cover_letter', data.cover_letter);
+      }
+
         router.push('/job-kit/result');
-        
       } else {
         alert("No resume generated.");
       }
@@ -183,6 +242,15 @@ export default function JobKitPage() {
       setGenerating(false);
     }
   }
+    // Custom logout handler to clear all localStorage data (optional, for privacy)
+  const handleLogout = () => {
+    logout()
+    
+    localStorage.clear(); // This clears all localStorage for this domain
+
+    // add any other keys you want to clear!
+  }
+
 
   return (
     <div className="min-h-screen bg-[#eef5ff] px-4 py-6 space-y-8">
@@ -191,7 +259,7 @@ export default function JobKitPage() {
         <h1 className="text-2xl font-bold text-gray-900">
           Smart Job Kit Generator
         </h1>
-        <Button variant="outline" onClick={logout}>
+        <Button variant="outline" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>
@@ -221,14 +289,7 @@ export default function JobKitPage() {
                 className="w-full border p-2 rounded"
                 placeholder="Paste the job description"
               />
-              <label className="block font-semibold">Your Email:</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                className="w-full border p-2 rounded"
-              />
+              
               {error && <div className="text-red-600">{error}</div>}
               <Button
                 type="submit"
@@ -261,63 +322,67 @@ export default function JobKitPage() {
                         <th className="px-3 py-2 text-center">Have You Worked On It?</th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      {result.skills_match.map(({ skill, in_job, in_resume }, i) => (
-                        <tr key={skill} className="even:bg-gray-50">
-                          <td className="px-3 py-2">{skill}</td>
-                          <td className="px-3 py-2 text-center">
-                            {in_job
-                              ? <Check className="inline h-5 w-5 text-green-600" />
-                              : <X className="inline h-5 w-5 text-red-600" />}
-                          </td>
-                          <td className="px-3 py-2 text-center">
-                            {in_resume
-                              ? <Check className="inline h-5 w-5 text-green-600" />
-                              : <X className="inline h-5 w-5 text-red-600" />}
-                          </td>
-                          <td className="px-3 py-2 text-center">
-                            {in_job && in_resume ? (
-                              "" // empty cell when both are true
-                            ) : (
-                              <div className="flex justify-center space-x-4">
-                                <label className="inline-flex items-center space-x-1">
-                                  <input
-                                    type="radio"
-                                    name={`worked-${i}`}
-                                    checked={workedOn[i] === true}
-                                    onChange={() =>
-                                      setWorkedOn(arr => {
-                                        const copy = [...arr];
-                                        copy[i] = true;
-                                        return copy;
-                                      })
-                                    }
-                                    className="form-radio h-4 w-4"
-                                  />
-                                  <span>Yes</span>
-                                </label>
-                                <label className="inline-flex items-center space-x-1">
-                                  <input
-                                    type="radio"
-                                    name={`worked-${i}`}
-                                    checked={workedOn[i] === false}
-                                    onChange={() =>
-                                      setWorkedOn(arr => {
-                                        const copy = [...arr];
-                                        copy[i] = false;
-                                        return copy;
-                                      })
-                                    }
-                                    className="form-radio h-4 w-4"
-                                  />
-                                  <span>No</span>
-                                </label>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
+                      {result.skills_match
+                        .filter(({ in_job }) => in_job) // ← Only where in_job is true
+                        .map(({ skill, in_job, in_resume }, i) => (
+                          <tr key={skill} className="even:bg-gray-50">
+                            <td className="px-3 py-2">{skill}</td>
+                            <td className="px-3 py-2 text-center">
+                              {in_job
+                                ? <Check className="inline h-5 w-5 text-green-600" />
+                                : <X className="inline h-5 w-5 text-red-600" />}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              {in_resume
+                                ? <Check className="inline h-5 w-5 text-green-600" />
+                                : <X className="inline h-5 w-5 text-red-600" />}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              {in_job && in_resume ? (
+                                "" // empty cell when both are true
+                              ) : (
+                                <div className="flex justify-center space-x-4">
+                                  <label className="inline-flex items-center space-x-1">
+                                    <input
+                                      type="radio"
+                                      name={`worked-${i}`}
+                                      checked={workedOn[i] === true}
+                                      onChange={() =>
+                                        setWorkedOn(arr => {
+                                          const copy = [...arr];
+                                          copy[i] = true;
+                                          return copy;
+                                        })
+                                      }
+                                      className="form-radio h-4 w-4"
+                                    />
+                                    <span>Yes</span>
+                                  </label>
+                                  <label className="inline-flex items-center space-x-1">
+                                    <input
+                                      type="radio"
+                                      name={`worked-${i}`}
+                                      checked={workedOn[i] === false}
+                                      onChange={() =>
+                                        setWorkedOn(arr => {
+                                          const copy = [...arr];
+                                          copy[i] = false;
+                                          return copy;
+                                        })
+                                      }
+                                      className="form-radio h-4 w-4"
+                                    />
+                                    <span>No</span>
+                                  </label>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
+
                   </table>
                 </div>
               </CardContent>
@@ -350,24 +415,13 @@ export default function JobKitPage() {
               )}
             </Button>
 
-            {generatedResume && (
-              <Card className="shadow-lg">
-                <CardContent>
-                  <h3 className="text-2xl font-semibold mb-4">Your AI-Tailored Resume</h3>
-                  <pre className="whitespace-pre-wrap bg-gray-50 p-4 rounded text-sm overflow-x-auto">
-                    {generatedResume}
-                  </pre>
-                </CardContent>
-              </Card>
-            )}
+            
           </div>
         )}
       </main>
     </div>
   )
 }
-
-
 
 
 

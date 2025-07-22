@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 
 export default function LinkedInCallback() {
+  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE
+
   const router = useRouter()
   const { setUser } = useAuth()
 
@@ -33,7 +35,7 @@ export default function LinkedInCallback() {
 
           // --- Send to FastAPI backend ---
           try {
-            await fetch('https://api-705060578323.us-central1.run.app/auth/user', {
+            await fetch(`${API_KEY}auth/user`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
