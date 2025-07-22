@@ -55,7 +55,7 @@ export default function JobKitResultPage() {
   formData.append('resume_text', resumeMarkdown);
 
   try {
-    const response = await fetch('http://localhost:8000/generate-resume-docx', {
+    const response = await fetch(`${API_KEY}generate-resume-docx`, {
       method: 'POST',
       body: formData,
     });
