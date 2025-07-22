@@ -40,6 +40,16 @@ export default function JobKitResultPage() {
     )
   }
 
+
+  const handleLogout = () => {
+    logout()
+    
+    localStorage.clear(); // This clears all localStorage for this domain
+
+    // add any other keys you want to clear!
+  }
+
+
   // Fallback dummy if nothing found (for dev/testing)
   const fallbackResume = `Your resume will appear here.`
   const fallbackCover = `Your cover letter will appear here.`
@@ -78,6 +88,39 @@ export default function JobKitResultPage() {
 };
 
 
+const downloadCoverLetterDocx = async () => {
+  const coverLetter = localStorage.getItem('generated_cover_letter');
+  if (!coverLetter) {
+    alert("No cover letter found in localStorage!");
+    return;
+  }
+  const formData = new FormData();
+  formData.append('cover_letter_text', coverLetter);
+
+  try {
+    const response = await fetch(`${API_KEY}generate-cover-letter-docx`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error('Failed to generate cover letter DOCX');
+    }
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cover_letter.docx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Cover letter download failed!');
+    console.error(err);
+  }
+};
+
+
 
   const download = (name: string, txt: string) => {
     const blob = new Blob([txt], { type: 'text/plain' })
@@ -108,7 +151,7 @@ export default function JobKitResultPage() {
             Job Link
           </Button>
         )}
-        <Button variant="outline" onClick={logout}>
+        <Button variant="outline" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>
@@ -146,11 +189,12 @@ export default function JobKitResultPage() {
             </div>
             <Button
               className="mt-4"
-              onClick={() => download('cover-letter.txt', coverLetterText || fallbackCover)}
+              onClick={downloadCoverLetterDocx}
               disabled={!coverLetterText}
             >
-              Download Cover Letter
+              Download Cover Letter (.docx)
             </Button>
+
           </CardContent>
         </Card>
       </main>
