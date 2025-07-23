@@ -1,58 +1,118 @@
-"use client";
+/* components/PricingButtons.tsx
+   Modal that shows the two paid plans.
+   ───────────────────────────────────────────────────────── */
+'use client'
 
-import { useState } from "react";
+import { useState } from 'react'
+import { Check } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
-const PRICES = {
-  //   FREE: "price_1RmKPwAgbqMxQURg228OXuAo",
-  //   SINGLE: "price_1RmKPwAgbqMxQURghj5BpH18",
-  //   MONTHLY: "price_1RmKPwAgbqMxQURg7r2KZF59",
-  FREE: "price_1RnRGHAgbqMxQURgomfydKNz",
-  SINGLE: "price_1RnR7bAgbqMxQURgkkJlS11x",
-  MONTHLY: "price_1RnR7vAgbqMxQURgeHeQvG3i",
-};
+/* ── Pricing plan config ────────────────────────────── */
+const PLANS = [
+  {
+    id: 'single',
+    label: 'Single-use credit',
+    priceId: process.env.NEXT_PUBLIC_PRICE_SINGLE ?? 'price_test_single',
+    priceText: '$7',
+    features: ['1 credit', 'No renewal'],
+  },
+  {
+    id: 'monthly',
+    label: 'Unlimited (monthly)',
+    priceId: process.env.NEXT_PUBLIC_PRICE_MONTHLY ?? 'price_test_monthly',
+    priceText: '$29 / mo',
+    features: ['Unlimited credits', 'Cancel anytime'],
+  },
+] as const
 
-export default function PricingButtons() {
-  const [loading, setLoading] = useState<string | null>(null);
+type Plan = (typeof PLANS)[number]
 
-  async function checkout(priceId: string) {
-    setLoading(priceId);
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ priceId }),
-    });
-    const { url } = await res.json();
-    window.location.href = url;
+/* ── Component ───────────────────────────────────────── */
+export default function PricingModal(props: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+}) {
+  const { open, onOpenChange } = props
+  const [busy, setBusy] = useState<string | null>(null)
+
+  async function checkout(plan: Plan) {
+    if (!plan.priceId) return
+    setBusy(plan.id)
+
+    try {
+      const rsp = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId: plan.priceId }),
+      })
+      if (!rsp.ok) throw new Error('checkout failed')
+      const { url } = await rsp.json()
+
+      /* ── Debug flag: don’t redirect, just log ── */
+      if (process.env.NEXT_PUBLIC_DEBUG_NO_REDIRECT === 'true') {
+        console.log('🔗 Stripe URL (debug, no redirect):', url)
+      } else {
+        window.location.href = url
+      }
+    } catch (err) {
+      console.error(err)
+      setBusy(null)
+    }
   }
 
   return (
-    <div className="flex flex-col gap-4 my-6">
-      {/* Free */}
-      <button
-        disabled={loading === PRICES.FREE}
-        onClick={() => checkout(PRICES.FREE)}
-        className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-      >
-        {loading === PRICES.FREE ? "Redirecting…" : "Try 1 resume free"}
-      </button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>You’ve exhausted your free credits</DialogTitle>
+          <DialogDescription>
+            Choose one of the options below to keep generating.
+          </DialogDescription>
+        </DialogHeader>
 
-      {/* Single */}
-      <button
-        disabled={loading === PRICES.SINGLE}
-        onClick={() => checkout(PRICES.SINGLE)}
-        className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-      >
-        {loading === PRICES.SINGLE ? "Redirecting…" : "Buy 1 credit – $7"}
-      </button>
+        <div className="grid gap-4 md:grid-cols-2">
+          {PLANS.map((plan) => (
+            <Card key={plan.id} className="shadow-sm">
+              <CardHeader>
+                <CardTitle>{plan.priceText}</CardTitle>
+                <CardDescription>{plan.label}</CardDescription>
+              </CardHeader>
 
-      {/* Monthly */}
-      <button
-        disabled={loading === PRICES.MONTHLY}
-        onClick={() => checkout(PRICES.MONTHLY)}
-        className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-      >
-        {loading === PRICES.MONTHLY ? "Redirecting…" : "Unlimited – $29/mo"}
-      </button>
-    </div>
-  );
+              <CardContent className="space-y-2">
+                <ul className="space-y-1 text-sm">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-1">
+                      <Check className="h-4 w-4 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  disabled={busy === plan.id}
+                  onClick={() => checkout(plan)}
+                  className="w-full mt-4"
+                >
+                  {busy === plan.id ? 'Redirecting…' : 'Choose'}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
 }
