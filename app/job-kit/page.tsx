@@ -222,14 +222,21 @@ export default function JobKitPage() {
       const data = await res.json();
       if (data.updated_resume) {
         localStorage.setItem('generated_resume', data.updated_resume);
-        setGeneratedResume(data.updated_resume);
+        setGeneratedResume(data.updated_resume_tex);
         // In your generate-resume handler (previous page, for completeness)
       if (data.updated_resume) {
         localStorage.setItem('generated_resume', data.updated_resume);
       }
+       if (data.latex_resume) {
+        localStorage.setItem('latex_resume', data.latex_resume);
+      }
       if (data.cover_letter) {
         localStorage.setItem('generated_cover_letter', data.cover_letter);
       }
+      if (data.latex_cover) {
+        localStorage.setItem('latex_cover', data.latex_cover);
+      }
+
 
         router.push('/job-kit/result');
       } else {

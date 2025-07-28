@@ -5,30 +5,27 @@ import React, {
   useRef,
   useState,
   useEffect,
-  Dispatch,
-  SetStateAction,
 } from "react"
 import { useRouter } from "next/navigation"
 import { LogOut, Upload } from "lucide-react"
 
 import { useAuth } from "@/components/AuthProvider"
 import { useResume } from "@/components/ResumeProvider"
-import { useEntitlement } from "@/hooks/useEntitlement"      // ⬅ NEW
-import PricingModal from "@/components/PricingButtons"        // ⬅ NEW (modal)
+import { useEntitlement } from "@/hooks/useEntitlement"
+import PricingModal from "@/components/PricingButtons"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
+import JobScanList from "@/components/JobScanList"
+
 export default function Dashboard() {
-  /* ───────── constants ────────────────────────────────────── */
   const API_URL = process.env.NEXT_PUBLIC_API_BASE
 
-  /* ───────── auth / routing ───────────────────────────────── */
   const { user, isLoading: authLoading, logout } = useAuth()
   const router = useRouter()
 
-  /* ───────── entitlement (credits / premium) ─────────────── */
   const {
     isLoading: entLoading,
     canGenerate,
@@ -37,26 +34,58 @@ export default function Dashboard() {
   } = useEntitlement()
   const [showPaywall, setShowPaywall] = useState(false)
 
-  /* ───────── upload state ────────────────────────────────── */
   const resumeInputRef = useRef<HTMLInputElement | null>(null)
   const coverLetterInputRef = useRef<HTMLInputElement | null>(null)
 
-  const { resumeFile, setResumeFile, coverLetterFile, setCoverLetterFile } =
-    useResume()
+  const { resumeFile, setResumeFile, coverLetterFile, setCoverLetterFile } = useResume()
 
-  /* hasResume === null -> unknown (loading) */
-  const [hasResume, setHasResume] = useState<boolean | null>(null)
+  // --- State is just boolean ---
+  const [hasResume, setHasResume] = useState<boolean>(false)
+  const [hasCoverLetter, setHasCoverLetter] = useState<boolean>(false)
+  const [userData, setUserData] = useState<any>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
 
-  /* ───────── local‑storage helpers (unchanged) ───────────── */
+  // Local storage helpers
   useEffect(() => {
-    if (hasResume !== null)
+    if (user?.email) localStorage.setItem("user_email", user.email)
+  }, [user])
+
+  useEffect(() => {
+    const cached = localStorage.getItem("has_resume")
+    if (cached) setHasResume(JSON.parse(cached))
+  }, [])
+
+  useEffect(() => {
+    const cached = localStorage.getItem("has_cover_letter")
+    if (cached) setHasCoverLetter(JSON.parse(cached))
+  }, [])
+
+  useEffect(() => {
+    if (hasResume !== undefined)
       localStorage.setItem("has_resume", JSON.stringify(hasResume))
   }, [hasResume])
 
   useEffect(() => {
-    if (user?.email) localStorage.setItem("user_email", user.email)
+    if (hasCoverLetter !== undefined)
+      localStorage.setItem("has_cover_letter", JSON.stringify(hasCoverLetter))
+  }, [hasCoverLetter])
+
+  // Fetch user dashboard data (set hasResume and hasCoverLetter from backend)
+  useEffect(() => {
+    if (user?.email) {
+      fetch(`${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setHasResume(data.has_resume === 1)
+          setHasCoverLetter(data.has_cover_letter === 1)
+          setUserData(data)
+        })
+        .catch((error) => {
+          console.error('Failed to fetch dashboard:', error)
+          setHasResume(false)
+        })
+    }
   }, [user])
 
   const localSetFileName = (
@@ -68,7 +97,6 @@ export default function Dashboard() {
     else localStorage.removeItem(storageKey)
   }
 
-  /* ───────── event handlers ──────────────────────────────── */
   const onResumeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null
     setResumeFile(f)
@@ -99,6 +127,7 @@ export default function Dashboard() {
       const data = await res.json()
       if (res.ok) {
         setHasResume(true)
+        if (coverLetterFile) setHasCoverLetter(true)
         setResumeFile(null)
         setCoverLetterFile(null)
         localStorage.removeItem("resume_file_name")
@@ -113,7 +142,35 @@ export default function Dashboard() {
     }
   }
 
-  /* after resume locked -> decide whether to proceed or show paywall */
+  const handleCoverLetterUpload = async () => {
+  if (!coverLetterFile || !user?.email) return;
+  setUploading(true);
+  setError("");
+  const fd = new FormData();
+  fd.append("cover_letter", coverLetterFile);
+  fd.append("user_email", user.email);
+
+  try {
+    const res = await fetch(`${API_URL}upload-cover-letter`, {
+      method: "POST",
+      body: fd,
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setHasCoverLetter(true);
+      setCoverLetterFile(null);
+      localStorage.removeItem("cover_letter_file_name");
+    } else {
+      setError(data.detail || "Cover letter upload failed. Try again.");
+    }
+  } catch {
+    setError("Network error. Try again.");
+  } finally {
+    setUploading(false);
+  }
+};
+
+
   const handleContinue = () => {
     if (canGenerate) router.push("/job-kit")
     else setShowPaywall(true)
@@ -124,36 +181,19 @@ export default function Dashboard() {
     localStorage.clear()
   }
 
-  /* ───────── bootstrap resume‑status from backend ────────── */
-  useEffect(() => {
-    const cached = localStorage.getItem("has_resume")
-    if (cached) setHasResume(JSON.parse(cached))
-  }, [])
-
-  useEffect(() => {
-    if (user?.email) {
-      fetch(
-        `${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`,
-      )
-        .then((r) => r.json())
-        .then((d) => setHasResume(d.has_resume === 1))
-        .catch(() => setHasResume(false))
-    }
-  }, [user])
-
-  /* ───────── redirects / skeleton ────────────────────────── */
+  // Loading skeleton
+  if (!userData) return <p className="text-center mt-10">Loading dashboard...</p>
   if (!authLoading && !user) {
     router.replace("/")
     return null
   }
-  if (authLoading || entLoading || hasResume === null) {
+  if (authLoading || entLoading) {
     return <p className="p-8">Loading…</p>
   }
 
-  /* ───────── render ──────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-[#eef5ff] px-4 py-6 space-y-8">
-      {/* ── Top Bar ───────────────────────────── */}
+      {/* Top Bar */}
       <header className="flex items-center justify-between max-w-5xl mx-auto">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -169,7 +209,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto space-y-8">
-        {/* ── User Card ───────────────────────── */}
+        {/* User Card */}
         <Card className="shadow-sm">
           <CardContent className="flex items-center space-x-4 p-6">
             {user?.picture ? (
@@ -197,7 +237,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* ── Upload Cards ─────────────────────── */}
+        {/* Upload Cards */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Resume */}
           <Card className="shadow-sm">
@@ -208,7 +248,7 @@ export default function Dashboard() {
               </div>
               {hasResume && (
                 <p className="text-center text-indigo-700 font-semibold">
-                  Resume &amp; Cover Letter are locked after upload.
+                  Resume is locked after upload.
                 </p>
               )}
               <label
@@ -262,67 +302,74 @@ export default function Dashboard() {
                 Optional: You can upload a cover letter in PDF format.
               </p>
               <label
-                htmlFor="cover-letter"
-                className={`flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-md h-40 cursor-pointer ${
-                  hasResume
-                    ? "opacity-60 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                }`}
-              >
-                <Input
-                  id="cover-letter"
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  ref={coverLetterInputRef}
-                  onChange={onCoverLetterChange}
-                  disabled={hasResume}
-                />
-                {coverLetterFile ? (
-                  <p className="text-sm">{coverLetterFile.name}</p>
-                ) : (
-                  <p
-                    className={`text-sm ${
-                      hasResume ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    {hasResume
-                      ? "Cover letter uploaded"
-                      : localStorage.getItem("cover_letter_file_name")
-                      ? `Last selected: ${localStorage.getItem(
-                          "cover_letter_file_name",
-                        )}`
-                      : "Click to upload PDF (optional)"}
-                  </p>
-                )}
-              </label>
+              htmlFor="cover-letter"
+              className={`flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-md h-40 cursor-pointer ${
+                !hasResume || hasCoverLetter
+                  ? "opacity-60 cursor-not-allowed"
+                  : "hover:bg-gray-50"
+              }`}
+            >
+              <Input
+                id="cover-letter"
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                ref={coverLetterInputRef}
+                onChange={onCoverLetterChange}
+                disabled={!hasResume || hasCoverLetter}
+              />
+              {coverLetterFile ? (
+                <p className="text-sm">{coverLetterFile.name}</p>
+              ) : (
+                <p
+                  className={`text-sm ${
+                    hasCoverLetter ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {!hasResume
+                    ? "Upload resume first to unlock"
+                    : hasCoverLetter
+                    ? "Cover letter uploaded"
+                    : localStorage.getItem("cover_letter_file_name")
+                    ? `Last selected: ${localStorage.getItem(
+                        "cover_letter_file_name"
+                      )}`
+                    : "Click to upload PDF (optional)"}
+                </p>
+              )}
+            </label>
+
+            
+              {/* Show upload button ONLY if resume is uploaded and cover letter is NOT uploaded and a file is selected */}
+              {hasResume && !hasCoverLetter && coverLetterFile && (
+                <Button
+                  size="sm"
+                  className="w-full mt-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
+                  onClick={handleCoverLetterUpload}
+                  disabled={uploading}
+                >
+                  {uploading ? "Uploading…" : "Upload Cover Letter"}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* ── Error message ───────────────────── */}
+        {/* Error message */}
         {error && <p className="text-center text-red-600">{error}</p>}
 
-        {/* ── Free‑credit badge ────────────────── */}
+        {/* Free credit badge */}
         {!isPremium && freeRemain > 0 && hasResume && (
           <p className="text-center text-sm text-gray-600">
             {freeRemain} / 5 free credits remaining
           </p>
         )}
 
-        {/* ── Paywall modal (always mounted) ──── */}
+        {/* Paywall modal */}
         <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
 
-        {/* ── CTA button(s) ───────────────────── */}
-        {hasResume ? (
-          <Button
-            size="lg"
-            className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
-            onClick={handleContinue}
-          >
-            Continue to Job Kit
-          </Button>
-        ) : (
+        {/* CTA buttons */}
+        {!hasResume ? (
           <Button
             size="lg"
             className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
@@ -331,11 +378,23 @@ export default function Dashboard() {
           >
             {uploading ? "Uploading…" : "Upload & Get Started"}
           </Button>
+        ) : (
+          <Button
+            size="lg"
+            className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
+            onClick={handleContinue}
+          >
+            Continue to Job Kit
+          </Button>
         )}
+
+        {/* Job Scan List */}
+        <JobScanList reports={userData.reports} />
       </main>
     </div>
   )
 }
+
 
 
 

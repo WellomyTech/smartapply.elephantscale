@@ -54,38 +54,108 @@ export default function JobKitResultPage() {
   const fallbackResume = `Your resume will appear here.`
   const fallbackCover = `Your cover letter will appear here.`
 
-  const downloadResumeDocx = async () => {
-  const resumeMarkdown = localStorage.getItem('generated_resume');
-  if (!resumeMarkdown) {
-    alert("No resume found in localStorage!");
+
+  const downloadResumePdf = async () => {
+  const latex = localStorage.getItem("latex_resume");
+  if (!latex) {
+    alert("No LaTeX resume found!");
     return;
   }
-  // Prepare form data for the backend
+
+  const response = await fetch("https://latex.ytotech.com/builds/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      compiler: "pdflatex",
+      resources: [{ content: latex, main: true, file: "resume.tex" }],
+    }),
+  });
+
+  if (!response.ok) {
+    alert("PDF generation failed");
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "resume.pdf";
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
+
+
+  const downloadResumePdf1 = async () => {
+  const latexContent = localStorage.getItem("latex_resume"); // or from state
+  if (!latexContent) {
+    alert("No LaTeX content found.");
+    return;
+  }
+
   const formData = new FormData();
-  formData.append('resume_text', resumeMarkdown);
+  formData.append("latex", latexContent);
 
   try {
-    const response = await fetch(`${API_KEY}generate-resume-docx`, {
-      method: 'POST',
+    const response = await fetch(`${API_KEY}generate-resume-pdf`, {
+      method: "POST",
       body: formData,
     });
+
     if (!response.ok) {
-      throw new Error('Failed to generate resume DOCX');
+      const err = await response.json();
+      throw new Error(err?.error || "PDF generation failed");
     }
+
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'resume.docx';
-    document.body.appendChild(a);
+    a.download = "resume.pdf";
     a.click();
-    a.remove();
     window.URL.revokeObjectURL(url);
   } catch (err) {
-    alert('Resume download failed!');
     console.error(err);
+    alert("Could not generate PDF resume.");
   }
 };
+
+
+
+
+//   const downloadResumeDocx = async () => {
+//   const resumeMarkdown = localStorage.getItem('generated_resume');
+//   if (!resumeMarkdown) {
+//     alert("No resume found in localStorage!");
+//     return;
+//   }
+//   // Prepare form data for the backend
+//   const formData = new FormData();
+//   formData.append('resume_text', resumeMarkdown);
+
+//   try {
+//     const response = await fetch(`${API_KEY}generate-resume-pdf`, {
+//       method: 'POST',
+//       body: formData,
+//     });
+//     if (!response.ok) {
+//       throw new Error('Failed to generate resume DOCX');
+//     }
+//     const blob = await response.blob();
+//     const url = window.URL.createObjectURL(blob);
+//     const a = document.createElement('a');
+//     a.href = url;
+//     a.download = 'resume.docx';
+//     document.body.appendChild(a);
+//     a.click();
+//     a.remove();
+//     window.URL.revokeObjectURL(url);
+//   } catch (err) {
+//     alert('Resume download failed!');
+//     console.error(err);
+//   }
+// };
 
 
 const downloadCoverLetterDocx = async () => {
@@ -98,7 +168,7 @@ const downloadCoverLetterDocx = async () => {
   formData.append('cover_letter_text', coverLetter);
 
   try {
-    const response = await fetch(`${API_KEY}generate-cover-letter-docx`, {
+    const response = await fetch(`${API_KEY}generate-cover-letter-pdf`, {
       method: 'POST',
       body: formData,
     });
@@ -170,7 +240,7 @@ const downloadCoverLetterDocx = async () => {
             </div>
             <Button
               className="mt-4"
-              onClick={downloadResumeDocx}
+              onClick={downloadResumePdf}
               disabled={!resumeText}
             >
               Download Resume (.docx)
