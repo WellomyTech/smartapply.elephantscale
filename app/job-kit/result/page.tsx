@@ -86,38 +86,34 @@ export default function JobKitResultPage() {
 };
 
 
-  const downloadResumePdf1 = async () => {
-  const latexContent = localStorage.getItem("latex_resume"); // or from state
-  if (!latexContent) {
-    alert("No LaTeX content found.");
+const downloadResumeDocx = async () => {
+  const API_KEY = process.env.NEXT_PUBLIC_API_BASE;
+  const reportId = localStorage.getItem("report_id");
+
+  if (!reportId) {
+    alert("No report_id found in localStorage!");
     return;
   }
 
-  const formData = new FormData();
-  formData.append("latex", latexContent);
-
   try {
-    const response = await fetch(`${API_KEY}generate-resume-pdf`, {
-      method: "POST",
-      body: formData,
-    });
-
+    const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`);
     if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err?.error || "PDF generation failed");
+      alert("Failed to generate/download resume DOCX");
+      return;
     }
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-
     const a = document.createElement("a");
     a.href = url;
-    a.download = "resume.pdf";
+    a.download = "resume.docx";
+    document.body.appendChild(a); // Needed for Firefox
     a.click();
+    a.remove();
     window.URL.revokeObjectURL(url);
   } catch (err) {
+    alert("Resume download failed!");
     console.error(err);
-    alert("Could not generate PDF resume.");
   }
 };
 
@@ -240,7 +236,7 @@ const downloadCoverLetterDocx = async () => {
             </div>
             <Button
               className="mt-4"
-              onClick={downloadResumePdf}
+              onClick={downloadResumeDocx}
               disabled={!resumeText}
             >
               Download Resume (.docx)

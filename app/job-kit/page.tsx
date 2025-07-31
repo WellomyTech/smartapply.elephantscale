@@ -58,6 +58,10 @@ async function compareResumeJob({
   } catch (e) {
     throw new Error('Could not parse API response.');
   }
+    
+  if (data.report_id) {
+    localStorage.setItem('report_id', data.report_id);
+  }
 
   if (!res.ok || data.error) {
     return { error: data.error || 'Unknown error', raw: data.raw, google_doc_link: data.google_doc_link };
@@ -131,9 +135,7 @@ export default function JobKitPage() {
 
   useEffect(() => {
     if (result) {
-      setWorkedOn(
-        result.skills_match.filter(s => s.in_job).map(s => !!s.in_resume)
-      );
+      setWorkedOn(result.skills_match.filter(s => s.in_job).map(s => !!s.in_resume));
     }
   }, [result]);
 
@@ -188,9 +190,10 @@ export default function JobKitPage() {
   async function handleGenerateResume() {
     if (!user?.email || !result) return;
 
-    const selectedSkills = result.skills_match
-      .filter((_, idx) => workedOn[idx])
-      .map((item) => item.skill);
+   const selectedSkills = result.skills_match
+  .filter((item, idx) => result.gaps.includes(item.skill) && workedOn[idx])
+  .map(item => item.skill);
+
 
     if (selectedSkills.length === 0) {
       alert("Please select at least one skill you have worked on.");
@@ -332,8 +335,10 @@ export default function JobKitPage() {
 
                     <tbody>
                       {result.skills_match
-                        .filter(({ in_job }) => in_job) // ← Only where in_job is true
-                        .map(({ skill, in_job, in_resume }, i) => (
+                      .filter(({ in_job }) => in_job)
+                      .map(({ skill, in_job, in_resume }, i) => {
+                        const showRadio = result.gaps.includes(skill); // ← Only if in gaps
+                        return (
                           <tr key={skill} className="even:bg-gray-50">
                             <td className="px-3 py-2">{skill}</td>
                             <td className="px-3 py-2 text-center">
@@ -347,9 +352,7 @@ export default function JobKitPage() {
                                 : <X className="inline h-5 w-5 text-red-600" />}
                             </td>
                             <td className="px-3 py-2 text-center">
-                              {in_job && in_resume ? (
-                                "" // empty cell when both are true
-                              ) : (
+                              {showRadio ? (
                                 <div className="flex justify-center space-x-4">
                                   <label className="inline-flex items-center space-x-1">
                                     <input
@@ -384,10 +387,15 @@ export default function JobKitPage() {
                                     <span>No</span>
                                   </label>
                                 </div>
+                              ) : (
+                                // Empty cell if not in gaps
+                                null
                               )}
                             </td>
                           </tr>
-                        ))}
+                        );
+                      })}
+
                     </tbody>
 
                   </table>

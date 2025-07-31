@@ -17,6 +17,7 @@ export default function HomePage() {
     if (!isLoading && user) {
       router.push('/dashboard')
     }
+    
   }, [isLoading, user, router])
 
   if (isLoading) {
