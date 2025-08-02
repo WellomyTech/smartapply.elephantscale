@@ -14,7 +14,7 @@ export default function SocialAuthRedirectPage() {
     const userParam = searchParams.get("user");
     if (userParam) {
       try {
-        const userJson = Buffer.from(decodeURIComponent(userParam), "base64").toString();
+        const userJson = atob(decodeURIComponent(userParam));
         const user = JSON.parse(userJson);
 
         // Save to localStorage
