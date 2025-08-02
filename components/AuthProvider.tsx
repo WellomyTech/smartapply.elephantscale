@@ -41,15 +41,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /* load saved user once */
   useEffect(() => {
-    const saved = localStorage.getItem('sjg_user')
+    const saved = localStorage.getItem('socialUser')
     if (saved) setUser(JSON.parse(saved))
     setLoading(false)
   }, [])
 
   /* keep localStorage in sync */
   useEffect(() => {
-    if (user) localStorage.setItem('sjg_user', JSON.stringify(user))
-    else localStorage.removeItem('sjg_user')
+    if (user) localStorage.setItem('socialUser', JSON.stringify(user))
+    else localStorage.removeItem('socialUser')
   }, [user])
 
   const logout = () => {

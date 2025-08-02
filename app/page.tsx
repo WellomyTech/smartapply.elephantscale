@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import LinkedInLoginButton from '@/components/LinkedInButton'
 import { Briefcase } from 'lucide-react'
+import GoogleButton from '@/components/GoogleButton'
 
 export default function HomePage() {
   const { user, isLoading } = useAuth()
@@ -50,10 +51,14 @@ export default function HomePage() {
         <div className="w-full">
           <LinkedInLoginButton />
         </div>
+        <div>
+      {/* other login buttons */}
+          <GoogleButton />
+        </div>
 
         {/* Footer Note */}
         <p className="text-sm text-gray-400">
-          Secure OAuth 2.0 authentication with LinkedIn
+          Secure OAuth 2.0 authentication with LinkedIn & Google
         </p>
       </div>
     </div>

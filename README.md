@@ -3,8 +3,18 @@
 smart-job-kit-generator-linkedin-ready
 ├─ app
 │  ├─ api
-│  │  └─ linkedin-auth
-│  │     └─ route.ts
+│  │  ├─ latex
+│  │  │  └─ latex_to_pdf.ts
+│  │  ├─ linkedin-auth
+│  │  │  └─ route.ts
+│  │  ├─ stripe
+│  │  │  ├─ checkout
+│  │  │  │  └─ route.ts
+│  │  │  └─ webhook
+│  │  │     └─ route.ts
+│  │  └─ user-dashboard
+│  │     └─ checkout
+│  │        └─ route.ts
 │  ├─ dashboard
 │  │  └─ page.tsx
 │  ├─ globals.css
@@ -21,7 +31,9 @@ smart-job-kit-generator-linkedin-ready
 │  └─ page.tsx
 ├─ components
 │  ├─ AuthProvider.tsx
+│  ├─ JobScanList.tsx
 │  ├─ LinkedInButton.tsx
+│  ├─ PricingButtons.tsx
 │  ├─ ResumeForm.tsx
 │  ├─ ResumeProvider.tsx
 │  ├─ theme-provider.tsx
@@ -81,9 +93,11 @@ smart-job-kit-generator-linkedin-ready
 │  └─ jobKit.json
 ├─ hooks
 │  ├─ use-mobile.tsx
-│  └─ use-toast.ts
+│  ├─ use-toast.ts
+│  └─ useEntitlement.ts
 ├─ lib
 │  ├─ endpoints.ts
+│  ├─ stripe.ts
 │  └─ utils.ts
 ├─ next.config.mjs
 ├─ package-lock.json
@@ -95,6 +109,7 @@ smart-job-kit-generator-linkedin-ready
 │  ├─ placeholder-user.jpg
 │  ├─ placeholder.jpg
 │  └─ placeholder.svg
+├─ README.md
 ├─ styles
 │  └─ globals.css
 ├─ tailwind.config.ts
