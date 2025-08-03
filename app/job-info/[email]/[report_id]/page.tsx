@@ -1,29 +1,34 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, ExternalLink } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-export default function JobInfoPage() {
+interface JobInfoPageProps {
+  params: {
+    email: string
+    report_id: string
+  }
+}
+
+export default function JobInfoPage({ params }: JobInfoPageProps) {
   const API_URL = process.env.NEXT_PUBLIC_API_BASE
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { user, isLoading, logout } = useAuth()
 
-  const reportId = searchParams.get('report_id')
-  const userEmail = searchParams.get('email')
+  const { email, report_id } = params
 
   const [jobData, setJobData] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!reportId || !userEmail) return
+    if (!report_id || !email) return
     fetch(
-      `${API_URL}user-dashboard?user_email=${userEmail}&report_id=${reportId}`
+      `${API_URL}user-dashboard?user_email=${email}&report_id=${report_id}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -33,7 +38,7 @@ export default function JobInfoPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [reportId, userEmail, API_URL])
+  }, [report_id, email, API_URL])
 
   if (!isLoading && !user) {
     router.replace('/')
@@ -54,10 +59,10 @@ export default function JobInfoPage() {
 
   // ✅ Download Resume DOCX
   const downloadResumeDocx = async () => {
-    if (!reportId) return alert('No report ID found!')
+    if (!report_id) return alert('No report ID found!')
     try {
       const response = await fetch(
-        `${API_URL}download-custom-resume-docx?report_id=${reportId}`
+        `${API_URL}download-custom-resume-docx?report_id=${report_id}`
       )
       if (!response.ok) throw new Error('Download failed')
       const blob = await response.blob()
@@ -74,10 +79,10 @@ export default function JobInfoPage() {
 
   // ✅ Download Cover Letter DOCX
   const downloadCoverLetterDocx = async () => {
-    if (!reportId) return alert('No report ID found!')
+    if (!report_id) return alert('No report ID found!')
     try {
       const response = await fetch(
-        `${API_URL}download-custom-cover-docx?report_id=${reportId}`
+        `${API_URL}download-custom-cover-docx?report_id=${report_id}`
       )
       if (!response.ok) throw new Error('Download failed')
       const blob = await response.blob()
@@ -94,7 +99,7 @@ export default function JobInfoPage() {
 
   return (
     <div className="min-h-screen bg-[#eef5ff] p-8">
-      {/* ✅ Top Bar */}
+      {/* Top Bar */}
       <header className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold">Job Info</h1>
         <Button variant="outline" onClick={handleLogout}>
@@ -102,7 +107,7 @@ export default function JobInfoPage() {
         </Button>
       </header>
 
-      {/* ✅ Job Info */}
+      {/* Job Info */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
         <h2 className="text-xl font-semibold">{jobData?.job_title}</h2>
         <p className="text-gray-600">{jobData?.job_company}</p>
@@ -111,7 +116,7 @@ export default function JobInfoPage() {
         </p>
       </div>
 
-      {/* ✅ Resume & Cover Letter Side by Side */}
+      {/* Resume & Cover Letter Side by Side */}
       <main className="flex flex-row gap-8 w-full h-[calc(100vh-18rem)]">
         {/* Resume */}
         <Card className="flex-1 h-full flex flex-col shadow-lg">

@@ -79,14 +79,14 @@ const JobScanList: React.FC<JobScanListProps> = ({ reports }) => {
               Interview
             </button>
 
-           <button
+            <button
               onClick={() => {
                 const userEmail = localStorage.getItem('user_email') || localStorage.getItem('userEmail');
                 if (!userEmail) {
                   alert('User email not found!');
                   return;
                 }
-                router.push(`/job-info?email=${encodeURIComponent(userEmail)}&report_id=${report.id}`);
+                router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`);
               }}
               className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
             >

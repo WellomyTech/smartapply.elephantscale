@@ -7,6 +7,9 @@ smart-job-kit-generator-linkedin-ready
 │  │  │  └─ latex_to_pdf.ts
 │  │  ├─ linkedin-auth
 │  │  │  └─ route.ts
+│  │  ├─ social-auth
+│  │  │  └─ callback
+│  │  │     └─ route.ts
 │  │  ├─ stripe
 │  │  │  ├─ checkout
 │  │  │  │  └─ route.ts
@@ -19,7 +22,9 @@ smart-job-kit-generator-linkedin-ready
 │  │  └─ page.tsx
 │  ├─ globals.css
 │  ├─ job-info
-│  │  └─ page.tsx
+│  │  └─ [email]
+│  │     └─ [report_id]
+│  │        └─ page.tsx
 │  ├─ job-kit
 │  │  ├─ page.tsx
 │  │  └─ result
@@ -28,14 +33,19 @@ smart-job-kit-generator-linkedin-ready
 │  ├─ linkedin
 │  │  └─ callback
 │  │     └─ page.tsx
-│  └─ page.tsx
+│  ├─ page.tsx
+│  └─ social-auth-redirect
+│     └─ page.tsx
 ├─ components
 │  ├─ AuthProvider.tsx
+│  ├─ GoogleButton.tsx
 │  ├─ JobScanList.tsx
 │  ├─ LinkedInButton.tsx
 │  ├─ PricingButtons.tsx
 │  ├─ ResumeForm.tsx
 │  ├─ ResumeProvider.tsx
+│  ├─ SocialAuthRedirectPage.jsx
+│  ├─ SocialLoginButtons.tsx
 │  ├─ theme-provider.tsx
 │  └─ ui
 │     ├─ accordion.tsx
