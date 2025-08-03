@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Check, X, LogOut, Loader2 } from 'lucide-react'
+import DashboardButton from '@/components/DashboardButton'
 
 // ---- API call for compare endpoint ----
 interface SkillsMatchItem {
@@ -265,14 +266,18 @@ export default function JobKitPage() {
   return (
     <div className="min-h-screen bg-[#eef5ff] px-4 py-6 space-y-8">
       {/* Top Bar */}
-      <header className="flex items-center justify-between max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Smart Job Kit Generator
-        </h1>
-        <Button variant="outline" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
+      <header className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+                        Smart Job Kit Generator
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <DashboardButton />
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" /> Logout
+          </Button>
+        </div>
       </header>
 
       {/* Main Content */}

@@ -1,11 +1,6 @@
 "use client"
 
-import React, {
-  ChangeEvent,
-  useRef,
-  useState,
-  useEffect,
-} from "react"
+import React, { ChangeEvent, useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { LogOut, Upload } from "lucide-react"
 
@@ -17,8 +12,8 @@ import PricingModal from "@/components/PricingButtons"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-
 import JobScanList from "@/components/JobScanList"
+import DashboardButton from "@/components/DashboardButton"
 
 export default function Dashboard() {
   const API_URL = process.env.NEXT_PUBLIC_API_BASE
@@ -39,55 +34,34 @@ export default function Dashboard() {
 
   const { resumeFile, setResumeFile, coverLetterFile, setCoverLetterFile } = useResume()
 
-  // --- State is just boolean ---
   const [hasResume, setHasResume] = useState<boolean>(false)
   const [hasCoverLetter, setHasCoverLetter] = useState<boolean>(false)
   const [userData, setUserData] = useState<any>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
 
-  // Local storage helpers
+  // Set user_email in localStorage when user is available
   useEffect(() => {
     if (user?.email) localStorage.setItem("user_email", user.email)
-  }, [user])
+  }, [user?.email])
 
+  // Fetch user dashboard data only after auth is ready and user is present
   useEffect(() => {
-    const cached = localStorage.getItem("has_resume")
-    if (cached) setHasResume(JSON.parse(cached))
-  }, [])
+    if (authLoading || !user?.email) return
+    fetch(`${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setHasResume(data.has_resume === 1)
+        setHasCoverLetter(data.has_cover_letter === 1)
+        setUserData(data)
+      })
+      .catch((error) => {
+        console.error('Failed to fetch dashboard:', error)
+        setHasResume(false)
+      })
+  }, [user?.email, authLoading, API_URL])
 
-  useEffect(() => {
-    const cached = localStorage.getItem("has_cover_letter")
-    if (cached) setHasCoverLetter(JSON.parse(cached))
-  }, [])
-
-  useEffect(() => {
-    if (hasResume !== undefined)
-      localStorage.setItem("has_resume", JSON.stringify(hasResume))
-  }, [hasResume])
-
-  useEffect(() => {
-    if (hasCoverLetter !== undefined)
-      localStorage.setItem("has_cover_letter", JSON.stringify(hasCoverLetter))
-  }, [hasCoverLetter])
-
-  // Fetch user dashboard data (set hasResume and hasCoverLetter from backend)
-  useEffect(() => {
-    if (user?.email) {
-      fetch(`${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setHasResume(data.has_resume === 1)
-          setHasCoverLetter(data.has_cover_letter === 1)
-          setUserData(data)
-        })
-        .catch((error) => {
-          console.error('Failed to fetch dashboard:', error)
-          setHasResume(false)
-        })
-    }
-  }, [user])
-
+  // File name helpers (same as before)
   const localSetFileName = (
     key: "resume" | "cover_letter",
     file: File | null,
@@ -143,33 +117,32 @@ export default function Dashboard() {
   }
 
   const handleCoverLetterUpload = async () => {
-  if (!coverLetterFile || !user?.email) return;
-  setUploading(true);
-  setError("");
-  const fd = new FormData();
-  fd.append("cover_letter", coverLetterFile);
-  fd.append("user_email", user.email);
+    if (!coverLetterFile || !user?.email) return;
+    setUploading(true);
+    setError("");
+    const fd = new FormData();
+    fd.append("cover_letter", coverLetterFile);
+    fd.append("user_email", user.email);
 
-  try {
-    const res = await fetch(`${API_URL}upload-cover-letter`, {
-      method: "POST",
-      body: fd,
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setHasCoverLetter(true);
-      setCoverLetterFile(null);
-      localStorage.removeItem("cover_letter_file_name");
-    } else {
-      setError(data.detail || "Cover letter upload failed. Try again.");
+    try {
+      const res = await fetch(`${API_URL}upload-cover-letter`, {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setHasCoverLetter(true);
+        setCoverLetterFile(null);
+        localStorage.removeItem("cover_letter_file_name");
+      } else {
+        setError(data.detail || "Cover letter upload failed. Try again.");
+      }
+    } catch {
+      setError("Network error. Try again.");
+    } finally {
+      setUploading(false);
     }
-  } catch {
-    setError("Network error. Try again.");
-  } finally {
-    setUploading(false);
-  }
-};
-
+  };
 
   const handleContinue = () => {
     if (canGenerate) router.push("/job-kit")
@@ -181,16 +154,20 @@ export default function Dashboard() {
     localStorage.clear()
   }
 
-  // Loading skeleton
-  if (!userData) return <p className="text-center mt-10">Loading dashboard...</p>
-  if (!authLoading && !user) {
-    router.replace("/")
+  // --- Loading and Redirect Logic ---
+
+  if (authLoading || entLoading) {
+    return <p className="text-center mt-10">Loading dashboard...</p>
+  }
+  if (!user) {
+    router.replace('/')
     return null
   }
-  if (authLoading || entLoading) {
-    return <p className="p-8">Loading…</p>
+  if (!userData) {
+    return <p className="text-center mt-10">Loading dashboard...</p>
   }
 
+  // --- UI ---
   return (
     <div className="min-h-screen bg-[#eef5ff] px-4 py-6 space-y-8">
       {/* Top Bar */}
@@ -203,9 +180,12 @@ export default function Dashboard() {
             Create personalized job application materials
           </p>
         </div>
-        <Button variant="outline" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" /> Logout
-        </Button>
+        <div className="flex gap-2">
+          <DashboardButton />
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" /> Logout
+          </Button>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto space-y-8">
@@ -333,13 +313,12 @@ export default function Dashboard() {
                     : localStorage.getItem("cover_letter_file_name")
                     ? `Last selected: ${localStorage.getItem(
                         "cover_letter_file_name"
-                      )}`
+                      )}` 
                     : "Click to upload PDF (optional)"}
                 </p>
               )}
             </label>
 
-            
               {/* Show upload button ONLY if resume is uploaded and cover letter is NOT uploaded and a file is selected */}
               {hasResume && !hasCoverLetter && coverLetterFile && (
                 <Button
@@ -394,8 +373,6 @@ export default function Dashboard() {
     </div>
   )
 }
-
-
 
 
 

@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LogOut, ExternalLink } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import DashboardButton from '@/components/DashboardButton'
 
 export default function JobKitResultPage() {
 
@@ -201,26 +202,18 @@ const downloadCoverLetterDocx = async () => {
   return (
     <div className="min-h-screen bg-[#eef5ff] m-12">
       {/* Top Bar */}
-      <header className="flex items-center justify-between w-full mb-8">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Smart Job Kit Generator
+      <header className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Genertaed Resume & Cover Letter
           </h1>
         </div>
-        {jobLink && (
-          <Button
-            variant="outline"
-            className="flex items-center"
-            onClick={() => window.open(jobLink, '_blank')}
-          >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Job Link
+        <div className="flex gap-2">
+          <DashboardButton />
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" /> Logout
           </Button>
-        )}
-        <Button variant="outline" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
+        </div>
       </header>
 
       {/* 2 Boxes (side by side, scrollable) */}
