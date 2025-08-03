@@ -1,26 +1,21 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-interface JobInfoPageProps {
-  params: {
-    email: string
-    report_id: string
-  }
-}
-
-export default function JobInfoPage({ params }: JobInfoPageProps) {
+export default function JobInfoPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_BASE
   const router = useRouter()
+  const params = useParams()
   const { user, isLoading, logout } = useAuth()
 
-  const { email, report_id } = params
+  const email = Array.isArray(params.email) ? params.email[0] : params.email
+  const report_id = Array.isArray(params.report_id) ? params.report_id[0] : params.report_id
 
   const [jobData, setJobData] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
@@ -111,6 +106,9 @@ export default function JobInfoPage({ params }: JobInfoPageProps) {
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
         <h2 className="text-xl font-semibold">{jobData?.job_title}</h2>
         <p className="text-gray-600">{jobData?.job_company}</p>
+        
+        <p className="text-gray-600">{jobData?.job_link}</p>
+
         <p className="mt-3 text-gray-800 whitespace-pre-wrap">
           {jobData?.job_description}
         </p>
