@@ -210,9 +210,9 @@ export default function Dashboard() {
               <p className="text-lg font-semibold text-gray-900">
                 {user?.name}
               </p>
-              <p className="text-sm text-gray-500">
+              {/* <p className="text-sm text-gray-500">
                 {user?.headline ?? user?.email ?? "LinkedIn member"}
-              </p>
+              </p> */}
             </div>
           </CardContent>
         </Card>

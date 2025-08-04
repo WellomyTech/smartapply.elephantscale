@@ -400,9 +400,7 @@ export default function JobKitPage() {
                           </tr>
                         );
                       })}
-
                     </tbody>
-
                   </table>
                 </div>
               </CardContent>
