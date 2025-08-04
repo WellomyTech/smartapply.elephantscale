@@ -22,22 +22,34 @@ import {
 import { Button } from '@/components/ui/button'
 
 /* ── Pricing plan config ────────────────────────────── */
-const PLANS = [
+export const PLANS = [
   {
     id: 'single',
     label: 'Single-use credit',
     priceId: process.env.NEXT_PUBLIC_PRICE_SINGLE ?? 'price_test_single',
     priceText: '$7',
-    features: ['1 credit', 'No renewal'],
+    features: [
+      'One Time Use',
+      'Recruiter Application Scan',
+      'Customize Resume',
+      'Customize Cover Letter',
+      'Company & Job Specific Interview Question/Answer',
+    ],
   },
   {
     id: 'monthly',
     label: 'Unlimited (monthly)',
     priceId: process.env.NEXT_PUBLIC_PRICE_MONTHLY ?? 'price_test_monthly',
     priceText: '$29 / mo',
-    features: ['Unlimited credits', 'Cancel anytime'],
+    features: [
+      'Unlimited Use',
+      'Recruiter Application Scan',
+      'Customize Resume',
+      'Customize Cover Letter',
+      'Company & Job Specific Interview Question/Answer',
+    ],
   },
-] as const
+] as const;
 
 type Plan = (typeof PLANS)[number]
 
