@@ -19,9 +19,11 @@ const JobScanList: React.FC<JobScanListProps> = ({ reports }) => {
 
     const router = useRouter()
 
+
   const [selectedReport, setSelectedReport] = useState<any | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  
 
   const fetchResumeInfo = async (reportId: number) => {
     setLoading(true)
@@ -102,12 +104,19 @@ const handleInterview = async (reportId, jobTitle, companyName) => {
   {generatingId === report.id ? "Generating questions..." : "Interview"}
 </button>
 
-      <button
-        // Your Resume Info logic
-        className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
-      >
-        Resume Info
-      </button>
+       <button
+              onClick={() => {
+                const userEmail = localStorage.getItem('user_email') || localStorage.getItem('userEmail');
+                if (!userEmail) {
+                  alert('User email not found!');
+                  return;
+                }
+                router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`);
+              }}
+              className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
+            >
+              Resume Info
+            </button>
     </div>
   </div>
 ))}
