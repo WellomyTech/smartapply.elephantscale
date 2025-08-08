@@ -70,6 +70,9 @@ const ASSISTANT_ID = "9295e1aa-6e41-4334-9dc4-030954c7274a";
 export default function InterviewVoiceDemo() {
   const [status, setStatus] = useState<Status>("idle");
   const [reportId, setReportId] = useState<string | null>(null);
+  const [jobtitle, setJobTitle] = useState<string | null>(null);
+  const [companyname, setCompanyName] = useState<string | null>(null);
+
   const vapiRef = useRef<Vapi | null>(null);
 
   // 🔥 Use the speaking indicator for the entire interview (all non-idle states)
@@ -80,7 +83,9 @@ export default function InterviewVoiceDemo() {
   }
 
   useEffect(() => {
-    setReportId(localStorage.getItem("report_id") || "140");
+    setReportId(localStorage.getItem("report_id"));
+    setJobTitle(localStorage.getItem("job_title"));
+    setCompanyName(localStorage.getItem("company_name"));
     const vapi = new Vapi(PUBLIC_KEY);
     vapiRef.current = vapi;
 
@@ -101,7 +106,7 @@ export default function InterviewVoiceDemo() {
     await navigator.mediaDevices.getUserMedia({ audio: true });
     await vapiRef.current.start(
       ASSISTANT_ID, {
-        variableValues: { report_id: reportId },
+        variableValues: { report_id: reportId, company_name: companyname, job_title: jobtitle },
       }
     );
   };

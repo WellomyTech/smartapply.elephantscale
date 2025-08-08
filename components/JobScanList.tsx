@@ -54,8 +54,8 @@ const JobScanList: React.FC<JobScanListProps> = ({ reports }) => {
 
 const [generatingId, setGeneratingId] = useState<number | string | null>(null);
 
-const handleInterview = async (reportId: number | string) => {
-  setGeneratingId(reportId); // <- Only this one is loading
+const handleInterview = async (reportId, jobTitle, companyName) => {
+  setGeneratingId(reportId);
   try {
     const response = await fetch(`${API_URL}generate-interview-questions`, {
       method: 'POST',
@@ -67,12 +67,17 @@ const handleInterview = async (reportId: number | string) => {
     });
 
     if (!response.ok) throw new Error('Failed to generate questions');
+
+    // Save to localStorage
     localStorage.setItem('report_id', String(reportId));
+    localStorage.setItem('job_title', jobTitle || "");
+    localStorage.setItem('company_name', companyName || "");
+
     router.push(`/interview?report_id=${reportId}`);
   } catch (err) {
     alert('Error generating questions. Please try again.');
   } finally {
-    setGeneratingId(null); // reset
+    setGeneratingId(null);
   }
 };
 
@@ -90,12 +95,13 @@ const handleInterview = async (reportId: number | string) => {
     </div>
     <div className="flex gap-2">
       <button
-        onClick={() => handleInterview(report.id)}
-        disabled={generatingId === report.id}
-        className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-      >
-        {generatingId === report.id ? "Generating questions..." : "Interview"}
-      </button>
+  onClick={() => handleInterview(report.id, report.job_title, report.job_company)}
+  disabled={generatingId === report.id}
+  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+>
+  {generatingId === report.id ? "Generating questions..." : "Interview"}
+</button>
+
       <button
         // Your Resume Info logic
         className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
