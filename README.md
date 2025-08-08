@@ -21,6 +21,8 @@ smart-job-kit-generator-linkedin-ready
 │  ├─ dashboard
 │  │  └─ page.tsx
 │  ├─ globals.css
+│  ├─ interview
+│  │  └─ page.tsx
 │  ├─ job-info
 │  │  └─ [email]
 │  │     └─ [report_id]
@@ -38,6 +40,7 @@ smart-job-kit-generator-linkedin-ready
 │     └─ page.tsx
 ├─ components
 │  ├─ AuthProvider.tsx
+│  ├─ DashboardButton.tsx
 │  ├─ GoogleButton.tsx
 │  ├─ JobScanList.tsx
 │  ├─ LinkedInButton.tsx
@@ -47,57 +50,58 @@ smart-job-kit-generator-linkedin-ready
 │  ├─ SocialAuthRedirectPage.jsx
 │  ├─ SocialLoginButtons.tsx
 │  ├─ theme-provider.tsx
-│  └─ ui
-│     ├─ accordion.tsx
-│     ├─ alert-dialog.tsx
-│     ├─ alert.tsx
-│     ├─ aspect-ratio.tsx
-│     ├─ avatar.tsx
-│     ├─ badge.tsx
-│     ├─ breadcrumb.tsx
-│     ├─ button.tsx
-│     ├─ calendar.tsx
-│     ├─ card.tsx
-│     ├─ carousel.tsx
-│     ├─ chart.tsx
-│     ├─ checkbox.tsx
-│     ├─ collapsible.tsx
-│     ├─ command.tsx
-│     ├─ context-menu.tsx
-│     ├─ dialog.tsx
-│     ├─ drawer.tsx
-│     ├─ dropdown-menu.tsx
-│     ├─ form.tsx
-│     ├─ hover-card.tsx
-│     ├─ input-otp.tsx
-│     ├─ input.tsx
-│     ├─ label.tsx
-│     ├─ menubar.tsx
-│     ├─ navigation-menu.tsx
-│     ├─ pagination.tsx
-│     ├─ popover.tsx
-│     ├─ progress.tsx
-│     ├─ radio-group.tsx
-│     ├─ resizable.tsx
-│     ├─ scroll-area.tsx
-│     ├─ select.tsx
-│     ├─ separator.tsx
-│     ├─ sheet.tsx
-│     ├─ sidebar.tsx
-│     ├─ skeleton.tsx
-│     ├─ slider.tsx
-│     ├─ sonner.tsx
-│     ├─ switch.tsx
-│     ├─ table.tsx
-│     ├─ tabs.tsx
-│     ├─ textarea.tsx
-│     ├─ toast.tsx
-│     ├─ toaster.tsx
-│     ├─ toggle-group.tsx
-│     ├─ toggle.tsx
-│     ├─ tooltip.tsx
-│     ├─ use-mobile.tsx
-│     └─ use-toast.ts
+│  ├─ ui
+│  │  ├─ accordion.tsx
+│  │  ├─ alert-dialog.tsx
+│  │  ├─ alert.tsx
+│  │  ├─ aspect-ratio.tsx
+│  │  ├─ avatar.tsx
+│  │  ├─ badge.tsx
+│  │  ├─ breadcrumb.tsx
+│  │  ├─ button.tsx
+│  │  ├─ calendar.tsx
+│  │  ├─ card.tsx
+│  │  ├─ carousel.tsx
+│  │  ├─ chart.tsx
+│  │  ├─ checkbox.tsx
+│  │  ├─ collapsible.tsx
+│  │  ├─ command.tsx
+│  │  ├─ context-menu.tsx
+│  │  ├─ dialog.tsx
+│  │  ├─ drawer.tsx
+│  │  ├─ dropdown-menu.tsx
+│  │  ├─ form.tsx
+│  │  ├─ hover-card.tsx
+│  │  ├─ input-otp.tsx
+│  │  ├─ input.tsx
+│  │  ├─ label.tsx
+│  │  ├─ menubar.tsx
+│  │  ├─ navigation-menu.tsx
+│  │  ├─ pagination.tsx
+│  │  ├─ popover.tsx
+│  │  ├─ progress.tsx
+│  │  ├─ radio-group.tsx
+│  │  ├─ resizable.tsx
+│  │  ├─ scroll-area.tsx
+│  │  ├─ select.tsx
+│  │  ├─ separator.tsx
+│  │  ├─ sheet.tsx
+│  │  ├─ sidebar.tsx
+│  │  ├─ skeleton.tsx
+│  │  ├─ slider.tsx
+│  │  ├─ sonner.tsx
+│  │  ├─ switch.tsx
+│  │  ├─ table.tsx
+│  │  ├─ tabs.tsx
+│  │  ├─ textarea.tsx
+│  │  ├─ toast.tsx
+│  │  ├─ toaster.tsx
+│  │  ├─ toggle-group.tsx
+│  │  ├─ toggle.tsx
+│  │  ├─ tooltip.tsx
+│  │  ├─ use-mobile.tsx
+│  │  └─ use-toast.ts
+│  └─ VapiButton.tsx
 ├─ components.json
 ├─ data
 │  └─ jobKit.json
@@ -123,6 +127,8 @@ smart-job-kit-generator-linkedin-ready
 ├─ styles
 │  └─ globals.css
 ├─ tailwind.config.ts
-└─ tsconfig.json
+├─ tsconfig.json
+└─ types
+   └─ vapi-sdk.d.ts
 
 ```

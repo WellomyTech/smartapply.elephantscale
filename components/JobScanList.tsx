@@ -12,6 +12,7 @@ interface JobScanListProps {
   reports: Report[]
 }
 
+
 const API_URL = process.env.NEXT_PUBLIC_API_BASE
 
 const JobScanList: React.FC<JobScanListProps> = ({ reports }) => {
@@ -51,51 +52,60 @@ const JobScanList: React.FC<JobScanListProps> = ({ reports }) => {
     )
   }
 
+const [generatingId, setGeneratingId] = useState<number | string | null>(null);
+
+const handleInterview = async (reportId: number | string) => {
+  setGeneratingId(reportId); // <- Only this one is loading
+  try {
+    const response = await fetch(`${API_URL}generate-interview-questions`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ report_id: String(reportId) }),
+    });
+
+    if (!response.ok) throw new Error('Failed to generate questions');
+    localStorage.setItem('report_id', String(reportId));
+    router.push(`/interview?report_id=${reportId}`);
+  } catch (err) {
+    alert('Error generating questions. Please try again.');
+  } finally {
+    setGeneratingId(null); // reset
+  }
+};
+
+
+
   return (
     <div className="mt-8 space-y-3">
       <h2 className="text-xl font-bold text-gray-800 mb-4">Your Job Scans</h2>
 
-      {reports.map((report) => (
-        <div
-          key={report.id}
-          className="flex justify-between items-center p-4 bg-white border rounded-xl shadow-sm hover:shadow-md transition"
-        >
-          {/* Left Side: Job Info */}
-          <div>
-            <div className="text-lg font-semibold text-gray-900">
-              {report.job_title || 'Unknown Title'}
-            </div>
-            <div className="text-sm text-gray-500">
-              {report.job_company || 'Unknown Company'}
-            </div>
-          </div>
+{reports.map((report) => (
+  <div key={report.id} className="border rounded-xl p-4 bg-white shadow-sm flex justify-between items-center">
+    <div>
+      <div className="text-sm text-gray-700 font-semibold">{report.job_title}</div>
+      <div className="text-xs text-gray-500">{report.job_company}</div>
+    </div>
+    <div className="flex gap-2">
+      <button
+        onClick={() => handleInterview(report.id)}
+        disabled={generatingId === report.id}
+        className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+      >
+        {generatingId === report.id ? "Generating questions..." : "Interview"}
+      </button>
+      <button
+        // Your Resume Info logic
+        className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
+      >
+        Resume Info
+      </button>
+    </div>
+  </div>
+))}
 
-          {/* Right Side: Buttons */}
-          <div className="flex space-x-3">
-            <button
-              onClick={() => alert(`Start interview for Job ID #${report.id}`)}
-              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-            >
-              Interview
-            </button>
-
-            <button
-              onClick={() => {
-                const userEmail = localStorage.getItem('user_email') || localStorage.getItem('userEmail');
-                if (!userEmail) {
-                  alert('User email not found!');
-                  return;
-                }
-                router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`);
-              }}
-              className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
-            >
-              Resume Info
-            </button>
-
-          </div>
-        </div>
-      ))}
 
       {/* ✅ Modal for Resume Info */}
       {isModalOpen && selectedReport && (

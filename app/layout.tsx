@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/AuthProvider"
 import { ResumeProvider } from "@/components/ResumeProvider"   // <-- add this
 import { Analytics } from "@vercel/analytics/next"
 
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -31,4 +32,5 @@ export default function RootLayout({
       </body>
     </html>
   )
+  
 }
