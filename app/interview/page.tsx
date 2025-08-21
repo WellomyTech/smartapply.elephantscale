@@ -135,7 +135,7 @@ export default function InterviewVoiceDemo() {
         setTranscript((prev) => [
           ...prev,
           {
-            role: m.role === "assistant" ? "Sophie" : "Alex",
+            role: m.role === "assistant" ? "Ruchit" : "Ruchit",
             message: m.transcript,
             timestamp,
           },
@@ -333,7 +333,7 @@ export default function InterviewVoiceDemo() {
 
                 <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <span className="text-white font-medium">Alex</span>
+                    <span className="text-white font-medium">Ruchit</span>
                     {isUserSpeaking && (
                       <div className="flex gap-1">
                         <div className="w-1 h-3 bg-green-400 rounded-full animate-pulse"></div>
@@ -363,7 +363,7 @@ export default function InterviewVoiceDemo() {
 
                   <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-white text-sm font-medium">Sophie</span>
+                      <span className="text-white text-sm font-medium">Mike</span>
                       {agentSpeaking && (
                         <div className="flex gap-0.5">
                           <div className="w-0.5 h-2 bg-blue-400 rounded-full animate-pulse"></div>
