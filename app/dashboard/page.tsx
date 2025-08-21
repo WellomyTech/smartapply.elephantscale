@@ -174,10 +174,10 @@ export default function Dashboard() {
       <header className="flex items-center justify-between max-w-5xl mx-auto">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Smart Job Kit Generator
+            SmartApply
           </h1>
           <p className="text-gray-600">
-            Create personalized job application materials
+            Build. Prepare. Perform. Get Hired. 
           </p>
         </div>
         <div className="flex gap-2">
