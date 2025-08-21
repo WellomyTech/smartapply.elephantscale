@@ -39,7 +39,11 @@ export default function JobInfoPage() {
   const [workedOn, setWorkedOn] = useState<boolean[]>([])
   const [generating, setGenerating] = useState(false)
 
-    const {
+  // NEW: download states for button spinners
+  const [downloadingResume, setDownloadingResume] = useState(false)
+  const [downloadingCover, setDownloadingCover] = useState(false)
+
+  const {
     isLoading: entLoading,
     isPremium,
     canGenerate,
@@ -47,32 +51,30 @@ export default function JobInfoPage() {
   } = useEntitlement()
   const [showPaywall, setShowPaywall] = useState(false)
 
-
   useEffect(() => {
     if (!report_id || !email) return
     fetch(`${API_URL}user-dashboard?user_email=${email}&report_id=${report_id}`)
       .then((res) => res.json())
       .then((data) => {
-  if (data?.report) {
-    // Parse JSON strings if needed
-    let report = { ...data.report };
-    try {
-      if (typeof report.skills_match === "string") {
-        report.skills_match = JSON.parse(report.skills_match);
-      }
-    } catch {}
-    try {
-      if (typeof report.gaps === "string") {
-        report.gaps = JSON.parse(report.gaps);
-      }
-    } catch {}
+        if (data?.report) {
+          // Parse JSON strings if needed
+          let report = { ...data.report };
+          try {
+            if (typeof report.skills_match === "string") {
+              report.skills_match = JSON.parse(report.skills_match);
+            }
+          } catch {}
+          try {
+            if (typeof report.gaps === "string") {
+              report.gaps = JSON.parse(report.gaps);
+            }
+          } catch {}
 
-    setJobData(report);
-    localStorage.setItem('report_id', report.id || report.report_id || report_id)
-  }
-  setLoading(false)
-})
-
+          setJobData(report);
+          localStorage.setItem('report_id', report.id || report.report_id || report_id as string)
+        }
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [report_id, email, API_URL])
 
@@ -101,9 +103,6 @@ export default function JobInfoPage() {
     localStorage.clear()
   }
 
-
-
-
   // =============== GENERATE RESUME ===============
   async function handleGenerateResume() {
     if (!user?.email || !jobData) return
@@ -111,7 +110,7 @@ export default function JobInfoPage() {
     const gaps = safeJsonArray(jobData.gaps)
     const selectedSkills = gaps
       .map((skill, idx) => workedOn[idx] ? skill : null)
-      .filter(Boolean)
+      .filter(Boolean) as string[]
 
     if (selectedSkills.length === 0) {
       alert("Please select at least one skill you have worked on.")
@@ -153,63 +152,69 @@ export default function JobInfoPage() {
   }
 
   const downloadResumeDocx = async () => {
-    const API_KEY = process.env.NEXT_PUBLIC_API_BASE;
-    const reportId = localStorage.getItem("report_id");
+    const API_KEY = process.env.NEXT_PUBLIC_API_BASE
+    const reportId = localStorage.getItem("report_id")
     if (!reportId) {
-      alert("No report_id found in localStorage!");
-      return;
+      alert("No report_id found in localStorage!")
+      return
     }
+    setDownloadingResume(true) // start spinner
     try {
-      const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`);
+      const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`)
       if (!response.ok) {
-        alert("Failed to generate/download resume DOCX");
-        return;
+        alert("Failed to generate/download resume DOCX")
+        return
       }
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "resume.docx";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "resume.docx"
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
     } catch (err) {
-      alert("Resume download failed!");
-      console.error(err);
+      alert("Resume download failed!")
+      console.error(err)
+    } finally {
+      setDownloadingResume(false) // stop spinner
     }
-  };
+  }
 
   const downloadCoverLetterDocx = async () => {
-    const coverLetter = localStorage.getItem('generated_cover_letter');
+    const coverLetter = localStorage.getItem('generated_cover_letter')
     if (!coverLetter) {
-      alert("No cover letter found in localStorage!");
-      return;
+      alert("No cover letter found in localStorage!")
+      return
     }
-    const formData = new FormData();
-    formData.append('cover_letter_text', coverLetter);
+    setDownloadingCover(true) // start spinner
+    const formData = new FormData()
+    formData.append('cover_letter_text', coverLetter)
     try {
       const response = await fetch(`${API_URL}generate-cover-letter-pdf`, {
         method: 'POST',
         body: formData,
-      });
+      })
       if (!response.ok) {
-        throw new Error('Failed to generate cover letter DOCX');
+        throw new Error('Failed to generate cover letter DOCX')
       }
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'cover_letter.docx';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'cover_letter.docx'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
     } catch (err) {
-      alert('Cover letter download failed!');
-      console.error(err);
+      alert('Cover letter download failed!')
+      console.error(err)
+    } finally {
+      setDownloadingCover(false) // stop spinner
     }
-  };
+  }
 
   // Always show job meta
   const jobMeta = (
@@ -270,123 +275,66 @@ export default function JobInfoPage() {
                   </thead>
 
                   <tbody>
-  {Array.isArray(skills_match) && skills_match
-    .filter(({ in_job }) => in_job)
-    .map(({ skill, in_job, in_resume }, i) => {
-      // Only show radio if in gaps
-      const showRadio = gaps.includes(skill)
-      return (
-        <tr key={skill} className="even:bg-gray-50">
-          <td className="px-3 py-2">{skill}</td>
-          <td className="px-3 py-2 text-center">
-            {in_job
-              ? <span className="text-green-600">✔</span>
-              : <span className="text-red-600">✘</span>}
-          </td>
-          <td className="px-3 py-2 text-center">
-            {in_resume
-              ? <span className="text-green-600">✔</span>
-              : <span className="text-red-600">✘</span>}
-          </td>
-          <td className="px-3 py-2 text-center">
-            {showRadio ? (
-              <div className="flex justify-center space-x-4">
-                <label className="inline-flex items-center space-x-1">
-                  <input
-                    type="radio"
-                    name={`worked-${i}`}
-                    checked={workedOn[i] === true}
-                    onChange={() =>
-                      setWorkedOn(arr => {
-                        const copy = [...arr]
-                        copy[i] = true
-                        return copy
-                      })
-                    }
-                    className="form-radio h-4 w-4"
-                  />
-                  <span>Yes</span>
-                </label>
-                <label className="inline-flex items-center space-x-1">
-                  <input
-                    type="radio"
-                    name={`worked-${i}`}
-                    checked={workedOn[i] === false}
-                    onChange={() =>
-                      setWorkedOn(arr => {
-                        const copy = [...arr]
-                        copy[i] = false
-                        return copy
-                      })
-                    }
-                    className="form-radio h-4 w-4"
-                  />
-                  <span>No</span>
-                </label>
-              </div>
-            ) : null}
-          </td>
-        </tr>
-      )
-    })}
-</tbody>
-
-                  {/* <tbody>
-                    {gaps.map((gapSkill: string, i: number) => {
-                      const skillObj = skills_match.find((s: any) => s.skill === gapSkill) || {}
-                      return (
-                        <tr key={gapSkill} className="even:bg-gray-50">
-                          <td className="px-3 py-2">{gapSkill}</td>
-                          <td className="px-3 py-2 text-center">
-                            <span className="text-green-600">✔</span> 
-                          </td>
-                          <td className="px-3 py-2 text-center">
-                            {skillObj?.in_resume ? (
-                              <span className="text-green-600">✔</span>
-                            ) : (
-                              <span className="text-red-600">✘</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-center">
-                            <div className="flex justify-center space-x-4">
-                              <label className="inline-flex items-center space-x-1">
-                                <input
-                                  type="radio"
-                                  name={`worked-${i}`}
-                                  checked={workedOn[i] === true}
-                                  onChange={() =>
-                                    setWorkedOn(arr => {
-                                      const copy = [...arr]
-                                      copy[i] = true
-                                      return copy
-                                    })
-                                  }
-                                  className="form-radio h-4 w-4"
-                                />
-                                <span>Yes</span>
-                              </label>
-                              <label className="inline-flex items-center space-x-1">
-                                <input
-                                  type="radio"
-                                  name={`worked-${i}`}
-                                  checked={workedOn[i] === false}
-                                  onChange={() =>
-                                    setWorkedOn(arr => {
-                                      const copy = [...arr]
-                                      copy[i] = false
-                                      return copy
-                                    })
-                                  }
-                                  className="form-radio h-4 w-4"
-                                />
-                                <span>No</span>
-                              </label>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody> */}
+                    {Array.isArray(skills_match) && skills_match
+                      .filter(({ in_job }: any) => in_job)
+                      .map(({ skill, in_job, in_resume }: any, i: number) => {
+                        // Only show radio if in gaps
+                        const showRadio = gaps.includes(skill)
+                        return (
+                          <tr key={skill} className="even:bg-gray-50">
+                            <td className="px-3 py-2">{skill}</td>
+                            <td className="px-3 py-2 text-center">
+                              {in_job
+                                ? <span className="text-green-600">✔</span>
+                                : <span className="text-red-600">✘</span>}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              {in_resume
+                                ? <span className="text-green-600">✔</span>
+                                : <span className="text-red-600">✘</span>}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              {showRadio ? (
+                                <div className="flex justify-center space-x-4">
+                                  <label className="inline-flex items-center space-x-1">
+                                    <input
+                                      type="radio"
+                                      name={`worked-${i}`}
+                                      checked={workedOn[i] === true}
+                                      onChange={() =>
+                                        setWorkedOn(arr => {
+                                          const copy = [...arr]
+                                          copy[i] = true
+                                          return copy
+                                        })
+                                      }
+                                      className="form-radio h-4 w-4"
+                                    />
+                                    <span>Yes</span>
+                                  </label>
+                                  <label className="inline-flex items-center space-x-1">
+                                    <input
+                                      type="radio"
+                                      name={`worked-${i}`}
+                                      checked={workedOn[i] === false}
+                                      onChange={() =>
+                                        setWorkedOn(arr => {
+                                          const copy = [...arr]
+                                          copy[i] = false
+                                          return copy
+                                        })
+                                      }
+                                      className="form-radio h-4 w-4"
+                                    />
+                                    <span>No</span>
+                                  </label>
+                                </div>
+                              ) : null}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                  </tbody>
                 </table>
               </div>
               <Button
@@ -431,22 +379,19 @@ export default function JobInfoPage() {
         {/* Reselect/Add Skills button */}
         <div className="flex justify-center mt-4 mb-8">
           <Button
-              size="lg"
-              className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
-              onClick={() => {
-                if (!isPremium) {
-                  setShowPaywall(true)
-                } else {
-                  setShowSkills(true)
-                }
-              }}
-            >
-              Reselect/Add Skills
-            </Button>
-            <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
-
-
-
+            size="lg"
+            className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md"
+            onClick={() => {
+              if (!isPremium) {
+                setShowPaywall(true)
+              } else {
+                setShowSkills(true)
+              }
+            }}
+          >
+            Reselect/Add Skills
+          </Button>
+          <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
         </div>
         <main className="flex flex-row gap-8 w-full h-[calc(100vh-18rem)]">
           {/* Resume */}
@@ -458,8 +403,14 @@ export default function JobInfoPage() {
                   {jobData.updated_resume}
                 </pre>
               </div>
-              <Button className="mt-4" onClick={downloadResumeDocx}>
-                Download Resume (.docx)
+              <Button className="mt-4" onClick={downloadResumeDocx} disabled={downloadingResume} aria-busy={downloadingResume}>
+                {downloadingResume ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-4 w-4" /> Preparing download…
+                  </>
+                ) : (
+                  'Download Resume (.docx)'
+                )}
               </Button>
             </CardContent>
           </Card>
@@ -472,14 +423,19 @@ export default function JobInfoPage() {
                   {jobData.cover_letter}
                 </pre>
               </div>
-              <Button className="mt-4" onClick={downloadCoverLetterDocx}>
-                Download Cover Letter (.docx)
+              <Button className="mt-4" onClick={downloadCoverLetterDocx} disabled={downloadingCover} aria-busy={downloadingCover}>
+                {downloadingCover ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-4 w-4" /> Preparing download…
+                  </>
+                ) : (
+                  'Download Cover Letter (.docx)'
+                )}
               </Button>
             </CardContent>
           </Card>
-        </main>  
+        </main>
       </div>
-
     )
   }
 
@@ -514,7 +470,6 @@ export default function JobInfoPage() {
     </div>
   )
 }
-
 
 
 // 'use client'

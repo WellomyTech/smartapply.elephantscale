@@ -5,13 +5,12 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, ExternalLink } from 'lucide-react'
+import { LogOut, ExternalLink, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import DashboardButton from '@/components/DashboardButton'
 
 export default function JobKitResultPage() {
-
-  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE
+  const API_KEY = process.env.NEXT_PUBLIC_API_BASE
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
 
@@ -20,6 +19,10 @@ export default function JobKitResultPage() {
   // Store results from localStorage
   const [resumeText, setResumeText] = useState<string | null>(null)
   const [coverLetterText, setCoverLetterText] = useState<string | null>(null)
+
+  // NEW: spinner states for downloads
+  const [downloadingResume, setDownloadingResume] = useState(false)
+  const [downloadingCover, setDownloadingCover] = useState(false)
 
   useEffect(() => {
     // Get jobLink from localStorage (optional)
@@ -41,153 +44,114 @@ export default function JobKitResultPage() {
     )
   }
 
-
   const handleLogout = () => {
     logout()
-    
-    localStorage.clear(); // This clears all localStorage for this domain
-
-    // add any other keys you want to clear!
+    localStorage.clear() // Clears all localStorage for this domain
   }
-
 
   // Fallback dummy if nothing found (for dev/testing)
   const fallbackResume = `Your resume will appear here.`
   const fallbackCover = `Your cover letter will appear here.`
 
-
   const downloadResumePdf = async () => {
-  const latex = localStorage.getItem("latex_resume");
-  if (!latex) {
-    alert("No LaTeX resume found!");
-    return;
-  }
-
-  const response = await fetch("https://latex.ytotech.com/builds/sync", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      compiler: "pdflatex",
-      resources: [{ content: latex, main: true, file: "resume.tex" }],
-    }),
-  });
-
-  if (!response.ok) {
-    alert("PDF generation failed");
-    return;
-  }
-
-  const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "resume.pdf";
-  a.click();
-  window.URL.revokeObjectURL(url);
-};
-
-
-const downloadResumeDocx = async () => {
-  const API_KEY = process.env.NEXT_PUBLIC_API_BASE;
-  const reportId = localStorage.getItem("report_id");
-
-  if (!reportId) {
-    alert("No report_id found in localStorage!");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`);
-    if (!response.ok) {
-      alert("Failed to generate/download resume DOCX");
-      return;
+    const latex = localStorage.getItem('latex_resume')
+    if (!latex) {
+      alert('No LaTeX resume found!')
+      return
     }
 
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resume.docx";
-    document.body.appendChild(a); // Needed for Firefox
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    alert("Resume download failed!");
-    console.error(err);
-  }
-};
-
-
-
-
-//   const downloadResumeDocx = async () => {
-//   const resumeMarkdown = localStorage.getItem('generated_resume');
-//   if (!resumeMarkdown) {
-//     alert("No resume found in localStorage!");
-//     return;
-//   }
-//   // Prepare form data for the backend
-//   const formData = new FormData();
-//   formData.append('resume_text', resumeMarkdown);
-
-//   try {
-//     const response = await fetch(`${API_KEY}generate-resume-pdf`, {
-//       method: 'POST',
-//       body: formData,
-//     });
-//     if (!response.ok) {
-//       throw new Error('Failed to generate resume DOCX');
-//     }
-//     const blob = await response.blob();
-//     const url = window.URL.createObjectURL(blob);
-//     const a = document.createElement('a');
-//     a.href = url;
-//     a.download = 'resume.docx';
-//     document.body.appendChild(a);
-//     a.click();
-//     a.remove();
-//     window.URL.revokeObjectURL(url);
-//   } catch (err) {
-//     alert('Resume download failed!');
-//     console.error(err);
-//   }
-// };
-
-
-const downloadCoverLetterDocx = async () => {
-  const coverLetter = localStorage.getItem('generated_cover_letter');
-  if (!coverLetter) {
-    alert("No cover letter found in localStorage!");
-    return;
-  }
-  const formData = new FormData();
-  formData.append('cover_letter_text', coverLetter);
-
-  try {
-    const response = await fetch(`${API_KEY}generate-cover-letter-pdf`, {
+    const response = await fetch('https://latex.ytotech.com/builds/sync', {
       method: 'POST',
-      body: formData,
-    });
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        compiler: 'pdflatex',
+        resources: [{ content: latex, main: true, file: 'resume.tex' }],
+      }),
+    })
+
     if (!response.ok) {
-      throw new Error('Failed to generate cover letter DOCX');
+      alert('PDF generation failed')
+      return
     }
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'cover_letter.docx';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    alert('Cover letter download failed!');
-    console.error(err);
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'resume.pdf'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
-};
 
+  const downloadResumeDocx = async () => {
+    const API_KEY = process.env.NEXT_PUBLIC_API_BASE
+    const reportId = localStorage.getItem('report_id')
 
+    if (!reportId) {
+      alert('No report_id found in localStorage!')
+      return
+    }
+
+    setDownloadingResume(true) // start spinner
+    try {
+      const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`)
+      if (!response.ok) {
+        alert('Failed to generate/download resume DOCX')
+        return
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'resume.docx'
+      document.body.appendChild(a) // Needed for Firefox
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      alert('Resume download failed!')
+      console.error(err)
+    } finally {
+      setDownloadingResume(false) // stop spinner
+    }
+  }
+
+  const downloadCoverLetterDocx = async () => {
+    const coverLetter = localStorage.getItem('generated_cover_letter')
+    if (!coverLetter) {
+      alert('No cover letter found in localStorage!')
+      return
+    }
+
+    setDownloadingCover(true) // start spinner
+    const formData = new FormData()
+    formData.append('cover_letter_text', coverLetter)
+
+    try {
+      const response = await fetch(`${API_KEY}generate-cover-letter-pdf`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!response.ok) {
+        throw new Error('Failed to generate cover letter DOCX')
+      }
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'cover_letter.docx'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      alert('Cover letter download failed!')
+      console.error(err)
+    } finally {
+      setDownloadingCover(false) // stop spinner
+    }
+  }
 
   const download = (name: string, txt: string) => {
     const blob = new Blob([txt], { type: 'text/plain' })
@@ -204,9 +168,7 @@ const downloadCoverLetterDocx = async () => {
       {/* Top Bar */}
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Genertaed Resume & Cover Letter
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Genertaed Resume & Cover Letter</h1>
         </div>
         <div className="flex gap-2">
           <DashboardButton />
@@ -230,9 +192,16 @@ const downloadCoverLetterDocx = async () => {
             <Button
               className="mt-4"
               onClick={downloadResumeDocx}
-              disabled={!resumeText}
+              disabled={!resumeText || downloadingResume}
+              aria-busy={downloadingResume}
             >
-              Download Resume (.docx)
+              {downloadingResume ? (
+                <>
+                  <Loader2 className="animate-spin mr-2 h-4 w-4" /> Preparing download…
+                </>
+              ) : (
+                'Download Resume (.docx)'
+              )}
             </Button>
           </CardContent>
         </Card>
@@ -249,17 +218,288 @@ const downloadCoverLetterDocx = async () => {
             <Button
               className="mt-4"
               onClick={downloadCoverLetterDocx}
-              disabled={!coverLetterText}
+              disabled={!coverLetterText || downloadingCover}
+              aria-busy={downloadingCover}
             >
-              Download Cover Letter (.docx)
+              {downloadingCover ? (
+                <>
+                  <Loader2 className="animate-spin mr-2 h-4 w-4" /> Preparing download…
+                </>
+              ) : (
+                'Download Cover Letter (.docx)'
+              )}
             </Button>
-
           </CardContent>
         </Card>
       </main>
     </div>
   )
 }
+
+
+
+// 'use client'
+// export const dynamic = 'force-dynamic'
+
+// import { useRouter } from 'next/navigation'
+// import { useAuth } from '@/components/AuthProvider'
+// import { Card, CardContent } from '@/components/ui/card'
+// import { Button } from '@/components/ui/button'
+// import { LogOut, ExternalLink } from 'lucide-react'
+// import { useEffect, useState } from 'react'
+// import DashboardButton from '@/components/DashboardButton'
+
+// export default function JobKitResultPage() {
+
+//   const API_KEY  = process.env.NEXT_PUBLIC_API_BASE
+//   const router = useRouter()
+//   const { user, isLoading, logout } = useAuth()
+
+//   // Show job link if you want
+//   const [jobLink, setJobLink] = useState<string | null>(null)
+//   // Store results from localStorage
+//   const [resumeText, setResumeText] = useState<string | null>(null)
+//   const [coverLetterText, setCoverLetterText] = useState<string | null>(null)
+
+//   useEffect(() => {
+//     // Get jobLink from localStorage (optional)
+//     setJobLink(localStorage.getItem('jobLink') || null)
+//     // Load AI-generated resume/cover from localStorage
+//     setResumeText(localStorage.getItem('generated_resume') || null)
+//     setCoverLetterText(localStorage.getItem('generated_cover_letter') || null)
+//   }, [])
+
+//   if (!isLoading && !user) {
+//     router.replace('/')
+//     return null
+//   }
+//   if (isLoading) {
+//     return (
+//       <div className="min-h-screen bg-[#eef5ff] flex items-center justify-center">
+//         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+//       </div>
+//     )
+//   }
+
+
+//   const handleLogout = () => {
+//     logout()
+    
+//     localStorage.clear(); // This clears all localStorage for this domain
+
+//     // add any other keys you want to clear!
+//   }
+
+
+//   // Fallback dummy if nothing found (for dev/testing)
+//   const fallbackResume = `Your resume will appear here.`
+//   const fallbackCover = `Your cover letter will appear here.`
+
+
+//   const downloadResumePdf = async () => {
+//   const latex = localStorage.getItem("latex_resume");
+//   if (!latex) {
+//     alert("No LaTeX resume found!");
+//     return;
+//   }
+
+//   const response = await fetch("https://latex.ytotech.com/builds/sync", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       compiler: "pdflatex",
+//       resources: [{ content: latex, main: true, file: "resume.tex" }],
+//     }),
+//   });
+
+//   if (!response.ok) {
+//     alert("PDF generation failed");
+//     return;
+//   }
+
+//   const blob = await response.blob();
+//   const url = window.URL.createObjectURL(blob);
+//   const a = document.createElement("a");
+//   a.href = url;
+//   a.download = "resume.pdf";
+//   a.click();
+//   window.URL.revokeObjectURL(url);
+// };
+
+
+// const downloadResumeDocx = async () => {
+//   const API_KEY = process.env.NEXT_PUBLIC_API_BASE;
+//   const reportId = localStorage.getItem("report_id");
+
+//   if (!reportId) {
+//     alert("No report_id found in localStorage!");
+//     return;
+//   }
+
+//   try {
+//     const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`);
+//     if (!response.ok) {
+//       alert("Failed to generate/download resume DOCX");
+//       return;
+//     }
+
+//     const blob = await response.blob();
+//     const url = window.URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = url;
+//     a.download = "resume.docx";
+//     document.body.appendChild(a); // Needed for Firefox
+//     a.click();
+//     a.remove();
+//     window.URL.revokeObjectURL(url);
+//   } catch (err) {
+//     alert("Resume download failed!");
+//     console.error(err);
+//   }
+// };
+
+
+
+
+// //   const downloadResumeDocx = async () => {
+// //   const resumeMarkdown = localStorage.getItem('generated_resume');
+// //   if (!resumeMarkdown) {
+// //     alert("No resume found in localStorage!");
+// //     return;
+// //   }
+// //   // Prepare form data for the backend
+// //   const formData = new FormData();
+// //   formData.append('resume_text', resumeMarkdown);
+
+// //   try {
+// //     const response = await fetch(`${API_KEY}generate-resume-pdf`, {
+// //       method: 'POST',
+// //       body: formData,
+// //     });
+// //     if (!response.ok) {
+// //       throw new Error('Failed to generate resume DOCX');
+// //     }
+// //     const blob = await response.blob();
+// //     const url = window.URL.createObjectURL(blob);
+// //     const a = document.createElement('a');
+// //     a.href = url;
+// //     a.download = 'resume.docx';
+// //     document.body.appendChild(a);
+// //     a.click();
+// //     a.remove();
+// //     window.URL.revokeObjectURL(url);
+// //   } catch (err) {
+// //     alert('Resume download failed!');
+// //     console.error(err);
+// //   }
+// // };
+
+
+// const downloadCoverLetterDocx = async () => {
+//   const coverLetter = localStorage.getItem('generated_cover_letter');
+//   if (!coverLetter) {
+//     alert("No cover letter found in localStorage!");
+//     return;
+//   }
+//   const formData = new FormData();
+//   formData.append('cover_letter_text', coverLetter);
+
+//   try {
+//     const response = await fetch(`${API_KEY}generate-cover-letter-pdf`, {
+//       method: 'POST',
+//       body: formData,
+//     });
+//     if (!response.ok) {
+//       throw new Error('Failed to generate cover letter DOCX');
+//     }
+//     const blob = await response.blob();
+//     const url = window.URL.createObjectURL(blob);
+//     const a = document.createElement('a');
+//     a.href = url;
+//     a.download = 'cover_letter.docx';
+//     document.body.appendChild(a);
+//     a.click();
+//     a.remove();
+//     window.URL.revokeObjectURL(url);
+//   } catch (err) {
+//     alert('Cover letter download failed!');
+//     console.error(err);
+//   }
+// };
+
+
+
+//   const download = (name: string, txt: string) => {
+//     const blob = new Blob([txt], { type: 'text/plain' })
+//     const url = URL.createObjectURL(blob)
+//     const a = document.createElement('a')
+//     a.href = url
+//     a.download = name
+//     a.click()
+//     URL.revokeObjectURL(url)
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-[#eef5ff] m-12">
+//       {/* Top Bar */}
+//       <header className="flex items-center justify-between mb-8">
+//         <div>
+//           <h1 className="text-3xl font-bold text-gray-900">
+//             Genertaed Resume & Cover Letter
+//           </h1>
+//         </div>
+//         <div className="flex gap-2">
+//           <DashboardButton />
+//           <Button variant="outline" onClick={handleLogout}>
+//             <LogOut className="mr-2 h-4 w-4" /> Logout
+//           </Button>
+//         </div>
+//       </header>
+
+//       {/* 2 Boxes (side by side, scrollable) */}
+//       <main className="flex flex-row gap-8 w-full h-[calc(100vh-10rem)]">
+//         {/* Resume */}
+//         <Card className="flex-1 h-full flex flex-col shadow-lg">
+//           <CardContent className="flex flex-col h-full">
+//             <h2 className="text-2xl font-semibold mb-2">Resume</h2>
+//             <div className="flex-1 bg-gray-50 rounded-md p-4 overflow-y-auto">
+//               <pre className="text-sm whitespace-pre-wrap break-words">
+//                 {resumeText || fallbackResume}
+//               </pre>
+//             </div>
+//             <Button
+//               className="mt-4"
+//               onClick={downloadResumeDocx}
+//               disabled={!resumeText}
+//             >
+//               Download Resume (.docx)
+//             </Button>
+//           </CardContent>
+//         </Card>
+
+//         {/* Cover Letter (if provided) */}
+//         <Card className="flex-1 h-full flex flex-col shadow-lg">
+//           <CardContent className="flex flex-col h-full">
+//             <h2 className="text-2xl font-semibold mb-2">Cover Letter</h2>
+//             <div className="flex-1 bg-gray-50 rounded-md p-4 overflow-y-auto">
+//               <pre className="text-sm whitespace-pre-wrap break-words">
+//                 {coverLetterText || fallbackCover}
+//               </pre>
+//             </div>
+//             <Button
+//               className="mt-4"
+//               onClick={downloadCoverLetterDocx}
+//               disabled={!coverLetterText}
+//             >
+//               Download Cover Letter (.docx)
+//             </Button>
+
+//           </CardContent>
+//         </Card>
+//       </main>
+//     </div>
+//   )
+// }
 
 
 
