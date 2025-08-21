@@ -106,7 +106,7 @@ export default function QAPage() {
       {/* Header */}
       <header className="flex items-center justify-between max-w-5xl mx-auto p-4 border-b bg-white sticky top-0 z-50">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">SmartApply</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Interview Q&A</h1>
           <p className="text-gray-600 text-sm">Build. Prepare. Perform. Get Hired.</p>
         </div>
         <div className="flex gap-2">
@@ -122,7 +122,7 @@ export default function QAPage() {
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-bold">
-              Interview Q&A {jobTitle ? `· ${jobTitle}` : ''} {companyName ? `@ ${companyName}` : ''}
+              {jobTitle ? ` ${jobTitle}` : ''} {companyName ? `@ ${companyName}` : ''}
             </h2>
             {reportId && <p className="text-sm text-gray-500">Report ID #{reportId}</p>}
           </div>
