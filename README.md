@@ -36,10 +36,15 @@ smart-job-kit-generator-linkedin-ready
 │  │  └─ callback
 │  │     └─ page.tsx
 │  ├─ page.tsx
-│  └─ social-auth-redirect
+│  ├─ QA
+│  │  └─ page.tsx
+│  ├─ social-auth-redirect
+│  │  └─ page.tsx
+│  └─ testvapi
 │     └─ page.tsx
 ├─ components
 │  ├─ AuthProvider.tsx
+│  ├─ ClientVapiProvider.tsx
 │  ├─ DashboardButton.tsx
 │  ├─ GoogleButton.tsx
 │  ├─ JobScanList.tsx

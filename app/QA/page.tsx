@@ -1,7 +1,8 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import DashboardButton from '@/components/DashboardButton';
 import { LogOut } from 'lucide-react';
@@ -14,7 +15,6 @@ const QA_POST_PATH = 'generate-question-answers';
 
 export default function QAPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { logout } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -28,10 +28,14 @@ export default function QAPage() {
     typeof window !== 'undefined' ? localStorage.getItem('company_name') || '' : '';
 
   useEffect(() => {
-    const fromQuery = searchParams.get('report_id');
-    const fromStorage =
-      typeof window !== 'undefined' ? localStorage.getItem('report_id') : null;
-    const id = fromQuery || fromStorage;
+    // ✅ No useSearchParams — read from window directly
+    const getReportId = () => {
+      if (typeof window === 'undefined') return null;
+      const url = new URL(window.location.href);
+      return url.searchParams.get('report_id') || localStorage.getItem('report_id');
+    };
+
+    const id = getReportId();
     if (!id) {
       setError('Missing report_id.');
       setLoading(false);
@@ -59,7 +63,7 @@ export default function QAPage() {
       if (!res.ok) {
         throw new Error(`Failed to generate Q&A (HTTP ${res.status})`);
       }
-      const data = await res.json();
+      const data = await res.json(); // expects: { report_id, question_answers }
       setRaw(String(data?.question_answers || ''));
     } catch (e: any) {
       setError(e?.message || 'Failed to load Q&A');
@@ -93,19 +97,17 @@ export default function QAPage() {
   };
 
   const handleLogout = () => {
-    logout(); // from useAuth
+    logout();
     router.push('/');
   };
 
   return (
     <div>
-      {/* --- Header --- */}
+      {/* Header */}
       <header className="flex items-center justify-between max-w-5xl mx-auto p-4 border-b bg-white sticky top-0 z-50">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interview Q&A</h1>
-          <p className="text-gray-600 text-sm">
-            Build. Prepare. Perform. Get Hired.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">SmartApply</h1>
+          <p className="text-gray-600 text-sm">Build. Prepare. Perform. Get Hired.</p>
         </div>
         <div className="flex gap-2">
           <DashboardButton />
@@ -115,24 +117,17 @@ export default function QAPage() {
         </div>
       </header>
 
-      {/* --- Main Content --- */}
+      {/* Main */}
       <main className="max-w-5xl mx-auto p-6">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-bold">
-              {jobTitle ? ` ${jobTitle}` : ''}{' '}
-              {companyName ? `@ ${companyName}` : ''}
+              Interview Q&A {jobTitle ? `· ${jobTitle}` : ''} {companyName ? `@ ${companyName}` : ''}
             </h2>
-            {/* {reportId && (
-              <p className="text-sm text-gray-500">Report ID #{reportId}</p>
-            )} */}
+            {reportId && <p className="text-sm text-gray-500">Report ID #{reportId}</p>}
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleRegenerate}
-              className="text-sm"
-            >
+            <Button variant="outline" onClick={handleRegenerate} className="text-sm">
               Regenerate
             </Button>
             <Button onClick={handleCopyAll} className="bg-blue-600 text-white text-sm hover:bg-blue-700">
@@ -145,33 +140,24 @@ export default function QAPage() {
         </div>
 
         {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 space-y-6">
-            {/* Spinner */}
+          // 🔄 Spinner + skeleton while generating
+          <div className="flex flex-col items-center justify-center py-20 space-y-6">
             <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-600 font-medium">Generating Q&A...</p>
-
-            {/* Skeleton preview */}
+            <p className="text-gray-600 font-medium">Generating Q&amp;A...</p>
             <div className="w-full max-w-3xl space-y-4 mt-6">
-            {[...Array(3)].map((_, i) => (
-                <div
-                key={i}
-                className="p-4 border rounded-xl bg-white shadow-sm animate-pulse"
-                >
-                <div className="h-4 w-3/5 bg-gray-200 rounded mb-3" />
-                <div className="h-3 w-11/12 bg-gray-100 rounded mb-2" />
-                <div className="h-3 w-4/5 bg-gray-100 rounded" />
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="p-4 border rounded-xl bg-white shadow-sm animate-pulse">
+                  <div className="h-4 w-3/5 bg-gray-200 rounded mb-3" />
+                  <div className="h-3 w-11/12 bg-gray-100 rounded mb-2" />
+                  <div className="h-3 w-4/5 bg-gray-100 rounded" />
                 </div>
-            ))}
+              ))}
             </div>
-        </div>
+          </div>
         ) : error ? (
-          <div className="p-6 border rounded-xl bg-red-50 text-red-800">
-            {error}
-          </div>
+          <div className="p-6 border rounded-xl bg-red-50 text-red-800">{error}</div>
         ) : parsed.length === 0 ? (
-          <div className="p-6 border rounded-xl bg-yellow-50 text-yellow-800">
-            No Q&A found from the API.
-          </div>
+          <div className="p-6 border rounded-xl bg-yellow-50 text-yellow-800">No Q&amp;A found from the API.</div>
         ) : (
           <div className="space-y-4">
             {parsed.map((item, idx) => (
@@ -184,7 +170,8 @@ export default function QAPage() {
   );
 }
 
-/* ---------------- Helpers ---------------- */
+/* ---------- Helpers ---------- */
+
 function QACard({ index, q, a }: { index: number; q: string; a: string }) {
   const copyOne = async () => {
     const block = `Q${index}: ${q}\n\n${a}\n`;
@@ -195,21 +182,10 @@ function QACard({ index, q, a }: { index: number; q: string; a: string }) {
   return (
     <div className="p-5 border rounded-xl bg-white shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-base font-semibold">
-          Q{index}: {q}
-        </h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={copyOne}
-          className="text-xs"
-        >
-          Copy
-        </Button>
+        <h3 className="text-base font-semibold">Q{index}: {q}</h3>
+        <Button variant="outline" size="sm" onClick={copyOne} className="text-xs">Copy</Button>
       </div>
-      <div className="mt-2 text-sm text-gray-800 whitespace-pre-wrap leading-6">
-        {a}
-      </div>
+      <div className="mt-2 text-sm text-gray-800 whitespace-pre-wrap leading-6">{a}</div>
     </div>
   );
 }
@@ -222,9 +198,13 @@ function parseQAText(text: string): QAPair[] {
   for (const block of blocks) {
     const qMatch = block.match(/Q\d+:\s*([\s\S]*?)(?=\nA\d+:|$)/i);
     const aMatch = block.match(/A\d+:\s*([\s\S]*)/i);
-    if (qMatch && aMatch) {
-      result.push({ q: qMatch[1].trim(), a: aMatch[1].trim() });
-    }
+    if (qMatch && aMatch) result.push({ q: qMatch[1].trim(), a: aMatch[1].trim() });
+  }
+  if (result.length === 0) {
+    // Fallback matcher without explicit separators
+    const re = /Q\d+:\s*([\s\S]*?)\nA\d+:\s*([\s\S]*?)(?=\nQ\d+:|$)/gi;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(trimmed)) !== null) result.push({ q: m[1].trim(), a: m[2].trim() });
   }
   return result;
 }
@@ -232,9 +212,6 @@ function parseQAText(text: string): QAPair[] {
 function toMarkdown(items: QAPair[]): string {
   if (!items.length) return '';
   return items
-    .map(
-      (item, i) =>
-        `### Q${i + 1}: ${item.q}\n\n${item.a}\n\n${i < items.length - 1 ? '---\n' : ''}`
-    )
+    .map((item, i) => `### Q${i + 1}: ${item.q}\n\n${item.a}\n\n${i < items.length - 1 ? '---\n' : ''}`)
     .join('\n');
 }
