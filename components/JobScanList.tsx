@@ -97,22 +97,7 @@ const JobScanList: React.FC<JobScanListProps> = ({ reports }) => {
             <div className="text-xs text-gray-500">{report.job_company}</div>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => handleInterview(report.id, report.job_title, report.job_company)}
-              disabled={generatingId === report.id}
-              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-            >
-              {generatingId === report.id ? "Generating questions..." : "Interview"}
-            </button>
-
-            {/* NEW button */}
-            <button
-              onClick={() => handleViewQA(report.id, report.job_title, report.job_company)}
-              className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition"
-            >
-              Interview Q&A
-            </button>
-
+            {/* Resume Info button */}
             <button
               onClick={() => {
                 const userEmail = localStorage.getItem('user_email') || localStorage.getItem('userEmail');
@@ -126,6 +111,26 @@ const JobScanList: React.FC<JobScanListProps> = ({ reports }) => {
             >
               Resume Info
             </button>
+
+            {/* Interview Q&A button */}
+            <button
+              onClick={() => handleViewQA(report.id, report.job_title, report.job_company)}
+              className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition"
+            >
+              Interview Q&A
+            </button>
+            
+            {/* Mock Interview button */}
+            <button
+              onClick={() => handleInterview(report.id, report.job_title, report.job_company)}
+              disabled={generatingId === report.id}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+            >
+              {generatingId === report.id ? "Generating questions..." : "Mock Interview"}
+            </button>
+
+
+            
           </div>
         </div>
       ))}
