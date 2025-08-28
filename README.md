@@ -1,4 +1,5 @@
 
+
 ```
 smart-job-kit-generator-linkedin-ready
 ├─ app
@@ -42,6 +43,8 @@ smart-job-kit-generator-linkedin-ready
 │  │  └─ page.tsx
 │  └─ testvapi
 │     └─ page.tsx
+├─ app (2).zip
+├─ app.zip
 ├─ components
 │  ├─ AuthProvider.tsx
 │  ├─ ClientVapiProvider.tsx
@@ -129,6 +132,9 @@ smart-job-kit-generator-linkedin-ready
 │  ├─ placeholder.jpg
 │  └─ placeholder.svg
 ├─ README.md
+├─ server
+│  └─ js
+├─ server.js
 ├─ styles
 │  └─ globals.css
 ├─ tailwind.config.ts
