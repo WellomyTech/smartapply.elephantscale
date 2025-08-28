@@ -6,61 +6,56 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import LinkedInLoginButton from '@/components/LinkedInButton'
-import { Briefcase } from 'lucide-react'
 import GoogleButton from '@/components/GoogleButton'
+import { Briefcase, Loader2 } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function HomePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
-  // If already signed in, redirect to dashboard
   useEffect(() => {
     if (!isLoading && user) {
       router.push('/dashboard')
     }
-    
   }, [isLoading, user, router])
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+      <div className="min-h-[70vh] grid place-items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-50 px-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full space-y-6 text-center">
-        {/* Icon */}
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
-          <Briefcase className="h-8 w-8" />
-        </div>
+    <main className="min-h-[70vh] flex items-center justify-center px-4">
+      <Card className="max-w-md w-full">
+        <CardContent className="p-8 space-y-6 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+            <Briefcase className="h-8 w-8" />
+          </div>
 
-        {/* Title */}
-        <h1 className="text-2xl font-bold text-gray-900">
-          Smart Job Kit Generator
-        </h1>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold tracking-tight">Smart Job Kit Generator</h1>
+            <p className="text-muted-foreground">
+              Create personalized job application materials with AI assistance.
+            </p>
+          </div>
 
-        {/* Subtitle */}
-        <p className="text-gray-600">
-          Create personalized job application materials with AI assistance
-        </p>
-
-        {/* Login Button */}
-        <div className="w-full">
-          <LinkedInLoginButton />
-        </div>
-        <div>
-      {/* other login buttons */}
-          <GoogleButton />
-        </div>
-
-        {/* Footer Note */}
-        <p className="text-sm text-gray-400">
-          Secure OAuth 2.0 authentication with LinkedIn & Google
-        </p>
-      </div>
-    </div>
+          <div className="space-y-3">
+            <div className="w-full">
+              <LinkedInLoginButton />
+            </div>
+            <div className="w-full">
+              <GoogleButton />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Secure OAuth 2.0 authentication with LinkedIn & Google
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </main>
   )
 }

@@ -1,5 +1,4 @@
 'use client'
-
 import {
   createContext,
   useContext,
@@ -9,7 +8,6 @@ import {
 } from 'react'
 import { useRouter } from 'next/navigation'
 
-/* ----------  types  ---------- */
 export type User = {
   sub: string
   name: string
@@ -26,7 +24,6 @@ type AuthContextShape = {
   logout: () => void
 }
 
-/* ----------  context  ---------- */
 const AuthContext = createContext<AuthContextShape>({
   user: null,
   isLoading: true,
@@ -39,14 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setLoading] = useState(true)
   const router = useRouter()
 
-  /* load saved user once */
   useEffect(() => {
     const saved = localStorage.getItem('socialUser')
     if (saved) setUser(JSON.parse(saved))
     setLoading(false)
   }, [])
 
-  /* keep localStorage in sync */
   useEffect(() => {
     if (user) localStorage.setItem('socialUser', JSON.stringify(user))
     else localStorage.removeItem('socialUser')

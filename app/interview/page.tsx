@@ -87,13 +87,12 @@ export default function InterviewVoiceDemo() {
   const isUserSpeaking = usePersistentSpeakingIndicator(status === "listening")
   const { user } = useAuth()
 
-  // Ensure the video element always gets the latest stream
   useEffect(() => {
     if (videoRef.current && videoStream && !isVideoOff) {
-      videoRef.current.srcObject = videoStream
+      ;(videoRef.current as HTMLVideoElement).srcObject = videoStream
     }
     if (videoRef.current && (!videoStream || isVideoOff)) {
-      videoRef.current.srcObject = null
+      ;(videoRef.current as HTMLVideoElement).srcObject = null
     }
   }, [videoStream, isVideoOff])
 
@@ -146,18 +145,17 @@ export default function InterviewVoiceDemo() {
     return () => vapi.stop()
   }, [])
 
-  // Camera getUserMedia logic: works every time, no toggling needed
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
       setVideoStream(stream)
       if (videoRef.current) {
-        videoRef.current.srcObject = stream
+        ;(videoRef.current as HTMLVideoElement).srcObject = stream
       }
       return stream
     } catch (error) {
       setVideoStream(null)
-      if (videoRef.current) videoRef.current.srcObject = null
+      if (videoRef.current) (videoRef.current as HTMLVideoElement).srcObject = null
       throw error
     }
   }
@@ -168,7 +166,7 @@ export default function InterviewVoiceDemo() {
       setVideoStream(null)
     }
     if (videoRef.current) {
-      videoRef.current.srcObject = null
+      ;(videoRef.current as HTMLVideoElement).srcObject = null
     }
   }
 
@@ -195,9 +193,7 @@ export default function InterviewVoiceDemo() {
     if (vapiRef.current) {
       setIsAnimatingOut(true)
       vapiRef.current.stop()
-
       stopCamera()
-
       setTimeout(() => {
         setStatus("idle")
         setIsAnimatingOut(false)
@@ -248,13 +244,11 @@ export default function InterviewVoiceDemo() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 flex flex-col">
+    <main className="min-h-[80vh] bg-gradient-to-br from-primary/80 via-primary to-primary/80 flex flex-col">
       <header className="bg-black/20 backdrop-blur-sm border-b border-white/10 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-lg font-semibold text-white">AI Interview</h1>
-            </div>
+            <h1 className="text-lg font-semibold text-white">AI Interview</h1>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -278,7 +272,7 @@ export default function InterviewVoiceDemo() {
                 localStorage.clear()
                 stopCamera()
               }}
-              className="border-white/20 hover:bg-white/10 hover:border-white/30 transition-colors bg-transparent text-white"
+              className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:border-white/30 transition-colors"
             >
               <LogOut className="mr-2 h-4 w-4" />
               Logout
@@ -300,7 +294,7 @@ export default function InterviewVoiceDemo() {
               onClick={handleStart}
               disabled={!reportId}
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              className="text-white px-8 py-3 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Start Interview
             </Button>
@@ -337,25 +331,15 @@ export default function InterviewVoiceDemo() {
                     {isUserSpeaking && (
                       <div className="flex gap-1">
                         <div className="w-1 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                        <div
-                          className="w-1 h-2 bg-green-400 rounded-full animate-pulse"
-                          style={{ animationDelay: "0.1s" }}
-                        ></div>
-                        <div
-                          className="w-1 h-4 bg-green-400 rounded-full animate-pulse"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
+                        <div className="w-1 h-2 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: "0.1s" }}></div>
+                        <div className="w-1 h-4 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div
-                className={`absolute bottom-6 right-6 w-48 h-36 bg-gray-900 rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${
-                  agentSpeaking ? "ring-3 ring-blue-400 shadow-blue-400/20" : ""
-                }`}
-              >
+              <div className={`absolute bottom-6 right-6 w-48 h-36 bg-gray-900 rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${agentSpeaking ? "ring-3 ring-blue-400 shadow-blue-400/20" : ""}`}>
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 relative">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                     <span className="text-2xl">🤖</span>
@@ -367,14 +351,8 @@ export default function InterviewVoiceDemo() {
                       {agentSpeaking && (
                         <div className="flex gap-0.5">
                           <div className="w-0.5 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                          <div
-                            className="w-0.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
-                            style={{ animationDelay: "0.1s" }}
-                          ></div>
-                          <div
-                            className="w-0.5 h-3 bg-blue-400 rounded-full animate-pulse"
-                            style={{ animationDelay: "0.2s" }}
-                          ></div>
+                          <div className="w-0.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.1s" }}></div>
+                          <div className="w-0.5 h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
                         </div>
                       )}
                     </div>
@@ -382,9 +360,7 @@ export default function InterviewVoiceDemo() {
 
                   {(agentListening || agentThinking) && (
                     <div className="absolute top-2 right-2">
-                      {agentListening && (
-                        <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">Listening</div>
-                      )}
+                      {agentListening && <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">Listening</div>}
                       {agentThinking && (
                         <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
                           <div className="w-1 h-1 bg-white rounded-full animate-bounce"></div>
@@ -398,53 +374,25 @@ export default function InterviewVoiceDemo() {
 
               <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
                 <div className="bg-black/50 backdrop-blur-sm rounded-full px-6 py-3 flex items-center gap-4 shadow-xl">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleMute}
-                    className={`rounded-full w-12 h-12 p-0 transition-colors ${
-                      isMuted ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"
-                    }`}
-                  >
+                  <Button variant="ghost" size="sm" onClick={toggleMute} className={`rounded-full w-12 h-12 p-0 transition-colors ${isMuted ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}>
                     {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                   </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleVideo}
-                    className={`rounded-full w-12 h-12 p-0 transition-colors ${
-                      isVideoOff ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"
-                    }`}
-                  >
+                  <Button variant="ghost" size="sm" onClick={toggleVideo} className={`rounded-full w-12 h-12 p-0 transition-colors ${isVideoOff ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}>
                     {isVideoOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
                   </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRestart}
-                    className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors"
-                  >
+                  <Button variant="ghost" size="sm" onClick={handleRestart} className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors">
                     <RotateCcw className="h-5 w-5" />
                   </Button>
 
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleEnd}
-                    className="rounded-full w-12 h-12 p-0 bg-red-500 hover:bg-red-600 text-white"
-                  >
+                  <Button variant="destructive" size="sm" onClick={handleEnd} className="rounded-full w-12 h-12 p-0">
                     <PhoneOff className="h-5 w-5" />
                   </Button>
 
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors"
-                      >
+                      <Button variant="ghost" size="sm" className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors">
                         <Settings className="h-5 w-5" />
                       </Button>
                     </SheetTrigger>
@@ -455,21 +403,15 @@ export default function InterviewVoiceDemo() {
                       <div className="mt-6 space-y-4">
                         <div>
                           <label className="text-sm font-semibold text-gray-700">Report ID</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
-                            {reportId || "Not set"}
-                          </p>
+                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">{reportId || "Not set"}</p>
                         </div>
                         <div>
                           <label className="text-sm font-semibold text-gray-700">Job Title</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
-                            {jobtitle || "Not set"}
-                          </p>
+                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">{jobtitle || "Not set"}</p>
                         </div>
                         <div>
                           <label className="text-sm font-semibold text-gray-700">Company</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
-                            {companyname || "Not set"}
-                          </p>
+                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">{companyname || "Not set"}</p>
                         </div>
                       </div>
                     </SheetContent>
@@ -484,23 +426,14 @@ export default function InterviewVoiceDemo() {
                 <p className="text-sm text-gray-600 mt-1">Real-time conversation transcript</p>
               </div>
 
-              <div
-                className="flex-1 overflow-y-auto p-4 space-y-4"
-                style={{ maxHeight: "calc(100vh - 130px)" }} // Only transcript scrolls, not page
-              >
+              <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: "calc(100vh - 130px)" }}>
                 {transcript.map((entry, index) => (
                   <div key={index} className="space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900 text-sm">{entry.role}</span>
                       <span className="text-xs text-gray-500">{entry.timestamp}</span>
                     </div>
-                    <div
-                      className={`p-3 rounded-lg text-sm ${
-                        entry.role === "Mike"
-                          ? "bg-blue-50 text-blue-900 ml-0 mr-4"
-                          : "bg-gray-50 text-gray-900 ml-4 mr-0"
-                      }`}
-                    >
+                    <div className={`p-3 rounded-lg text-sm ${entry.role === "Mike" ? "bg-blue-50 text-blue-900 ml-0 mr-4" : "bg-gray-50 text-gray-900 ml-4 mr-0"}`}>
                       {entry.message}
                     </div>
                   </div>
@@ -516,237 +449,6 @@ export default function InterviewVoiceDemo() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }
-
-
-
-
-
-// "use client";
-
-// import { useEffect, useRef, useState } from "react";
-// import Vapi, { type VapiMessage } from "@vapi-ai/web";
-
-// type Status = "idle" | "listening" | "thinking" | "speaking";
-
-// const PUBLIC_KEY   = "4b3fb521-9ad5-439a-8224-cdb78e2e78e8";
-// const ASSISTANT_ID = "9295e1aa-6e41-4334-9dc4-030954c7274a";
-
-// export default function InterviewVoiceDemo() {
-//   const [status, setStatus] = useState<Status>("idle");
-//   const [reportId, setReportId] = useState<string | null>(null);
-//   const vapiRef = useRef<Vapi | null>(null);
-
-//   useEffect(() => {
-//     setReportId(localStorage.getItem("report_id") || "140");
-//     const vapi = new Vapi(PUBLIC_KEY);
-//     vapiRef.current = vapi;
-
-//     vapi.on("call-start",   () => setStatus("listening"));
-//     vapi.on("speech-start", () => setStatus("speaking"));
-//     vapi.on("speech-end",   () => setStatus("thinking"));
-//     vapi.on("call-end",     () => setStatus("idle"));
-
-//     vapi.on("message", (m: VapiMessage) => {
-//       if (m.type === "transcript") console.log(`${m.role}: ${m.transcript}`);
-//     });
-
-//     return () => vapi.stop();
-//   }, []);
-
-//   const handleStart = async () => {
-//     if (!vapiRef.current) return;
-//     await navigator.mediaDevices.getUserMedia({ audio: true });
-//     await vapiRef.current.start(
-//       ASSISTANT_ID, {
-//         variableValues: { report_id: reportId },
-//       }
-//     );
-//   };
-
-//   const handleEnd = () => {
-//     if (vapiRef.current) {
-//       vapiRef.current.stop();
-//     }
-//   };
-
-//   // Determine which card is "active" for effect
-//   const agentSpeaking = status === "speaking";
-//   const agentListening = status === "listening";
-//   const agentThinking = status === "thinking";
-//   const userSpeaking = status === "listening"; // You speak when agent is listening
-
-//   return (
-//     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 py-8">
-//       <div className="mb-6 text-lg font-semibold text-gray-700">
-//         AI Interview Room
-//       </div>
-//       <div className="mb-2 text-sm text-gray-500">
-//         Job Report ID: <b>{reportId || "none"}</b>
-//       </div>
-
-//       {/* ZOOM-LIKE VIDEO LAYOUT */}
-//       <div className="flex flex-row gap-10 justify-center items-end w-full max-w-3xl mb-8">
-//         {/* Agent Card */}
-//         <div
-//           className={`w-64 h-56 rounded-2xl flex flex-col items-center justify-end p-5 bg-white shadow-xl transition-all duration-300 border-4
-//             ${agentSpeaking ? "border-blue-600 shadow-blue-300" : agentListening ? "border-blue-400" : agentThinking ? "border-blue-300" : "border-gray-200"}`}
-//         >
-//           <div className="flex flex-col items-center flex-1 justify-center">
-//             <div className="rounded-full bg-blue-100 w-16 h-16 flex items-center justify-center mb-3 border-4 border-blue-400 shadow">
-//               <span className="text-blue-700 text-3xl">🤖</span>
-//             </div>
-//             <div className="font-bold text-blue-800">Mike (AI Agent)</div>
-//             <div className="text-xs text-gray-400 mt-2 mb-2 italic">AI Interviewer</div>
-//           </div>
-//           {/* Status below agent */}
-//           <div className="text-xs text-blue-600 font-semibold min-h-[24px] text-center">
-//             {agentSpeaking && <span className="animate-pulse">Speaking…</span>}
-//             {agentListening && <span>Listening…</span>}
-//             {agentThinking && <span>Thinking…</span>}
-//           </div>
-//         </div>
-
-//         {/* User Card */}
-// {/* User Card */}
-// <div
-//   className={`w-64 h-56 rounded-2xl flex flex-col items-center justify-end p-5 bg-white shadow-xl transition-all duration-300 border-4
-//     ${status === "listening" ? "border-green-600 shadow-green-300" : "border-gray-200"}`}
-// >
-//   <div className="flex flex-col items-center flex-1 justify-center">
-//     <div className="rounded-full bg-green-100 w-16 h-16 flex items-center justify-center mb-3 border-4 border-green-400 shadow">
-//       <span className="text-green-700 text-3xl">🧑</span>
-//     </div>
-//     <div className="font-bold text-green-800">You</div>
-//     <div className="text-xs text-gray-400 mt-2 mb-2 italic">Candidate</div>
-//   </div>
-//   <div className="text-xs text-green-600 font-semibold min-h-[24px] text-center">
-//     {status === "listening" && <span className="animate-pulse">You’re speaking…</span>}
-//   </div>
-// </div>
-
-//       </div>
-
-//       {/* Start/End Interview buttons */}
-//       <div className="flex gap-4 justify-center items-center">
-//         {status === "idle" && (
-//           <button
-//             onClick={handleStart}
-//             className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold text-lg shadow hover:bg-blue-700 transition disabled:opacity-60"
-//             disabled={!reportId}
-//           >
-//             Start Interview
-//           </button>
-//         )}
-//         {status !== "idle" && (
-//           <button
-//             onClick={handleEnd}
-//             className="bg-red-600 text-white px-8 py-3 rounded-xl font-semibold text-lg shadow hover:bg-red-700 transition"
-//           >
-//             End Interview
-//           </button>
-//         )}
-//       </div>
-
-//       {/* Interview state indicator */}
-//       {status !== "idle" && (
-//         <div className="mt-5 text-xs text-gray-500 text-center">
-//           {status === "listening" && "You may answer the question now."}
-//           {status === "speaking" && "Mike is asking a question…"}
-//           {status === "thinking" && "Mike is thinking…"}
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-
-// "use client";
-
-// import { useEffect, useRef, useState } from "react";
-// import Vapi, { type VapiMessage } from "@vapi-ai/web";
-
-// type Status = "idle" | "listening" | "thinking" | "speaking";
-
-// const PUBLIC_KEY   = "4b3fb521-9ad5-439a-8224-cdb78e2e78e8";
-// const ASSISTANT_ID = "9295e1aa-6e41-4334-9dc4-030954c7274a";
-
-// export default function InterviewVoiceDemo() {
-//   const [status, setStatus] = useState<Status>("idle");
-//   const [reportId, setReportId] = useState<string | null>(null);
-//   const vapiRef = useRef<Vapi | null>(null);
-
-//   useEffect(() => {
-//     setReportId(localStorage.getItem("report_id") || "140");
-//     const vapi = new Vapi(PUBLIC_KEY);
-//     vapiRef.current = vapi;
-
-//     vapi.on("call-start",   () => setStatus("listening"));
-//     vapi.on("speech-start", () => setStatus("speaking"));
-//     vapi.on("speech-end",   () => setStatus("thinking"));
-//     vapi.on("call-end",     () => setStatus("idle"));
-
-//     vapi.on("message", (m: VapiMessage) => {
-//       if (m.type === "transcript") console.log(`${m.role}: ${m.transcript}`);
-//     });
-
-//     return () => vapi.stop();
-//   }, []);
-
-//   const handleStart = async () => {
-//     if (!vapiRef.current) return;
-//     await navigator.mediaDevices.getUserMedia({ audio: true });
-//     await vapiRef.current.start(
-//        ASSISTANT_ID,{
-//       variableValues: { report_id: reportId},
-//     });
-//   };
-
-//   const handleEnd = () => {
-//     if (vapiRef.current) {
-//       vapiRef.current.stop();
-//     }
-//   };
-
-//   return (
-//     <div className="flex flex-col items-center gap-3">
-//       <div className="text-gray-700 text-sm">
-//         Job Report ID: <b>{reportId || "none"}</b>
-//       </div>
-
-//       {/* Start Interview button */}
-//       {status === "idle" && (
-//         <button
-//           onClick={handleStart}
-//           className="px-8 py-3 rounded-xl text-lg font-semibold shadow transition
-//                    bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
-//           disabled={!reportId}
-//         >
-//           Start Interview
-//         </button>
-//       )}
-
-//       {/* End Interview button (always shown during call, speech, thinking, etc) */}
-//       {status !== "idle" && (
-//         <button
-//           onClick={handleEnd}
-//           className="px-8 py-3 rounded-xl text-lg font-semibold shadow transition
-//                    bg-red-600 text-white hover:bg-red-700"
-//         >
-//           End Interview
-//         </button>
-//       )}
-
-//       {/* Optional: status indicator */}
-//       {status !== "idle" && (
-//         <div className="mt-2 text-sm text-gray-500">
-//           {status === "listening" && "Listening…"}
-//           {status === "speaking"  && "Speaking…"}
-//           {status === "thinking"  && "Thinking…"}
-//         </div>
-//       )}
-//     </div>
-//   );
-// }

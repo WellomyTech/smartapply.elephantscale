@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -22,13 +22,10 @@ export default function QAPage() {
   const [raw, setRaw] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  const jobTitle =
-    typeof window !== 'undefined' ? localStorage.getItem('job_title') || '' : '';
-  const companyName =
-    typeof window !== 'undefined' ? localStorage.getItem('company_name') || '' : '';
+  const jobTitle = typeof window !== 'undefined' ? localStorage.getItem('job_title') || '' : '';
+  const companyName = typeof window !== 'undefined' ? localStorage.getItem('company_name') || '' : '';
 
   useEffect(() => {
-    // ✅ No useSearchParams — read from window directly
     const getReportId = () => {
       if (typeof window === 'undefined') return null;
       const url = new URL(window.location.href);
@@ -43,7 +40,6 @@ export default function QAPage() {
     }
     setReportId(id);
     void loadQA(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadQA = async (id: string) => {
@@ -60,10 +56,8 @@ export default function QAPage() {
         cache: 'no-store',
       });
 
-      if (!res.ok) {
-        throw new Error(`Failed to generate Q&A (HTTP ${res.status})`);
-      }
-      const data = await res.json(); // expects: { report_id, question_answers }
+      if (!res.ok) throw new Error(`Failed to generate Q&A (HTTP ${res.status})`);
+      const data = await res.json();
       setRaw(String(data?.question_answers || ''));
     } catch (e: any) {
       setError(e?.message || 'Failed to load Q&A');
@@ -102,12 +96,11 @@ export default function QAPage() {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <header className="flex items-center justify-between max-w-5xl mx-auto p-4 border-b bg-white sticky top-0 z-50">
+    <main className="px-4 py-8">
+      <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interview Q&A</h1>
-          <p className="text-gray-600 text-sm">Build. Prepare. Perform. Get Hired.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Interview Q&amp;A</h1>
+          <p className="text-sm text-muted-foreground">Build. Prepare. Perform. Get Hired.</p>
         </div>
         <div className="flex gap-2">
           <DashboardButton />
@@ -115,41 +108,33 @@ export default function QAPage() {
             <LogOut className="mr-2 h-4 w-4" /> Logout
           </Button>
         </div>
-      </header>
+      </div>
 
-      {/* Main */}
-      <main className="max-w-5xl mx-auto p-6">
+      <section className="max-w-5xl mx-auto p-0">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-xl font-semibold">
               {jobTitle ? ` ${jobTitle}` : ''} {companyName ? `@ ${companyName}` : ''}
             </h2>
-            {reportId && <p className="text-sm text-gray-500">Report ID #{reportId}</p>}
+            {reportId && <p className="text-sm text-muted-foreground">Report ID #{reportId}</p>}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleRegenerate} className="text-sm">
-              Regenerate
-            </Button>
-            <Button onClick={handleCopyAll} className="bg-blue-600 text-white text-sm hover:bg-blue-700">
-              Copy All
-            </Button>
-            <Button onClick={handleDownload} className="bg-purple-600 text-white text-sm hover:bg-purple-700">
-              Download .md
-            </Button>
+            <Button variant="outline" onClick={handleRegenerate} className="text-sm">Regenerate</Button>
+            <Button onClick={handleCopyAll} className="text-sm">Copy All</Button>
+            <Button onClick={handleDownload} className="text-sm">Download .md</Button>
           </div>
         </div>
 
         {loading ? (
-          // 🔄 Spinner + skeleton while generating
           <div className="flex flex-col items-center justify-center py-20 space-y-6">
-            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-600 font-medium">Generating Q&amp;A...</p>
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-muted-foreground font-medium">Generating Q&amp;A...</p>
             <div className="w-full max-w-3xl space-y-4 mt-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="p-4 border rounded-xl bg-white shadow-sm animate-pulse">
-                  <div className="h-4 w-3/5 bg-gray-200 rounded mb-3" />
-                  <div className="h-3 w-11/12 bg-gray-100 rounded mb-2" />
-                  <div className="h-3 w-4/5 bg-gray-100 rounded" />
+                <div key={i} className="p-4 border rounded-xl bg-background shadow-sm animate-pulse">
+                  <div className="h-4 w-3/5 bg-muted rounded mb-3" />
+                  <div className="h-3 w-11/12 bg-muted rounded mb-2" />
+                  <div className="h-3 w-4/5 bg-muted rounded" />
                 </div>
               ))}
             </div>
@@ -160,17 +145,13 @@ export default function QAPage() {
           <div className="p-6 border rounded-xl bg-yellow-50 text-yellow-800">No Q&amp;A found from the API.</div>
         ) : (
           <div className="space-y-4">
-            {parsed.map((item, idx) => (
-              <QACard key={idx} index={idx + 1} q={item.q} a={item.a} />
-            ))}
+            {parsed.map((item, idx) => (<QACard key={idx} index={idx + 1} q={item.q} a={item.a} />))}
           </div>
         )}
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
-
-/* ---------- Helpers ---------- */
 
 function QACard({ index, q, a }: { index: number; q: string; a: string }) {
   const copyOne = async () => {
@@ -180,28 +161,27 @@ function QACard({ index, q, a }: { index: number; q: string; a: string }) {
   };
 
   return (
-    <div className="p-5 border rounded-xl bg-white shadow-sm">
+    <div className="p-5 border rounded-xl bg-background shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-base font-semibold">Q{index}: {q}</h3>
         <Button variant="outline" size="sm" onClick={copyOne} className="text-xs">Copy</Button>
       </div>
-      <div className="mt-2 text-sm text-gray-800 whitespace-pre-wrap leading-6">{a}</div>
+      <div className="mt-2 text-sm whitespace-pre-wrap leading-6">{a}</div>
     </div>
   );
 }
 
-function parseQAText(text: string): QAPair[] {
+function parseQAText(text: string): Array<{ q: string; a: string }> {
   if (!text) return [];
   const trimmed = text.trim();
   const blocks = trimmed.split(/\n---\n/g);
-  const result: QAPair[] = [];
+  const result: Array<{ q: string; a: string }> = [];
   for (const block of blocks) {
     const qMatch = block.match(/Q\d+:\s*([\s\S]*?)(?=\nA\d+:|$)/i);
     const aMatch = block.match(/A\d+:\s*([\s\S]*)/i);
     if (qMatch && aMatch) result.push({ q: qMatch[1].trim(), a: aMatch[1].trim() });
   }
   if (result.length === 0) {
-    // Fallback matcher without explicit separators
     const re = /Q\d+:\s*([\s\S]*?)\nA\d+:\s*([\s\S]*?)(?=\nQ\d+:|$)/gi;
     let m: RegExpExecArray | null;
     while ((m = re.exec(trimmed)) !== null) result.push({ q: m[1].trim(), a: m[2].trim() });
@@ -209,9 +189,7 @@ function parseQAText(text: string): QAPair[] {
   return result;
 }
 
-function toMarkdown(items: QAPair[]): string {
+function toMarkdown(items: Array<{ q: string; a: string }>): string {
   if (!items.length) return '';
-  return items
-    .map((item, i) => `### Q${i + 1}: ${item.q}\n\n${item.a}\n\n${i < items.length - 1 ? '---\n' : ''}`)
-    .join('\n');
+  return items.map((item, i) => `### Q${i + 1}: ${item.q}\n\n${item.a}\n\n${i < items.length - 1 ? '---\n' : ''}`).join('\n');
 }

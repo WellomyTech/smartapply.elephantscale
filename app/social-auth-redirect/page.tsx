@@ -1,11 +1,12 @@
-'use client'
+ 'use client'
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Loader2 } from 'lucide-react'
 
 export default function SocialAuthRedirectPage() {
   const router = useRouter()
-  const API_URL = process.env.NEXT_PUBLIC_API_BASE // <--- fix here!
+  const API_URL = process.env.NEXT_PUBLIC_API_BASE
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -18,7 +19,6 @@ export default function SocialAuthRedirectPage() {
           localStorage.setItem('socialUser', JSON.stringify(user))
           localStorage.setItem('user_email', user.email)
 
-          // Send user to your backend API
           fetch(`${API_URL}auth/user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -33,7 +33,14 @@ export default function SocialAuthRedirectPage() {
         router.replace('/?error=no_user')
       }
     }
-  }, [router, API_URL]) // Make sure to include API_URL here!
+  }, [router, API_URL])
 
-  return <div className="text-center mt-10">Signing you in...</div>
+  return (
+    <div className="min-h-[60vh] grid place-items-center text-muted-foreground">
+      <div className="flex items-center gap-2">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span>Signing you in…</span>
+      </div>
+    </div>
+  )
 }
