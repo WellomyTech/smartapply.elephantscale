@@ -26,9 +26,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-app_new_UI3.zip
-app_new_UI2.zip
-app_new_UI1.zip
-app_new_UI.zip
 
 .zip
