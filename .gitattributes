@@ -1,0 +1,66 @@
+# --- Defaults ---------------------------------------------------------------
+
+# Normalize all text filfs to LF in the repository and LF in the working tree
+# (pairs well with: git config --global core.autocrlf input)
+*           text eol=lf
+
+# --- Windows-only scripts: keep CRLF on checkout ---------------------------
+# (Batch/CMD need CRLF; most other tools are fine with LF)
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# Optional: if your team wants CRLF for PowerShell scripts, uncomment:
+# *.ps1     text eol=crlf
+# *.psm1    text eol=crlf
+
+# --- Unix-y scripts: ensure LF ---------------------------------------------
+*.sh        text eol=lf
+*.bash      text eol=lf
+
+# --- Mark binaries so Git won't attempt text conversions -------------------
+# Images
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.webp      binary
+*.ico       binary
+*.svgz      binary
+
+# Fonts
+*.ttf       binary
+*.otf       binary
+*.woff      binary
+*.woff2     binary
+
+# Archives & docs
+*.zip       binary
+*.gz        binary
+*.bz2       binary
+*.7z        binary
+*.rar       binary
+*.pdf       binary
+
+# Media
+*.mp3       binary
+*.mp4       binary
+*.mov       binary
+*.wav       binary
+
+# Data/bundles
+*.jar       binary
+*.war       binary
+*.class     binary
+*.exe       binary
+*.dll       binary
+
+# --- Language/framework specifics (uncomment as needed) --------------------
+# Node / lockfiles (treat as text but keep exact bytes; LF default already)
+# package-lock.json text eol=lf
+# yarn.lock         text eol=lf
+# pnpm-lock.yaml    text eol=lf
+
+# Git / config
+.gitattributes text eol=lf
+.gitignore    text eol=lf
+.editorconfig text eol=lf

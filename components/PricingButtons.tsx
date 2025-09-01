@@ -1,6 +1,3 @@
-/* components/PricingButtons.tsx
-   Modal that shows the two paid plans.
-   ───────────────────────────────────────────────────────── */
 'use client'
 
 import { useState } from 'react'
@@ -21,7 +18,6 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-/* ── Pricing plan config ────────────────────────────── */
 export const PLANS = [
   {
     id: 'single',
@@ -33,7 +29,7 @@ export const PLANS = [
       'Recruiter Application Scan',
       'Customize Resume',
       'Customize Cover Letter',
-      'Company & Job Specific Interview Question/Answer',
+      'Company & Job Specific Interview Q&A',
     ],
   },
   {
@@ -46,25 +42,19 @@ export const PLANS = [
       'Recruiter Application Scan',
       'Customize Resume',
       'Customize Cover Letter',
-      'Company & Job Specific Interview Question/Answer',
+      'Company & Job Specific Interview Q&A',
     ],
   },
-] as const;
+] as const
 
 type Plan = (typeof PLANS)[number]
 
-/* ── Component ───────────────────────────────────────── */
-export default function PricingModal(props: {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-}) {
-  const { open, onOpenChange } = props
+export default function PricingModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [busy, setBusy] = useState<string | null>(null)
 
   async function checkout(plan: Plan) {
     if (!plan.priceId) return
     setBusy(plan.id)
-
     try {
       const rsp = await fetch('/api/stripe/checkout', {
         method: 'POST',
@@ -73,10 +63,8 @@ export default function PricingModal(props: {
       })
       if (!rsp.ok) throw new Error('checkout failed')
       const { url } = await rsp.json()
-
-      /* ── Debug flag: don’t redirect, just log ── */
       if (process.env.NEXT_PUBLIC_DEBUG_NO_REDIRECT === 'true') {
-        console.log('🔗 Stripe URL (debug, no redirect):', url)
+        console.log('Stripe URL (debug, no redirect):', url)
       } else {
         window.location.href = url
       }
@@ -88,12 +76,10 @@ export default function PricingModal(props: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>You’ve exhausted your free credits</DialogTitle>
-          <DialogDescription>
-            Choose one of the options below to keep generating.
-          </DialogDescription>
+          <DialogDescription>Choose a plan to keep generating.</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -103,21 +89,16 @@ export default function PricingModal(props: {
                 <CardTitle>{plan.priceText}</CardTitle>
                 <CardDescription>{plan.label}</CardDescription>
               </CardHeader>
-
               <CardContent className="space-y-2">
                 <ul className="space-y-1 text-sm">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-1">
-                      <Check className="h-4 w-4 shrink-0" /> {f}
+                    <li key={f} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 shrink-0" />
+                      <span>{f}</span>
                     </li>
                   ))}
                 </ul>
-
-                <Button
-                  disabled={busy === plan.id}
-                  onClick={() => checkout(plan)}
-                  className="w-full mt-4"
-                >
+                <Button disabled={busy === plan.id} onClick={() => checkout(plan)} className="w-full mt-2">
                   {busy === plan.id ? 'Redirecting…' : 'Choose'}
                 </Button>
               </CardContent>

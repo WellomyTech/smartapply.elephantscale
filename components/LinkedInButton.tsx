@@ -1,9 +1,7 @@
 'use client'
-
 import { Button } from '@/components/ui/button'
 
 export default function LinkedInLoginButton() {
-  
   const CLIENT_ID = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID
   const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL}/api/social-auth/callback?provider=linkedin`
   const SCOPE = ['openid', 'profile', 'email'].join(' ')
@@ -14,10 +12,9 @@ export default function LinkedInLoginButton() {
     `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
     `&scope=${encodeURIComponent(SCOPE)}`
 
-
   return (
-    <a href={loginUrl}>
-      <Button className="w-full rounded-full">Login with LinkedIn</Button>
+    <a href={loginUrl} className="w-full">
+      <Button className="w-full">Continue with LinkedIn</Button>
     </a>
   )
 }
