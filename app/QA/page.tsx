@@ -97,7 +97,7 @@ export default function QAPage() {
 
   return (
     <main className="px-4 py-8">
-      <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
+      {/* <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Interview Q&amp;A</h1>
           <p className="text-sm text-muted-foreground">Build. Prepare. Perform. Get Hired.</p>
@@ -108,22 +108,32 @@ export default function QAPage() {
             <LogOut className="mr-2 h-4 w-4" /> Logout
           </Button>
         </div>
+      </div> */}
+
+      <section className="max-w-screen-2x2 mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6">
+        {/* Left: title + company */}
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold break-words">{jobTitle || ''}</h2>
+          <p className="text-muted-foreground break-words">
+            {companyName ? `@ ${companyName}` : ''}
+          </p>
+        </div>
+
+        {/* Right: actions */}
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+          <Button variant="outline" onClick={handleRegenerate} className="text-sm w-full sm:w-auto">
+            Regenerate
+          </Button>
+          <Button onClick={handleCopyAll} className="text-sm w-full sm:w-auto">
+            Copy All
+          </Button>
+          <Button onClick={handleDownload} className="text-sm w-full sm:w-auto">
+            Download .md
+          </Button>
+        </div>
       </div>
 
-      <section className="max-w-5xl mx-auto p-0">
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-xl font-semibold">
-              {jobTitle ? ` ${jobTitle}` : ''} {companyName ? `@ ${companyName}` : ''}
-            </h2>
-            {reportId && <p className="text-sm text-muted-foreground">Report ID #{reportId}</p>}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleRegenerate} className="text-sm">Regenerate</Button>
-            <Button onClick={handleCopyAll} className="text-sm">Copy All</Button>
-            <Button onClick={handleDownload} className="text-sm">Download .md</Button>
-          </div>
-        </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-6">

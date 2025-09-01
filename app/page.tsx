@@ -32,14 +32,11 @@ export default function HomePage() {
     <main className="min-h-[70vh] flex items-center justify-center px-4">
       <Card className="max-w-md w-full">
         <CardContent className="p-8 space-y-6 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            <Briefcase className="h-8 w-8" />
-          </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight">Smart Job Kit Generator</h1>
+            <h1 className="text-2xl font-bold tracking-tight">SmartApply</h1>
             <p className="text-muted-foreground">
-              Create personalized job application materials with AI assistance.
+              Build. Prepare. Perform. Get Hired.
             </p>
           </div>
 

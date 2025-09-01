@@ -230,15 +230,9 @@ export default function JobInfoPage() {
 
   if (showSkills) {
     return (
-      <main className="px-4 py-8">
-        <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Job Info</h1>
-          <div className="flex gap-2">
-            <DashboardButton />
-            <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
-          </div>
-        </div>
-        <div className="max-w-5xl mx-auto">
+      <main className="py-8">
+
+        <div className="max-w-screen-2x2 mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {jobMeta}
           <Card className="shadow-sm">
             <CardContent className="p-6">
@@ -307,15 +301,9 @@ export default function JobInfoPage() {
 
   if (jobData?.updated_resume && jobData?.cover_letter) {
     return (
-      <main className="px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Job Info</h1>
-          <div className="flex gap-2">
-            <DashboardButton />
-            <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
-          </div>
-        </div>
-        <div className="max-w-5xl mx-auto">
+      <main className="py-8">
+        
+        <div className="max-w-screen-2x2 mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {jobMeta}
           <div className="flex justify-center mt-4 mb-8">
             <Button
@@ -357,13 +345,7 @@ export default function JobInfoPage() {
 
   return (
     <main className="px-4 py-8">
-      <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Job Info</h1>
-        <div className="flex gap-2">
-          <DashboardButton />
-          <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
-        </div>
-      </div>
+      
       <div className="max-w-5xl mx-auto">
         {jobMeta}
         <div className="flex flex-col items-center gap-4 mt-10">

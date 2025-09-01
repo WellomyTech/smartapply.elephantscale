@@ -18,10 +18,18 @@ export const metadata: Metadata = {
   generator: "v0.dev",
 }
 
+import { Poppins } from 'next/font/google'
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400','500','600','700'],
+  variable: '--font-poppins',
+})
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${poppins.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
             <ResumeProvider>

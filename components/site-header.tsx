@@ -2,78 +2,82 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Menu } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink
-} from "@/components/ui/navigation-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { NAV_ITEMS } from "@/lib/site-nav"
+import { useAuth } from "@/components/AuthProvider"
+import DashboardButton from "@/components/DashboardButton"
 
 export default function SiteHeader() {
-  return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/65">
-      <div className="container flex h-14 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          {/* Drop your ES logo as /public/elephantscale-logo.svg (fallback to text if missing) */}
-          <Image
-            src="/elephantscale-logo.svg"
-            alt="Elephant Scale"
-            width={28}
-            height={28}
-            className="hidden sm:block"
-            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-          />
-          <span className="text-xl font-semibold tracking-tight">Elephant Scale</span>
-        </Link>
+  const { logout } = useAuth()
+  const pathname = usePathname()
+  const isHome = pathname === "/"
+  
 
-        <div className="hidden md:flex items-center gap-2">
-          <NavigationMenu>
-            <NavigationMenuList>
-              {NAV_ITEMS.map((item) => (
-                <NavigationMenuItem key={item.href}>
-                  <Link href={item.href} legacyBehavior passHref target={item.external ? "_blank" : undefined}>
-                    <NavigationMenuLink className="px-3 py-2 text-sm text-foreground/80 hover:text-foreground">
-                      {item.label}
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
+const handleLogout = async () => {
+    if (typeof window === "undefined") return
+    const confirmed = window.confirm(
+      "Are you sure you want to log out?"
+    )
+    if (!confirmed) return // ❌ No: dismiss
 
-          <Button asChild className="ml-2">
-            <Link href="/">SmartApply</Link>
-          </Button>
-        </div>
+    try {
+      window.localStorage.clear() // ✅ wipe everything
+    } catch (e) {
+      console.error("Failed to clear localStorage", e)
+    }
 
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Open menu">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <nav className="mt-6 grid gap-3">
-                {NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    target={item.external ? "_blank" : undefined}
-                    className="text-base text-foreground/90 hover:text-foreground"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <Button asChild className="mt-2">
-                  <Link href="/">SmartApply</Link>
-                </Button>
-              </nav>
-            </SheetContent>
-          </Sheet>
-        </div>
+    try {
+      // supports both sync/async logout
+      const maybePromise = logout()
+      if (maybePromise instanceof Promise) await maybePromise
+    } finally {
+      router.push("/") // ✅ Yes: go to home
+    }
+  }
+
+const handleSymbol = () => {
+  if (typeof window === "undefined") return;
+
+  const confirmed = window.confirm(
+    "You will be transferred to Elephant Scale Main Website. \nDo you want to proceed?"
+  );
+
+  if (!confirmed) return; // ❌ No: dismiss
+
+  // ✅ Yes: open in a new tab
+  window.open("https://elephantscale.com/", "_blank", "noopener,noreferrer");
+};
+
+  
+return (
+  <header className="sticky top-0 z-40 w-full border-b bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/65">
+  {/* full width row with small side gutters */}
+  <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    
+    {/* Left: Logo */}
+    <div className="flex items-center gap-3">
+      <Image
+        src="/elephantscale-logo.png"
+        alt="Elephant Scale"
+        onClick={handleSymbol}
+        width={100}
+        height={40}
+        className="h-10 w-auto cursor-pointer"
+      />
+    </div>
+
+    {/* Right: Dashboard + Logout */}
+    {!isHome && (
+      <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+        <DashboardButton className="w-full sm:w-auto" />
+        <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">
+          <LogOut className="mr-2 h-4 w-4" /> Logout
+        </Button>
       </div>
-    </header>
-  )
+    )}
+  </div>
+</header>
+
+)
 }

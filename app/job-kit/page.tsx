@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { useResume } from '@/components/ResumeProvider'
 import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -44,12 +45,13 @@ async function compareResumeJob({
   jobTitle,
   jobCompany,
 }: {
-  jobDescription: string,
-  jobTitle?: string,
-  jobCompany?: string,
+  jobDescription: string
+  jobTitle?: string
+  jobCompany?: string
 }) {
-  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE as string
-  const email = typeof window !== 'undefined' ? (localStorage.getItem('user_email') || '') : ''
+  const API_KEY = process.env.NEXT_PUBLIC_API_BASE as string
+  const email =
+    typeof window !== 'undefined' ? (window.localStorage.getItem('user_email') || '') : ''
 
   const form = new FormData()
   form.append('user_email', email)
@@ -89,20 +91,25 @@ async function compareResumeJob({
     } as Compare422
   }
 
-  if (data?.report_id) {
-    localStorage.setItem('report_id', String(data.report_id))
+  if (data?.report_id && typeof window !== 'undefined') {
+    window.localStorage.setItem('report_id', String(data.report_id))
   }
   return data as CompareApiResponse
 }
 
 export default function JobKitPage() {
-  const API_KEY  = process.env.NEXT_PUBLIC_API_BASE  as string
+  const API_KEY = process.env.NEXT_PUBLIC_API_BASE as string
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
-  const { resumeFile } = useResume()
+  const { resumeFile } = useResume() // (kept in case you need it later)
 
   const [jobUrl, setJobUrl] = useState('')
   const [description, setDescription] = useState('')
+
+  // separate inputs for job title & company
+  const [jobTitle, setJobTitle] = useState('')
+  const [jobCompany, setJobCompany] = useState('')
+
   const [email, setEmail] = useState(user?.email ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -117,40 +124,97 @@ export default function JobKitPage() {
   const [jobCompanyInput, setJobCompanyInput] = useState('')
   const [submittingMeta, setSubmittingMeta] = useState(false)
 
+  // Safe display values (no localStorage during SSR)
+  const [displayJobTitle, setDisplayJobTitle] = useState('')
+  const [displayJobCompany, setDisplayJobCompany] = useState('')
+
+  // Keep email from auth
   useEffect(() => {
-    const savedJobUrl = localStorage.getItem('job_url')
-    if (savedJobUrl) setJobUrl(savedJobUrl)
+    if (user?.email) setEmail(user.email)
+  }, [user])
 
-    const savedDescription = localStorage.getItem('job_description')
-    if (savedDescription) setDescription(savedDescription)
-
-    const savedEmail = localStorage.getItem('user_email')
-    if (savedEmail) setEmail(savedEmail)
-
-    const savedResult = localStorage.getItem('compare_result')
-    if (savedResult) setResult(JSON.parse(savedResult))
-
-    const savedWorkedOn = localStorage.getItem('worked_on')
-    if (savedWorkedOn) setWorkedOn(JSON.parse(savedWorkedOn))
-
-    const savedResume = localStorage.getItem('generated_resume')
-    if (savedResume) setGeneratedResume(savedResume)
-  }, [])
-
-  useEffect(() => { localStorage.setItem('job_url', jobUrl) }, [jobUrl])
-  useEffect(() => { localStorage.setItem('job_description', description) }, [description])
-  useEffect(() => { localStorage.setItem('user_email', email) }, [email])
-  useEffect(() => { if (result) localStorage.setItem('compare_result', JSON.stringify(result)) }, [result])
-  useEffect(() => { localStorage.setItem('worked_on', JSON.stringify(workedOn)) }, [workedOn])
-  useEffect(() => { if (generatedResume) localStorage.setItem('generated_resume', generatedResume) }, [generatedResume])
-
-  useEffect(() => { if (user?.email) setEmail(user.email) }, [user])
-
+  // Persist fields (client-only)
   useEffect(() => {
-    if (result) {
-      setWorkedOn(result.skills_match.filter(s => s.in_job).map(s => !!s.in_resume))
-    }
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('job_url', jobUrl)
+  }, [jobUrl])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('job_description', description)
+  }, [description])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('job_title', jobTitle)
+  }, [jobTitle])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('job_company', jobCompany)
+  }, [jobCompany])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('user_email', email)
+  }, [email])
+  useEffect(() => {
+    if (typeof window === 'undefined' || !result) return
+    window.localStorage.setItem('compare_result', JSON.stringify(result))
   }, [result])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('worked_on', JSON.stringify(workedOn))
+  }, [workedOn])
+  useEffect(() => {
+    if (typeof window === 'undefined' || !generatedResume) return
+    window.localStorage.setItem('generated_resume', generatedResume)
+  }, [generatedResume])
+
+  // Update workedOn after getting a result
+  useEffect(() => {
+    if (!result) return
+    setWorkedOn(result.skills_match.filter(s => s.in_job).map(s => !!s.in_resume))
+  }, [result])
+
+  // Compute display job title/company on client only
+  // Wipe Job Kit data when this page opens
+useEffect(() => {
+  if (typeof window === "undefined") return
+  try {
+    // delete ONLY Job Kit keys (keeps auth/user_email intact)
+    const keys = [
+      "job_title",
+      "job_company",
+      "job_description",
+      "job_url",
+      "compare_result",
+      "worked_on",
+      "report_id",
+      "generated_resume",
+      "latex_resume",
+      "generated_cover_letter",
+      "latex_cover",
+    ]
+    keys.forEach(k => window.localStorage.removeItem(k))
+  } catch (e) {
+    console.error("Failed to clear Job Kit localStorage keys", e)
+  }
+
+  // reset UI state
+  setJobTitle("")
+  setJobCompany("")
+  setDescription("")
+  setResult(null)
+  setWorkedOn([])
+  setGeneratedResume(null)
+}, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const lsTitle = window.localStorage.getItem('job_title')
+    const lsCompany = window.localStorage.getItem('job_company')
+    const title = (result?.job_title ?? lsTitle ?? jobTitle ?? '').toString().trim()
+    const company = (result?.job_company ?? lsCompany ?? jobCompany ?? '').toString().trim()
+    setDisplayJobTitle(title)
+    setDisplayJobCompany(company)
+  }, [result?.job_title, result?.job_company, jobTitle, jobCompany])
 
   if (!isLoading && !user) {
     router.replace('/')
@@ -158,9 +222,11 @@ export default function JobKitPage() {
   }
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] grid place-items-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
+      <main className="py-8">
+        <div className="container min-h-[60vh] grid place-items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </main>
     )
   }
 
@@ -171,7 +237,11 @@ export default function JobKitPage() {
     setLoading(true)
 
     try {
-      const compareRes = await compareResumeJob({ jobDescription: description || '' })
+      const compareRes = await compareResumeJob({
+        jobDescription: description || '',
+        jobTitle: jobTitle?.trim() || undefined,
+        jobCompany: jobCompany?.trim() || undefined,
+      })
 
       if ((compareRes as Compare422).status === 422) {
         const err = compareRes as Compare422
@@ -179,8 +249,8 @@ export default function JobKitPage() {
           ? err.detail.missing_fields
           : ['job_title', 'job_company']
         setMissingFields(missing)
-        setJobTitleInput('')
-        setJobCompanyInput('')
+        setJobTitleInput(jobTitle || '')
+        setJobCompanyInput(jobCompany || '')
         setShowMissingModal(true)
         return
       }
@@ -189,13 +259,24 @@ export default function JobKitPage() {
         const err = compareRes as Compare422
         setError(err.error || 'An error occurred.')
         setResult({
-          skills_match: [], gaps: [], bonus_points: [], recommendations: [],
-          google_doc_link: err.google_doc_link, raw: err.raw
+          skills_match: [],
+          gaps: [],
+          bonus_points: [],
+          recommendations: [],
+          google_doc_link: err.google_doc_link,
+          raw: err.raw,
         })
         return
       }
 
-      setResult(compareRes as CompareApiResponse)
+      const ok = compareRes as CompareApiResponse
+      if (ok.job_title && typeof window !== 'undefined') {
+        window.localStorage.setItem('job_title', ok.job_title)
+      }
+      if (ok.job_company && typeof window !== 'undefined') {
+        window.localStorage.setItem('job_company', ok.job_company)
+      }
+      setResult(ok)
     } catch (err: any) {
       setError(err?.message ?? 'An error occurred.')
     } finally {
@@ -232,13 +313,27 @@ export default function JobKitPage() {
         const err = compareRes as Compare422
         setError(err.error || 'An error occurred.')
         setResult({
-          skills_match: [], gaps: [], bonus_points: [], recommendations: [],
-          google_doc_link: err.google_doc_link, raw: err.raw
+          skills_match: [],
+          gaps: [],
+          bonus_points: [],
+          recommendations: [],
+          google_doc_link: err.google_doc_link,
+          raw: err.raw,
         })
         return
       }
 
-      setResult(compareRes as CompareApiResponse)
+      const ok = compareRes as CompareApiResponse
+      if (jobTitleInput.trim() && typeof window !== 'undefined') {
+        window.localStorage.setItem('job_title', jobTitleInput.trim())
+      }
+      if (jobCompanyInput.trim() && typeof window !== 'undefined') {
+        window.localStorage.setItem('job_company', jobCompanyInput.trim())
+      }
+
+      setJobTitle(jobTitleInput.trim())
+      setJobCompany(jobCompanyInput.trim())
+      setResult(ok)
       setShowMissingModal(false)
     } catch (err: any) {
       alert(err?.message ?? 'Failed to submit job details.')
@@ -255,21 +350,22 @@ export default function JobKitPage() {
       .map(item => item.skill)
 
     if (selectedSkills.length === 0) {
-      alert("Please select at least one skill you have worked on.")
+      alert('Please select at least one skill you have worked on.')
       return
     }
 
-    const jobInfoToSend = description
     const form = new FormData()
-    const email = localStorage.getItem('user_email') || ''
-
+    const email = typeof window !== 'undefined' ? (window.localStorage.getItem('user_email') || '') : ''
     form.append('user_email', email)
     form.append('additional_skills', selectedSkills.join(', '))
-    form.append('job_description', jobInfoToSend)
+    form.append('job_description', description)
 
-    if (result.report_id) {
-      form.append('report_id', result.report_id.toString())
-    }
+    const jt = typeof window !== 'undefined' ? (window.localStorage.getItem('job_title') || jobTitle) : jobTitle
+    const jc = typeof window !== 'undefined' ? (window.localStorage.getItem('job_company') || jobCompany) : jobCompany
+    if (jt) form.append('job_title', jt)
+    if (jc) form.append('job_company', jc)
+
+    if (result.report_id) form.append('report_id', result.report_id.toString())
 
     setGenerating(true)
     setGeneratedResume(null)
@@ -282,28 +378,18 @@ export default function JobKitPage() {
 
       const data = await res.json()
       if (data.updated_resume) {
-        localStorage.setItem('generated_resume', data.updated_resume)
-        setGeneratedResume(data.updated_resume_tex)
-
-        if (data.updated_resume) {
-          localStorage.setItem('generated_resume', data.updated_resume)
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('generated_resume', data.updated_resume)
+          if (data.latex_resume) window.localStorage.setItem('latex_resume', data.latex_resume)
+          if (data.cover_letter) window.localStorage.setItem('generated_cover_letter', data.cover_letter)
+          if (data.latex_cover) window.localStorage.setItem('latex_cover', data.latex_cover)
         }
-        if (data.latex_resume) {
-          localStorage.setItem('latex_resume', data.latex_resume)
-        }
-        if (data.cover_letter) {
-          localStorage.setItem('generated_cover_letter', data.cover_letter)
-        }
-        if (data.latex_cover) {
-          localStorage.setItem('latex_cover', data.latex_cover)
-        }
-
         router.push('/job-kit/result')
       } else {
-        alert("No resume generated.")
+        alert('No resume generated.')
       }
     } catch (err) {
-      alert("Failed to generate resume.")
+      alert('Failed to generate resume.')
       console.error(err)
     } finally {
       setGenerating(false)
@@ -312,165 +398,271 @@ export default function JobKitPage() {
 
   const handleLogout = () => {
     logout()
-    localStorage.clear()
+    if (typeof window !== 'undefined') window.localStorage.clear()
   }
 
+  const compareDisabled =
+    loading || !description.trim() || !jobTitle.trim() || !jobCompany.trim()
+
   return (
-    <main className="px-4 py-8">
-      <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Smart Job Kit Generator</h1>
-        <div className="flex gap-2">
-          <DashboardButton />
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto space-y-10">
-        <Card className="shadow-sm">
-          <CardContent className="p-6">
-            <form onSubmit={handleCompare} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="job-desc">Job Description</Label>
-                <Textarea
-                  id="job-desc"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  rows={6}
-                  placeholder="Paste the job description"
-                />
-              </div>
-
-              {error && <div className="text-destructive">{error}</div>}
-              <Button type="submit" size="lg" className="w-full" disabled={loading || !description.trim()}>
-                {loading ? <><Loader2 className="animate-spin mr-2 h-4 w-4" /> Comparing...</> : 'Compare with Recruiter Job Scanner'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {result && (
-          <div className="space-y-10">
+    <main className="py-8">
+        <div className="max-w-screen-2x2 mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          {!result ? (
             <Card className="shadow-sm">
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-4">Skills Comparison</h3>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Skill</TableHead>
-                        <TableHead className="text-center">In Job</TableHead>
-                        <TableHead className="text-center">In Resume</TableHead>
-                        <TableHead className="text-center">Have You Worked On It?</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {result.skills_match
-                        .filter(({ in_job }) => in_job)
-                        .map(({ skill, in_job, in_resume }, i) => {
-                          const showRadio = result.gaps.includes(skill)
-                          return (
-                            <TableRow key={skill}>
-                              <TableCell className="font-medium">{skill}</TableCell>
-                              <TableCell className="text-center">
-                                {in_job ? <Check className="inline h-5 w-5 text-green-600" /> : <X className="inline h-5 w-5 text-red-600" />}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {in_resume ? <Check className="inline h-5 w-5 text-green-600" /> : <X className="inline h-5 w-5 text-red-600" />}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {showRadio ? (
-                                  <RadioGroup
-                                    className="flex items-center justify-center gap-6"
-                                    value={String(workedOn[i])}
-                                    onValueChange={(val) => {
-                                      setWorkedOn(arr => {
-                                        const copy = [...arr]
-                                        copy[i] = val === 'true'
-                                        return copy
-                                      })
-                                    }}
-                                  >
-                                    <div className="flex items-center space-x-2">
-                                      <RadioGroupItem id={`yes-${i}`} value="true" />
-                                      <Label htmlFor={`yes-${i}`}>Yes</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                      <RadioGroupItem id={`no-${i}`} value="false" />
-                                      <Label htmlFor={`no-${i}`}>No</Label>
-                                    </div>
-                                  </RadioGroup>
-                                ) : null}
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                    </TableBody>
-                    <TableCaption className="text-left">Only job-required skills are listed.</TableCaption>
-                  </Table>
+                <form onSubmit={handleCompare} className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="job-title">
+                        Job Title <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="job-title"
+                        type="text"
+                        value={jobTitle}
+                        onChange={e => setJobTitle(e.target.value)}
+                        placeholder="e.g., Senior Software Engineer"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="job-company">
+                        Company Name <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="job-company"
+                        type="text"
+                        value={jobCompany}
+                        onChange={e => setJobCompany(e.target.value)}
+                        placeholder="e.g., Acme Corp"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="job-company">
+                        Job Link (Optional) <span className="text-destructive"></span>
+                      </Label>
+                      <Input
+                        id="job-company"
+                        type="text"
+                        value={jobCompany}
+                        onChange={e => setJobCompany(e.target.value)}
+                        placeholder="e.g., https://www.linkedin.com/jobs/view/123456789"
+                        required
+                      />
+                    </div>
+
+
+                    <div className="space-y-2">
+                      <Label htmlFor="job-desc">
+                        Job Description (Please Copy - Paste from Job Board){' '}
+                        <span className="text-destructive">*</span>
+                      </Label>
+                      <Textarea
+                        id="job-desc"
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                        rows={30}
+                        placeholder="Paste the full job description..."
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Fields marked with <span className="text-destructive">*</span> are mandatory.
+                      </p>
+                    </div>
+                  </div>
+
+                  {error && <div className="text-destructive">{error}</div>}
+                  <Button type="submit" size="lg" className="w-full" disabled={compareDisabled}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="animate-spin mr-2 h-4 w-4" /> Comparing...
+                      </>
+                    ) : (
+                      'Compare with Recruiter Job Scanner'
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          ) : (
+            // After successful compare: compact summary card
+            <Card className="rounded-xl shadow-sm border border-[#0099d7]/20 overflow-hidden">
+              <CardHeader className="bg-[#0099d7] py-3 flex items-center justify-center">
+                <CardTitle className="text-white text-base font-semibold text-center">
+                  Recruiter&apos;s View
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <div className="text-lg font-semibold">{displayJobTitle || '—'}</div>
+                  <div className="text-muted-foreground">{displayJobCompany || '—'}</div>
                 </div>
               </CardContent>
             </Card>
+          )}
 
-            <Card className="shadow-sm">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-3">Bonus Points</h3>
-                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                  {result.bonus_points.map((bp) => (<li key={bp}>{bp}</li>))}
-                </ul>
-              </CardContent>
-            </Card>
+          {result && (
+            <div className="space-y-10">
+              <Card className="shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-4">Job Scan Results</h3>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow
+                          className="-mx-6 -mt-6 mb-4 rounded-t-xl bg-[#808080] px-6 py-3 font-poppins
+                                     hover:bg-[#808080]
+                                     [&>th]:text-white [&>th]:font-semibold
+                                     [&>th]:whitespace-nowrap [&>th]:truncate
+                                     [&>th]:text-[15px] md:[&>th]:text-base"
+                        >
+                          <TableHead>Skills</TableHead>
+                          <TableHead className="text-center">Job Requirement</TableHead>
+                          <TableHead className="text-center">In Resume</TableHead>
+                          <TableHead className="text-center">Have You Worked On It?</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {result.skills_match
+                          .filter(({ in_job }) => in_job)
+                          .map(({ skill, in_job, in_resume }, i) => {
+                            const showRadio = result.gaps.includes(skill)
+                            return (
+                              <TableRow key={skill}>
+                                <TableCell className="font-medium">{skill}</TableCell>
+                                <TableCell className="text-center">
+                                  {in_job ? (
+                                    <Check className="inline h-5 w-5 text-green-600" />
+                                  ) : (
+                                    <X className="inline h-5 w-5 text-red-600" />
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {in_resume ? (
+                                    <Check className="inline h-5 w-5 text-green-600" />
+                                  ) : (
+                                    <X className="inline h-5 w-5 text-red-600" />
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {showRadio ? (
+                                    <RadioGroup
+                                      className="flex items-center justify-center gap-6"
+                                      value={String(workedOn[i])}
+                                      onValueChange={(val) => {
+                                        setWorkedOn((arr) => {
+                                          const copy = [...arr]
+                                          copy[i] = val === 'true'
+                                          return copy
+                                        })
+                                      }}
+                                    >
+                                      <div className="flex items-center space-x-2">
+                                        <RadioGroupItem id={`yes-${i}`} value="true" />
+                                        <Label htmlFor={`yes-${i}`}>Yes</Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <RadioGroupItem id={`no-${i}`} value="false" />
+                                        <Label htmlFor={`no-${i}`}>No</Label>
+                                      </div>
+                                    </RadioGroup>
+                                  ) : null}
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
+                      </TableBody>
+                      <TableCaption className="text-left">Only job-required skills are listed.</TableCaption>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Button size="lg" className="w-full" onClick={handleGenerateResume} disabled={generating}>
-              {generating ? <><Loader2 className="animate-spin mr-2 h-4 w-4" /> Generating Resume...</> : 'Generate Resume and Cover Letter'}
-            </Button>
+              <Card className="shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-3">Bonus Points</h3>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    {result.bonus_points.map((bp) => (
+                      <li key={bp}>{bp}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Button size="lg" className="w-full" onClick={handleGenerateResume} disabled={generating}>
+                {generating ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-4 w-4" /> Generating Resume...
+                  </>
+                ) : (
+                  'Generate Resume and Cover Letter'
+                )}
+              </Button>
+            </div>
+          )}
+
+        {/* Minimal custom modal for missing meta */}
+        {showMissingModal && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 px-4">
+            <div className="w-full max-w-md rounded-xl bg-background p-6 shadow-xl border">
+              <h3 className="text-lg font-semibold">We need a bit more info</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Please provide the missing job details to continue.
+              </p>
+
+              <div className="mt-4 space-y-3">
+                <div>
+                  <Label htmlFor="job-title-modal">
+                    Job Title {missingFields.includes('job_title') && <span className="text-destructive">*</span>}
+                  </Label>
+                  <input
+                    id="job-title-modal"
+                    type="text"
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                    placeholder="e.g., Senior Software Engineer"
+                    value={jobTitleInput}
+                    onChange={(e) => setJobTitleInput(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="job-company-modal">
+                    Company Name {missingFields.includes('job_company') && (
+                      <span className="text-destructive">*</span>
+                    )}
+                  </Label>
+                  <input
+                    id="job-company-modal"
+                    type="text"
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                    placeholder="e.g., Acme Corp"
+                    value={jobCompanyInput}
+                    onChange={(e) => setJobCompanyInput(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowMissingModal(false)} disabled={submittingMeta}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSubmitMissingMeta} disabled={submittingMeta}>
+                  {submittingMeta ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
+                    </>
+                  ) : (
+                    'Submit'
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
-
-      {/* Minimal custom modal for missing meta (kept for logic parity) */}
-      {showMissingModal && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 px-4">
-          <div className="w-full max-w-md rounded-xl bg-background p-6 shadow-xl border">
-            <h3 className="text-lg font-semibold">We need a bit more info</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Please provide the missing job details to continue.</p>
-
-            <div className="mt-4 space-y-3">
-              <div>
-                <Label htmlFor="job-title">Job Title {missingFields.includes('job_title') && <span className="text-destructive">*</span>}</Label>
-                <input
-                  id="job-title"
-                  type="text"
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                  placeholder="e.g., Senior Software Engineer"
-                  value={jobTitleInput}
-                  onChange={(e) => setJobTitleInput(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="job-company">Company Name {missingFields.includes('job_company') && <span className="text-destructive">*</span>}</Label>
-                <input
-                  id="job-company"
-                  type="text"
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                  placeholder="e.g., Acme Corp"
-                  value={jobCompanyInput}
-                  onChange={(e) => setJobCompanyInput(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowMissingModal(false)} disabled={submittingMeta}>Cancel</Button>
-              <Button onClick={handleSubmitMissingMeta} disabled={submittingMeta}>
-                {submittingMeta ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</> : 'Submit'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   )
 }

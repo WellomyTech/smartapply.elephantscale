@@ -11,12 +11,12 @@ export default function SiteFooter() {
 
   return (
     <footer className="mt-16 border-t bg-[hsl(var(--footer))] text-white">
-      <div className="container grid gap-10 py-12 md:grid-cols-4">
+      <div className="container flex flex-col items-center justify-between gap-4 py-4 text-sm text-white/7F0 md:flex-row">
         <div className="md:col-span-2">
           <div className="flex items-center gap-3">
             {showLogo && (
               <Image
-                src="/elephantscale-logo-white.svg"
+                src="/elephantscale-logo-white.png"
                 alt="Elephant Scale"
                 width={32}
                 height={32}

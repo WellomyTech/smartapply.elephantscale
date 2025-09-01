@@ -148,8 +148,8 @@ export default function JobKitResultPage() {
   }
 
   return (
-    <main className="px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
+    <main className="py-8">
+      {/* <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Generated Resume &amp; Cover Letter</h1>
         <div className="flex gap-2">
           <DashboardButton />
@@ -157,7 +157,7 @@ export default function JobKitResultPage() {
             <LogOut className="mr-2 h-4 w-4" /> Logout
           </Button>
         </div>
-      </div>
+      </div> */}
 
       <div className="flex flex-col md:flex-row gap-6 w-full md:h-[calc(100vh-13rem)]">
         <Card className="flex-1 flex flex-col">

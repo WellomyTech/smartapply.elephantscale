@@ -243,212 +243,365 @@ export default function InterviewVoiceDemo() {
     return "U"
   }
 
-  return (
-    <main className="min-h-[80vh] bg-gradient-to-br from-primary/80 via-primary to-primary/80 flex flex-col">
-      <header className="bg-black/20 backdrop-blur-sm border-b border-white/10 px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold text-white">AI Interview</h1>
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <div className="bg-black/30 px-3 py-1.5 rounded-lg text-sm font-medium text-white/90 border border-white/20">
-              Meeting ID: {reportId || "—"}
-            </div>
-            {status !== "idle" && (
-              <div className="bg-red-500/20 px-3 py-1.5 rounded-lg text-sm font-medium text-red-200 border border-red-400/30 flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                LIVE {formatTime(timer)}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <DashboardButton />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                localStorage.clear()
-                stopCamera()
-              }}
-              className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:border-white/30 transition-colors"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
+return (
+  <main className="min-h-[80vh] bg-gradient-to-br from-primary/80 via-primary to-primary/80 flex flex-col">
+    {/* Header */}
+    <header className="bg-black/20 backdrop-blur-sm border-b border-white/10 px-4 py-3">
+      <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        {/* left */}
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-white">AI Interview</h1>
         </div>
-      </header>
 
-      <div className="flex-1 flex">
-        {status === "idle" ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <div className="text-center mb-8 max-w-2xl">
-              <h2 className="text-3xl font-semibold text-white mb-4">Ready to Begin Your Interview?</h2>
-              <p className="text-lg font-medium text-white/80">
-                Start your professional AI-powered interview session when you're ready.
-              </p>
-            </div>
-            <Button
-              onClick={handleStart}
-              disabled={!reportId}
-              size="lg"
-              className="text-white px-8 py-3 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Start Interview
-            </Button>
-            {!reportId && (
-              <p className="text-sm font-medium text-red-300 mt-4">
-                Please ensure you have a valid report ID to start the interview.
-              </p>
-            )}
+        {/* right: Meeting ID + LIVE */}
+        <div className="flex items-center gap-3">
+          <div className="bg-black/30 px-3 py-1.5 rounded-lg text-sm font-medium text-white/90 border border-white/20">
+            Meeting ID: {reportId || "—"}
           </div>
-        ) : (
-          <div className="flex-1 flex">
-            <div className="flex-1 relative p-4">
-              <div
-                className={`relative w-full h-full bg-gray-900 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${
-                  isUserSpeaking ? "ring-4 ring-green-400 shadow-green-400/20" : ""
-                }`}
-              >
-                {videoStream && !isVideoOff ? (
-                  <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                    <div className="text-center">
-                      <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <span className="text-3xl text-white">{getUserInitial()}</span>
-                      </div>
-                      <p className="text-white font-medium">Camera Off</p>
-                    </div>
-                  </div>
-                )}
+          {status !== "idle" && (
+            <div className="bg-red-500/20 px-3 py-1.5 rounded-lg text-sm font-medium text-red-200 border border-red-400/30 flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+              LIVE {formatTime(timer)}
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
 
-                <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white font-medium">Ruchit</span>
-                    {isUserSpeaking && (
-                      <div className="flex gap-1">
-                        <div className="w-1 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                        <div className="w-1 h-2 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: "0.1s" }}></div>
-                        <div className="w-1 h-4 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+    <div className="flex-1 flex">
+      {status === "idle" ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <div className="text-center mb-8 max-w-2xl">
+            <h2 className="text-3xl font-semibold text-white mb-4">
+              Ready to Begin Your Interview?
+            </h2>
+            <p className="text-lg font-medium text-white/80">
+              Start your professional AI-powered interview session when you're ready.
+            </p>
+          </div>
+          <Button
+            onClick={handleStart}
+            disabled={!reportId}
+            size="lg"
+            className="text-white px-8 py-3 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            Start Interview
+          </Button>
+          {!reportId && (
+            <p className="text-sm font-medium text-red-300 mt-4">
+              Please ensure you have a valid report ID to start the interview.
+            </p>
+          )}
+        </div>
+      ) : (
+        // Live layout
+        <div className="flex-1 flex flex-col lg:flex-row">
+          {/* Video panel */}
+          <div className="flex-1 relative p-4 order-1">
+<div
+  className={`relative w-full aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${
+    isUserSpeaking ? "ring-4 ring-green-400 shadow-green-400/20" : ""
+  }`}
+>
+  {videoStream && !isVideoOff ? (
+    <video
+      ref={videoRef}
+      autoPlay
+      muted
+      playsInline
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+      <div className="text-center">
+        <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center mb-3 mx-auto">
+          <span className="text-2xl text-white">{getUserInitial()}</span>
+        </div>
+        <p className="text-white text-sm font-medium">Camera Off</p>
+      </div>
+    </div>
+  )}
 
-              <div className={`absolute bottom-6 right-6 w-48 h-36 bg-gray-900 rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${agentSpeaking ? "ring-3 ring-blue-400 shadow-blue-400/20" : ""}`}>
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 relative">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🤖</span>
-                  </div>
-
-                  <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-white text-sm font-medium">Mike</span>
-                      {agentSpeaking && (
-                        <div className="flex gap-0.5">
-                          <div className="w-0.5 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                          <div className="w-0.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.1s" }}></div>
-                          <div className="w-0.5 h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {(agentListening || agentThinking) && (
-                    <div className="absolute top-2 right-2">
-                      {agentListening && <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">Listening</div>}
-                      {agentThinking && (
-                        <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
-                          <div className="w-1 h-1 bg-white rounded-full animate-bounce"></div>
-                          Thinking
-                        </div>
-                      )}
+              {/* user label */}
+              <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-medium select-none">Ruchit</span>
+                  {isUserSpeaking && (
+                    <div className="flex gap-1">
+                      <div className="w-1 h-3 bg-green-400 rounded-full animate-pulse" />
+                      <div
+                        className="w-1 h-2 bg-green-400 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.1s" }}
+                      />
+                      <div
+                        className="w-1 h-4 bg-green-400 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.2s" }}
+                      />
                     </div>
                   )}
                 </div>
               </div>
-
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-                <div className="bg-black/50 backdrop-blur-sm rounded-full px-6 py-3 flex items-center gap-4 shadow-xl">
-                  <Button variant="ghost" size="sm" onClick={toggleMute} className={`rounded-full w-12 h-12 p-0 transition-colors ${isMuted ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}>
-                    {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                  </Button>
-
-                  <Button variant="ghost" size="sm" onClick={toggleVideo} className={`rounded-full w-12 h-12 p-0 transition-colors ${isVideoOff ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}>
-                    {isVideoOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
-                  </Button>
-
-                  <Button variant="ghost" size="sm" onClick={handleRestart} className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors">
-                    <RotateCcw className="h-5 w-5" />
-                  </Button>
-
-                  <Button variant="destructive" size="sm" onClick={handleEnd} className="rounded-full w-12 h-12 p-0">
-                    <PhoneOff className="h-5 w-5" />
-                  </Button>
-
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="sm" className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors">
-                        <Settings className="h-5 w-5" />
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent className="bg-white">
-                      <SheetHeader>
-                        <SheetTitle className="font-semibold text-gray-900">Session Information</SheetTitle>
-                      </SheetHeader>
-                      <div className="mt-6 space-y-4">
-                        <div>
-                          <label className="text-sm font-semibold text-gray-700">Report ID</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">{reportId || "Not set"}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-semibold text-gray-700">Job Title</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">{jobtitle || "Not set"}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-semibold text-gray-700">Company</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">{companyname || "Not set"}</p>
-                        </div>
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                </div>
-              </div>
             </div>
 
-            <div className="w-80 bg-white/95 backdrop-blur-sm border-l border-white/20 flex flex-col">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900">Live Transcript</h3>
-                <p className="text-sm text-gray-600 mt-1">Real-time conversation transcript</p>
-              </div>
+            {/* Agent PiP */}
+            {/* <div
+              className={`absolute bottom-6 right-6 w-48 h-36 bg-gray-900 rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${
+                agentSpeaking ? "ring-3 ring-blue-400 shadow-blue-400/20" : ""
+              }`}
+            >
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 relative">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🤖</span>
+                </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: "calc(100vh - 130px)" }}>
-                {transcript.map((entry, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900 text-sm">{entry.role}</span>
-                      <span className="text-xs text-gray-500">{entry.timestamp}</span>
-                    </div>
-                    <div className={`p-3 rounded-lg text-sm ${entry.role === "Mike" ? "bg-blue-50 text-blue-900 ml-0 mr-4" : "bg-gray-50 text-gray-900 ml-4 mr-0"}`}>
-                      {entry.message}
-                    </div>
+                <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-white text-sm font-medium select-none">Mike</span>
+                    {agentSpeaking && (
+                      <div className="flex gap-0.5">
+                        <div className="w-0.5 h-2 bg-blue-400 rounded-full animate-pulse" />
+                        <div
+                          className="w-0.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
+                          style={{ animationDelay: "0.1s" }}
+                        />
+                        <div
+                          className="w-0.5 h-3 bg-blue-400 rounded-full animate-pulse"
+                          style={{ animationDelay: "0.2s" }}
+                        />
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
 
-                {transcript.length === 0 && (
-                  <div className="text-center text-gray-500 mt-8">
-                    <p className="text-sm">Transcript will appear here once the conversation starts...</p>
+                {(agentListening || agentThinking) && (
+                  <div className="absolute top-2 right-2">
+                    {agentListening && (
+                      <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                        Listening
+                      </div>
+                    )}
+                    {agentThinking && (
+                      <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                        <div className="w-1 h-1 bg-white rounded-full animate-bounce" />
+                        Thinking
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
+            {/* Agent PiP — hidden on mobile, visible from `sm:` and above */}
+<div
+  className={`hidden sm:block absolute bottom-6 right-6 w-48 h-36 bg-gray-900 rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${
+    agentSpeaking ? "ring-3 ring-blue-400 shadow-blue-400/20" : ""
+  }`}
+>
+  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 relative">
+    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+      <span className="text-2xl">🤖</span>
+    </div>
+
+    <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+      <div className="flex items-center gap-1.5">
+        <span className="text-white text-sm font-medium">Mike</span>
+        {agentSpeaking && (
+          <div className="flex gap-0.5">
+            <div className="w-0.5 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <div
+              className="w-0.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
+              style={{ animationDelay: "0.1s" }}
+            ></div>
+            <div
+              className="w-0.5 h-3 bg-blue-400 rounded-full animate-pulse"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
           </div>
         )}
       </div>
-    </main>
-  )
+    </div>
+  </div>
+</div>
+
+
+            {/* Controls */}
+            {/* <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 sm:px-0">
+              <div className="bg-black/50 backdrop-blur-sm rounded-full px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 shadow-xl">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMute}
+                  className={`rounded-full w-12 h-12 p-0 transition-colors ${
+                    isMuted ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"
+                  }`}
+                >
+                  {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleVideo}
+                  className={`rounded-full w-12 h-12 p-0 transition-colors ${
+                    isVideoOff ? "bg-red-500 hover:bg-red-600 text-white" : "bg-white/20 hover:bg-white/30 text-white"
+                  }`}
+                >
+                  {isVideoOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRestart}
+                  className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </Button>
+
+                <Button variant="destructive" size="sm" onClick={handleEnd} className="rounded-full w-12 h-12 p-0">
+                  <PhoneOff className="h-5 w-5" />
+                </Button>
+
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full w-12 h-12 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors"
+                    >
+                      <Settings className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent className="bg-white">
+                    <SheetHeader>
+                      <SheetTitle className="font-semibold text-gray-900">Session Information</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-6 space-y-4">
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">Report ID</label>
+                        <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
+                          {reportId || "Not set"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">Job Title</label>
+                        <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
+                          {jobtitle || "Not set"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">Company</label>
+                        <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
+                          {companyname || "Not set"}
+                        </p>
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </div> */}
+
+
+            {/* Controls bar */}
+<div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-2 sm:px-0">
+  <div className="bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 sm:gap-4 shadow-xl">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleMute}
+      className={`rounded-full w-10 h-10 p-0 transition-colors ${
+        isMuted
+          ? "bg-red-500 hover:bg-red-600 text-white"
+          : "bg-white/20 hover:bg-white/30 text-white"
+      }`}
+    >
+      {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+    </Button>
+
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleVideo}
+      className={`rounded-full w-10 h-10 p-0 transition-colors ${
+        isVideoOff
+          ? "bg-red-500 hover:bg-red-600 text-white"
+          : "bg-white/20 hover:bg-white/30 text-white"
+      }`}
+    >
+      {isVideoOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+    </Button>
+
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleRestart}
+      className="rounded-full w-10 h-10 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors"
+    >
+      <RotateCcw className="h-4 w-4" />
+    </Button>
+
+    <Button
+      variant="destructive"
+      size="sm"
+      onClick={handleEnd}
+      className="rounded-full w-10 h-10 p-0"
+    >
+      <PhoneOff className="h-4 w-4" />
+    </Button>
+
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="rounded-full w-10 h-10 p-0 bg-white/20 hover:bg-white/30 text-white transition-colors"
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
+      </SheetTrigger>
+      {/* Session Info Sheet Content */}
+    </Sheet>
+  </div>
+</div>
+
+          </div>
+
+          {/* Transcript panel */}
+          <div className="w-full lg:w-80 bg-white/95 backdrop-blur-sm border-t lg:border-t-0 lg:border-l border-white/20 flex flex-col order-2">
+            <div className="p-4 border-b border-gray-200 sticky top-0 bg-white/95 z-10">
+              <h3 className="font-semibold text-gray-900">Live Transcript</h3>
+              <p className="text-sm text-gray-600 mt-1">Real-time conversation transcript</p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[calc(100vh-260px)] lg:max-h-[calc(100vh-130px)]">
+              {transcript.map((entry, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-900 text-sm">{entry.role}</span>
+                    <span className="text-xs text-gray-500">{entry.timestamp}</span>
+                  </div>
+                  <div
+                    className={`p-3 rounded-lg text-sm ${
+                      entry.role === "Mike" ? "bg-blue-50 text-blue-900" : "bg-gray-50 text-gray-900"
+                    }`}
+                  >
+                    {entry.message}
+                  </div>
+                </div>
+              ))}
+
+              {transcript.length === 0 && (
+                <div className="text-center text-gray-500 mt-8">
+                  <p className="text-sm">
+                    Transcript will appear here once the conversation starts...
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </main>
+)
+
 }

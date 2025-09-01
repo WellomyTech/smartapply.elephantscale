@@ -15,6 +15,35 @@ import { Input } from "@/components/ui/input"
 import JobScanList from "@/components/JobScanList"
 import DashboardButton from "@/components/DashboardButton"
 
+/** ---- in-flight fetch de-dupe (no logic change) ---- */
+/** ---- JSON fetch with in-flight + persistent cache ---- */
+const inflight = new Map<string, Promise<any>>();
+const jsonCache = new Map<string, any>();
+
+async function fetchJsonOnce(url: string, init?: RequestInit) {
+  // If we already have the parsed JSON, return it immediately.
+  if (jsonCache.has(url)) return jsonCache.get(url);
+
+  // If a request is currently in flight, await and share it.
+  if (inflight.has(url)) return inflight.get(url)!;
+
+  const p = fetch(url, init)
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then((data) => {
+      jsonCache.set(url, data);   // persist for subsequent calls
+      return data;
+    })
+    .finally(() => {
+      inflight.delete(url);       // clear in-flight but keep jsonCache
+    });
+
+  inflight.set(url, p);
+  return p;
+}
+
 export default function Dashboard() {
   const API_URL = process.env.NEXT_PUBLIC_API_BASE
 
@@ -40,24 +69,34 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
 
+  /** ensure we write email once */
   useEffect(() => {
     if (user?.email) localStorage.setItem("user_email", user.email)
   }, [user?.email])
 
-  useEffect(() => {
-    if (authLoading || !user?.email) return
-    fetch(`${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setHasResume(data.has_resume === 1)
-        setHasCoverLetter(data.has_cover_letter === 1)
-        setUserData(data)
-      })
-      .catch((error) => {
-        console.error('Failed to fetch dashboard:', error)
-        setHasResume(false)
-      })
-  }, [user?.email, authLoading, API_URL])
+  /** ---- RUN-ONCE GUARD for the dashboard fetch ---- */
+const fetchedRef = useRef(false);
+
+useEffect(() => {
+  if (authLoading || !user?.email) return;
+  if (fetchedRef.current) return;
+  fetchedRef.current = true;
+
+  const url = `${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`;
+
+  fetchJsonOnce(url)
+    .then((data) => {
+      setHasResume(data.has_resume === 1);
+      setHasCoverLetter(data.has_cover_letter === 1);
+      setUserData(data);
+    })
+    .catch((error) => {
+      console.error("Failed to fetch dashboard:", error);
+      setHasResume(false);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [user?.email, authLoading]);  // (omit API_URL to avoid re-trigger)
+
 
   const localSetFileName = (
     key: "resume" | "cover_letter",
@@ -163,179 +202,158 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="px-4 py-8">
-      {/* Page heading */}
-      <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Build. Prepare. Perform. Get Hired.</p>
-        </div>
-        <div className="flex gap-2">
-          <DashboardButton />
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* User Card */}
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            {user?.picture ? (
-              <img
-                src={user.picture}
-                alt={user.name}
-                className="h-14 w-14 rounded-full object-cover"
-              />
-            ) : (
-              <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-lg font-semibold text-muted-foreground">
-                {user?.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </div>
-            )}
-            <div className="flex-1">
-              <p className="text-lg font-semibold">{user?.name}</p>
-              <p className="text-sm text-muted-foreground">{user?.email ?? "LinkedIn member"}</p>
+  <main className="py-8">
+    <div className="max-w-screen-2x2 mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* User Card */}
+      <Card>
+        <CardContent className="flex items-center gap-4 p-6">
+          {user?.picture ? (
+            <img
+              src={user.picture}
+              alt={user.name}
+              className="h-14 w-14 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-lg font-semibold text-muted-foreground">
+              {user?.name?.split(" ").map((n) => n[0]).join("")}
             </div>
+          )}
+          <div className="flex-1">
+            <p className="text-lg font-semibold">{user?.name}</p>
+            <p className="text-sm text-muted-foreground">{user?.email ?? "LinkedIn member"}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upload Cards */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Resume */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center gap-2 text-primary">
+              <Upload className="h-5 w-5" />
+              <h2 className="text-lg font-semibold">Upload Resume (PDF) *</h2>
+            </div>
+            {hasResume && (
+              <p className="text-center text-primary font-medium">
+                Resume is locked after upload.
+              </p>
+            )}
+            <label
+              htmlFor="resume"
+              className={`flex flex-col items-center justify-center border-2 border-dashed rounded-md h-40 cursor-pointer transition-colors
+              ${hasResume ? "opacity-60 cursor-not-allowed" : "hover:bg-muted/40 border-muted-foreground/30"}`}
+            >
+              <Input
+                id="resume"
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                ref={resumeInputRef}
+                onChange={onResumeChange}
+                disabled={hasResume}
+              />
+              {resumeFile ? (
+                <p className="text-sm">{resumeFile.name}</p>
+              ) : (
+                <p className={`text-sm ${hasResume ? "text-muted-foreground" : "text-muted-foreground"}`}>
+                  {hasResume
+                    ? "Resume uploaded"
+                    : localStorage.getItem("resume_file_name")
+                    ? `Last selected: ${localStorage.getItem("resume_file_name")}`
+                    : "Click to upload PDF"}
+                </p>
+              )}
+            </label>
           </CardContent>
         </Card>
 
-        {/* Upload Cards */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Resume */}
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center gap-2 text-primary">
-                <Upload className="h-5 w-5" />
-                <h2 className="text-lg font-semibold">Upload Resume (PDF) *</h2>
-              </div>
-              {hasResume && (
-                <p className="text-center text-primary font-medium">
-                  Resume is locked after upload.
+        {/* Cover Letter */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center gap-2 text-primary">
+              <Upload className="h-5 w-5" />
+              <h2 className="text-lg font-semibold">Upload Cover Letter (PDF)</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Optional: You can upload a cover letter in PDF format.
+            </p>
+
+            <label
+              htmlFor="cover-letter"
+              className={`flex flex-col items-center justify-center border-2 border-dashed rounded-md h-40 cursor-pointer transition-colors
+              ${!hasResume || hasCoverLetter ? "opacity-60 cursor-not-allowed" : "hover:bg-muted/40 border-muted-foreground/30"}`}
+            >
+              <Input
+                id="cover-letter"
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                ref={coverLetterInputRef}
+                onChange={onCoverLetterChange}
+                disabled={!hasResume || hasCoverLetter}
+              />
+              {coverLetterFile ? (
+                <p className="text-sm">{coverLetterFile.name}</p>
+              ) : (
+                <p className={`text-sm ${hasCoverLetter ? "text-muted-foreground" : "text-muted-foreground"}`}>
+                  {!hasResume
+                    ? "Upload resume first to unlock"
+                    : hasCoverLetter
+                    ? "Cover letter uploaded"
+                    : localStorage.getItem("cover_letter_file_name")
+                    ? `Last selected: ${localStorage.getItem("cover_letter_file_name")}`
+                    : "Click to upload PDF (optional)"}
                 </p>
               )}
-              <label
-                htmlFor="resume"
-                className={`flex flex-col items-center justify-center border-2 border-dashed rounded-md h-40 cursor-pointer transition-colors
-                ${hasResume ? "opacity-60 cursor-not-allowed" : "hover:bg-muted/40 border-muted-foreground/30"}`}
+            </label>
+
+            {hasResume && !hasCoverLetter && coverLetterFile && (
+              <Button
+                size="sm"
+                className="w-full mt-2"
+                onClick={handleCoverLetterUpload}
+                disabled={uploading}
               >
-                <Input
-                  id="resume"
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  ref={resumeInputRef}
-                  onChange={onResumeChange}
-                  disabled={hasResume}
-                />
-                {resumeFile ? (
-                  <p className="text-sm">{resumeFile.name}</p>
-                ) : (
-                  <p className={`text-sm ${hasResume ? "text-muted-foreground" : "text-muted-foreground"}`}>
-                    {hasResume
-                      ? "Resume uploaded"
-                      : localStorage.getItem("resume_file_name")
-                      ? `Last selected: ${localStorage.getItem("resume_file_name")}`
-                      : "Click to upload PDF"}
-                  </p>
-                )}
-              </label>
-            </CardContent>
-          </Card>
-
-          {/* Cover Letter */}
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center gap-2 text-primary">
-                <Upload className="h-5 w-5" />
-                <h2 className="text-lg font-semibold">Upload Cover Letter (PDF)</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Optional: You can upload a cover letter in PDF format.
-              </p>
-
-              <label
-                htmlFor="cover-letter"
-                className={`flex flex-col items-center justify-center border-2 border-dashed rounded-md h-40 cursor-pointer transition-colors
-                ${!hasResume || hasCoverLetter ? "opacity-60 cursor-not-allowed" : "hover:bg-muted/40 border-muted-foreground/30"}`}
-              >
-                <Input
-                  id="cover-letter"
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  ref={coverLetterInputRef}
-                  onChange={onCoverLetterChange}
-                  disabled={!hasResume || hasCoverLetter}
-                />
-                {coverLetterFile ? (
-                  <p className="text-sm">{coverLetterFile.name}</p>
-                ) : (
-                  <p className={`text-sm ${hasCoverLetter ? "text-muted-foreground" : "text-muted-foreground"}`}>
-                    {!hasResume
-                      ? "Upload resume first to unlock"
-                      : hasCoverLetter
-                      ? "Cover letter uploaded"
-                      : localStorage.getItem("cover_letter_file_name")
-                      ? `Last selected: ${localStorage.getItem("cover_letter_file_name")}`
-                      : "Click to upload PDF (optional)"}
-                  </p>
-                )}
-              </label>
-
-              {hasResume && !hasCoverLetter && coverLetterFile && (
-                <Button
-                  size="sm"
-                  className="w-full mt-2"
-                  onClick={handleCoverLetterUpload}
-                  disabled={uploading}
-                >
-                  {uploading ? "Uploading…" : "Upload Cover Letter"}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Error message */}
-        {error && <p className="text-center text-destructive">{error}</p>}
-
-        {/* Free credit badge */}
-        {!isPremium && freeRemain > 0 && hasResume && (
-          <p className="text-center text-sm text-muted-foreground">
-            {freeRemain} / 5 free credits remaining
-          </p>
-        )}
-
-        {/* Paywall modal */}
-        <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
-
-        {/* CTA buttons */}
-        {!hasResume ? (
-          <Button
-            size="lg"
-            className="w-full"
-            disabled={!resumeFile || uploading}
-            onClick={handleUpload}
-          >
-            {uploading ? "Uploading…" : "Upload & Get Started"}
-          </Button>
-        ) : (
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={handleContinue}
-          >
-            Continue to Job Kit
-          </Button>
-        )}
-
-        {/* Job Scan List */}
-        <JobScanList reports={userData.reports} />
+                {uploading ? "Uploading…" : "Upload Cover Letter"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </main>
-  )
+
+      {/* Error message */}
+      {error && <p className="text-center text-destructive">{error}</p>}
+
+      {/* Free credit badge */}
+      {!isPremium && freeRemain > 0 && hasResume && (
+        <p className="text-center text-sm text-muted-foreground">
+          {freeRemain} / 5 free credits remaining
+        </p>
+      )}
+
+      {/* Paywall modal */}
+      <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
+
+      {/* CTA buttons */}
+      {!hasResume ? (
+        <Button
+          size="lg"
+          className="w-full"
+          disabled={!resumeFile || uploading}
+          onClick={handleUpload}
+        >
+          {uploading ? "Uploading…" : "Upload & Get Started"}
+        </Button>
+      ) : (
+        <Button size="lg" className="w-full" onClick={handleContinue}>
+          Continue to Job Kit
+        </Button>
+      )}
+
+      {/* Job Scan List */}
+      <JobScanList reports={userData.reports} />
+    </div>
+  </main>
+)
 }
