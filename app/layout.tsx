@@ -5,17 +5,13 @@ import "./globals.css"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/AuthProvider"
-import { ResumeProvider } from "@/components/ResumeProvider"
-import SiteHeader from "@/components/site-header"
-import SiteFooter from "@/components/site-footer"
-import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Smart Job Kit Generator",
   description: "Generate personalized job application materials with AI",
-  generator: "v0.dev",
+    generator: 'v0.dev'
 }
 
 import { Poppins } from 'next/font/google'
@@ -28,19 +24,11 @@ const poppins = Poppins({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} ${poppins.variable}`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <AuthProvider>
-            <ResumeProvider>
-              <SiteHeader />
-              <main className="min-h-[calc(100svh-56px)]">{children}</main>
-              <SiteFooter />
-              <Analytics />
-            </ResumeProvider>
-          </AuthProvider>
-        </ThemeProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )
+  
 }

@@ -33,9 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ⬇️ run-once guard to prevent StrictMode double init
   const didInitRef = useRef(false)
   useEffect(() => {
+<<<<<<< HEAD
     if (didInitRef.current) return
     didInitRef.current = true
 
+=======
+>>>>>>> d324444a4b6816f0bc4e5b67cf0ef767a6613369
     const saved = localStorage.getItem('socialUser')
     if (saved) setUser(JSON.parse(saved))
     setLoading(false)
@@ -44,11 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ⬇️ avoid redundant writes to localStorage
   const lastSerialized = useRef<string | null>(null)
   useEffect(() => {
+<<<<<<< HEAD
     const serialized = user ? JSON.stringify(user) : null
     if (serialized === lastSerialized.current) return
     lastSerialized.current = serialized
 
     if (user) localStorage.setItem('socialUser', serialized)
+=======
+    if (user) localStorage.setItem('socialUser', JSON.stringify(user))
+>>>>>>> d324444a4b6816f0bc4e5b67cf0ef767a6613369
     else localStorage.removeItem('socialUser')
   }, [user])
 
