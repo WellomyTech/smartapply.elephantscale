@@ -1,10 +1,10 @@
 'use client'
-import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Home } from 'lucide-react'
 
 export default function DashboardButton({ className = '' }: { className?: string }) {
-  const router = useRouter()
+  const pathname = usePathname()
 
   function handleDashboardClick() {
     const appKeys = [
@@ -25,11 +25,22 @@ export default function DashboardButton({ className = '' }: { className?: string
       'latex_cover',
     ]
     appKeys.forEach((key) => localStorage.removeItem(key))
-    router.push('/dashboard')
+
+    if (pathname === '/dashboard') {
+      // ✅ Already on dashboard → force full reload
+      window.location.reload()
+    } else {
+      // ✅ Navigate to dashboard with full reload
+      window.location.href = '/dashboard'
+    }
   }
 
   return (
-    <Button variant="outline" className={`flex items-center gap-2 ${className}`} onClick={handleDashboardClick}>
+    <Button
+      variant="outline"
+      className={`flex items-center gap-2 ${className}`}
+      onClick={handleDashboardClick}
+    >
       <Home className="w-4 h-4" />
       Dashboard
     </Button>

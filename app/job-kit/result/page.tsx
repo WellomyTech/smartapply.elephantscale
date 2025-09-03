@@ -159,7 +159,7 @@ export default function JobKitResultPage() {
         </div>
       </div> */}
 
-      <div className="flex flex-col md:flex-row gap-6 w-full md:h-[calc(100vh-13rem)]">
+      <div className="flex flex-col md:flex-row gap-6 w-full md:h-[calc(100vh-1rem)]">
         <Card className="flex-1 flex flex-col">
           <CardContent className="flex flex-col h-full p-6">
             <h2 className="text-xl font-semibold mb-2">Resume</h2>

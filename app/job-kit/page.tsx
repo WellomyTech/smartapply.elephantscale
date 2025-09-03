@@ -44,11 +44,14 @@ async function compareResumeJob({
   jobDescription,
   jobTitle,
   jobCompany,
+  jobLink,          // 👈 NEW
 }: {
   jobDescription: string
   jobTitle?: string
   jobCompany?: string
+  jobLink?: string  // 👈 NEW
 }) {
+
   const API_KEY = process.env.NEXT_PUBLIC_API_BASE as string
   const email =
     typeof window !== 'undefined' ? (window.localStorage.getItem('user_email') || '') : ''
@@ -58,6 +61,8 @@ async function compareResumeJob({
   form.append('job_description', jobDescription)
   if (jobTitle) form.append('job_title', jobTitle)
   if (jobCompany) form.append('job_company', jobCompany)
+  if (jobLink) form.append('job_link', jobLink)   // 👈 NEW
+
 
   const res = await fetch(`${API_KEY}compare-resume-job`, {
     method: 'POST',
@@ -241,6 +246,8 @@ useEffect(() => {
         jobDescription: description || '',
         jobTitle: jobTitle?.trim() || undefined,
         jobCompany: jobCompany?.trim() || undefined,
+        jobLink: jobUrl?.trim() || undefined,          // 👈 NEW
+
       })
 
       if ((compareRes as Compare422).status === 422) {
@@ -302,6 +309,8 @@ useEffect(() => {
         jobDescription: description || '',
         jobTitle: jobTitleInput.trim() || undefined,
         jobCompany: jobCompanyInput.trim() || undefined,
+        jobLink: jobUrl?.trim() || undefined,          // 👈 NEW
+
       })
 
       if ((compareRes as Compare422).status === 422) {
@@ -441,14 +450,14 @@ useEffect(() => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="job-company">
+                      <Label htmlFor="job-link">
                         Job Link (Optional) <span className="text-destructive"></span>
                       </Label>
                       <Input
-                        id="job-company"
+                        id="job-link"
                         type="text"
-                        value={jobCompany}
-                        onChange={e => setJobCompany(e.target.value)}
+                        value={jobUrl}
+                        onChange={e => setJobUrl(e.target.value)}
                         placeholder="e.g., https://www.linkedin.com/jobs/view/123456789"
                         required
                       />
