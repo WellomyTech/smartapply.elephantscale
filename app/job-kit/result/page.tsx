@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Loader2 } from 'lucide-react'
+import { LogOut, Loader2, FileText, Download, Sparkles, CheckCircle, ArrowLeft, Eye, ExternalLink } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import DashboardButton from '@/components/DashboardButton'
+import { StatusBar, useStatusBar } from '@/components/ui/status-bar'
 
 export default function JobKitResultPage() {
   const API_KEY = process.env.NEXT_PUBLIC_API_BASE
@@ -21,10 +22,22 @@ export default function JobKitResultPage() {
   const [downloadingResume, setDownloadingResume] = useState(false)
   const [downloadingCover, setDownloadingCover] = useState(false)
 
+  // Status bar hook
+  const { status, showStatus, hideStatus } = useStatusBar()
+
   useEffect(() => {
-    setJobLink(localStorage.getItem('jobLink') || null)
-    setResumeText(localStorage.getItem('generated_resume') || null)
-    setCoverLetterText(localStorage.getItem('generated_cover_letter') || null)
+    const jobUrl = localStorage.getItem('job_url') || localStorage.getItem('jobLink') || localStorage.getItem('job_link') || null
+    const resume = localStorage.getItem('generated_resume') || null
+    const coverLetter = localStorage.getItem('generated_cover_letter') || null
+    
+    console.log('Results page - Loading from localStorage:')
+    console.log('Job URL:', jobUrl)
+    console.log('Resume text:', resume ? `${resume.substring(0, 100)}...` : 'null')
+    console.log('Cover letter text:', coverLetter ? `${coverLetter.substring(0, 100)}...` : 'null')
+    
+    setJobLink(jobUrl)
+    setResumeText(resume)
+    setCoverLetterText(coverLetter)
   }, [])
 
   if (!isLoading && !user) {
@@ -82,15 +95,16 @@ export default function JobKitResultPage() {
     const reportId = localStorage.getItem('report_id')
 
     if (!reportId) {
-      alert('No report_id found in localStorage!')
+      showStatus('No report ID found. Please regenerate your resume.', 'error')
       return
     }
 
     setDownloadingResume(true)
+    showStatus('Preparing resume download...', 'loading')
     try {
       const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`)
       if (!response.ok) {
-        alert('Failed to generate/download resume DOCX')
+        showStatus('Failed to generate resume DOCX', 'error')
         return
       }
 
@@ -103,8 +117,9 @@ export default function JobKitResultPage() {
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
+      showStatus('Resume downloaded successfully!', 'success')
     } catch (err) {
-      alert('Resume download failed!')
+      showStatus('Resume download failed!', 'error')
       console.error(err)
     } finally {
       setDownloadingResume(false)
@@ -114,11 +129,12 @@ export default function JobKitResultPage() {
   const downloadCoverLetterDocx = async () => {
     const coverLetter = localStorage.getItem('generated_cover_letter')
     if (!coverLetter) {
-      alert('No cover letter found in localStorage!')
+      showStatus('No cover letter found. Please regenerate your documents.', 'error')
       return
     }
 
     setDownloadingCover(true)
+    showStatus('Preparing cover letter download...', 'loading')
     const formData = new FormData()
     formData.append('cover_letter_text', coverLetter)
 
@@ -139,8 +155,9 @@ export default function JobKitResultPage() {
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
+      showStatus('Cover letter downloaded successfully!', 'success')
     } catch (err) {
-      alert('Cover letter download failed!')
+      showStatus('Cover letter download failed!', 'error')
       console.error(err)
     } finally {
       setDownloadingCover(false)
@@ -148,42 +165,199 @@ export default function JobKitResultPage() {
   }
 
   return (
-    <main className="py-8">
-      {/* <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Generated Resume &amp; Cover Letter</h1>
-        <div className="flex gap-2">
-          <DashboardButton />
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> Logout
-          </Button>
+    <>
+      <StatusBar
+        message={status.message}
+        type={status.type}
+        visible={status.visible}
+        onClose={hideStatus}
+      />
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
+        <div className="container mx-auto px-4">
+        {/* Header Section */}
+        <div className="text-center space-y-4 mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-200/20 backdrop-blur-sm">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700 dark:text-green-300">AI Generation Complete</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            Your AI-Optimized Documents
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Review and download your personalized resume and cover letter
+          </p>
         </div>
-      </div> */}
 
-      <div className="flex flex-col md:flex-row gap-6 w-full md:h-[calc(100vh-1rem)]">
-        <Card className="flex-1 flex flex-col">
-          <CardContent className="flex flex-col h-full p-6">
-            <h2 className="text-xl font-semibold mb-2">Resume</h2>
-            <div className="flex-1 bg-muted rounded-md p-4 overflow-y-auto">
-              <pre className="text-sm whitespace-pre-wrap break-words">{resumeText || fallbackResume}</pre>
-            </div>
-            <Button className="mt-4" onClick={downloadResumeDocx} disabled={!resumeText || downloadingResume} aria-busy={downloadingResume}>
-              {downloadingResume ? <><Loader2 className="animate-spin mr-2 h-4 w-4" /> Preparing download…</> : 'Download Resume (.docx)'}
+        {/* Navigation */}
+        <div className="flex items-center justify-between mb-8">
+          <Button 
+            variant="outline" 
+            onClick={() => router.back()}
+            className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 rounded-xl hover:bg-white/90"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Analysis
+          </Button>
+          <div className="flex gap-3">
+            <DashboardButton />
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 rounded-xl hover:bg-white/90"
+            >
+              <LogOut className="mr-2 h-4 w-4" /> 
+              Logout
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="flex-1 flex flex-col">
-          <CardContent className="flex flex-col h-full p-6">
-            <h2 className="text-xl font-semibold mb-2">Cover Letter</h2>
-            <div className="flex-1 bg-muted rounded-md p-4 overflow-y-auto">
-              <pre className="text-sm whitespace-pre-wrap break-words">{coverLetterText || fallbackCover}</pre>
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Resume Card */}
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">AI-Optimized Resume</h2>
+                  <p className="text-blue-100 text-sm">Tailored for your target role</p>
+                </div>
+              </div>
             </div>
-            <Button className="mt-4" onClick={downloadCoverLetterDocx} disabled={!coverLetterText || downloadingCover} aria-busy={downloadingCover}>
-              {downloadingCover ? <><Loader2 className="animate-spin mr-2 h-4 w-4" /> Preparing download…</> : 'Download Cover Letter (.docx)'}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+            <CardContent className="flex flex-col h-[600px] p-0">
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-6 h-full">
+                  <pre className="text-sm whitespace-pre-wrap break-words leading-relaxed font-mono">
+                    {resumeText || fallbackResume}
+                  </pre>
+                </div>
+              </div>
+              <div className="p-6 pt-0 space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Optimized with AI for maximum ATS compatibility</span>
+                </div>
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300" 
+                  onClick={downloadResumeDocx} 
+                  disabled={!resumeText || downloadingResume} 
+                  aria-busy={downloadingResume}
+                >
+                  {downloadingResume ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Preparing Download...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      Download Resume (.docx)
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cover Letter Card */}
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <Eye className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Personalized Cover Letter</h2>
+                  <p className="text-emerald-100 text-sm">Crafted to highlight your strengths</p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="flex flex-col h-[600px] p-0">
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-6 h-full">
+                  <pre className="text-sm whitespace-pre-wrap break-words leading-relaxed font-mono">
+                    {coverLetterText || fallbackCover}
+                  </pre>
+                </div>
+              </div>
+              <div className="p-6 pt-0 space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Personalized messaging that resonates with employers</span>
+                </div>
+                <Button 
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300" 
+                  onClick={downloadCoverLetterDocx} 
+                  disabled={!coverLetterText || downloadingCover} 
+                  aria-busy={downloadingCover}
+                >
+                  {downloadingCover ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Preparing Download...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      Download Cover Letter (.docx)
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Success Message and Apply Button */}
+        <div className="mt-8 text-center space-y-6">
+          <Card className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-200/30 backdrop-blur-sm rounded-2xl shadow-xl max-w-3xl mx-auto">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <CheckCircle className="h-7 w-7 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-green-700 dark:text-green-300">Documents Ready!</h3>
+              </div>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+                Your AI-optimized resume and cover letter are ready for download. These documents have been tailored specifically for your target role to maximize your chances of success.
+              </p>
+              
+              <div className="bg-white/50 dark:bg-gray-800/50 rounded-xl p-6 border border-green-200/50 dark:border-green-700/30">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {jobLink ? 
+                    "Ready to take the next step? Apply directly to the job posting:" :
+                    "Ready to apply? Use your downloaded documents to apply to job postings:"
+                  }
+                </p>
+                {jobLink ? (
+                  <Button 
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg"
+                    onClick={() => window.open(jobLink, '_blank')}
+                  >
+                    <ExternalLink className="mr-3 h-5 w-5" />
+                    Apply to Job Now
+                  </Button>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                      No specific job link found. You can now apply to any job posting with your optimized documents.
+                    </p>
+                    <Button 
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                      onClick={() => router.push('/job-kit')}
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Job Kit
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        </div>
+      </main>
+    </>
   )
 }
