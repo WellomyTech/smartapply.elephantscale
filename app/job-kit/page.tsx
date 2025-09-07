@@ -109,56 +109,86 @@ async function compareResumeJob({
   return data as CompareApiResponse
 }
 
-async function generateDocuments(reportId?: number) {
-  if (!reportId) {
-    console.error('No report ID provided for document generation')
-    throw new Error('No report ID provided')
-  }
-
-  const API_KEY = process.env.NEXT_PUBLIC_API_BASE as string
-  console.log('Generating documents for report ID:', reportId)
-  
-  try {
-    // Generate resume content
-    console.log('Fetching resume from:', `${API_KEY}generate-resume-text?report_id=${reportId}`)
-    const resumeResponse = await fetch(`${API_KEY}generate-resume-text?report_id=${reportId}`)
-    console.log('Resume response status:', resumeResponse.status)
-    
-    if (resumeResponse.ok) {
-      const resumeData = await resumeResponse.json()
-      console.log('Resume data received:', resumeData)
-      if (resumeData.resume_text && typeof window !== 'undefined') {
-        window.localStorage.setItem('generated_resume', resumeData.resume_text)
-        console.log('Resume saved to localStorage')
-      } else {
-        console.warn('No resume_text in response:', resumeData)
-      }
-    } else {
-      console.error('Resume generation failed:', resumeResponse.status, await resumeResponse.text())
-    }
-
-    // Generate cover letter content
-    console.log('Fetching cover letter from:', `${API_KEY}generate-cover-letter-text?report_id=${reportId}`)
-    const coverResponse = await fetch(`${API_KEY}generate-cover-letter-text?report_id=${reportId}`)
-    console.log('Cover letter response status:', coverResponse.status)
-    
-    if (coverResponse.ok) {
-      const coverData = await coverResponse.json()
-      console.log('Cover letter data received:', coverData)
-      if (coverData.cover_letter_text && typeof window !== 'undefined') {
-        window.localStorage.setItem('generated_cover_letter', coverData.cover_letter_text)
-        console.log('Cover letter saved to localStorage')
-      } else {
-        console.warn('No cover_letter_text in response:', coverData)
-      }
-    } else {
-      console.error('Cover letter generation failed:', coverResponse.status, await coverResponse.text())
-    }
-  } catch (error) {
-    console.error('Failed to generate documents:', error)
-    throw error
-  }
+type GenDocsInput = {
+  reportId: number
+  userEmail: string
+  additionalSkills: string
+  jobDescription?: string
+  jobLink?: string
 }
+
+type GenerateResumeResponse = {
+  // adjust names if your API differs
+  resume_text?: string
+  cover_letter_text?: string
+  // any extras your API returns
+  google_doc_link?: string
+  [k: string]: any
+}
+
+export async function generateDocuments({
+  reportId,
+  userEmail,
+  additionalSkills,
+  jobDescription,
+  jobLink,
+}: GenDocsInput) {
+  if (!reportId) throw new Error('No report ID provided')
+  const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || '').replace(/\/?$/, '/')
+
+  const body = new URLSearchParams()
+  body.set('report_id', String(reportId))
+  body.set('user_email', userEmail)
+  body.set('additional_skills', additionalSkills)
+  if (jobDescription) body.set('job_description', jobDescription)
+  if (jobLink) body.set('job_link', jobLink)
+
+  const res = await fetch(`${API_BASE}generate-resume`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  })
+
+  const text = await res.text()
+  if (!res.ok) {
+    console.error('POST /generate-resume failed:', res.status, text)
+    throw new Error(`generate-resume failed: ${res.status}`)
+  }
+
+  let data: GenerateResumeResponse
+  try { data = text ? JSON.parse(text) : {} } catch { data = {} as any }
+
+  // Save results (be tolerant to slight key name changes)
+  const resume =
+    data.updated_resume ??
+    (data as any).resume ??
+    ''
+  const cover =
+    data.cover_letter ??
+    (data as any).cover_letter ??
+    ''
+
+ if (typeof window !== 'undefined') {
+    if (resume && String(resume).trim().length) {
+      localStorage.setItem('generated_resume', String(resume))
+      console.log('✅ saved generated_resume (len=%d)', String(resume).length)
+    } else {
+      console.warn('⚠️ No resume-like field found. Keys:', Object.keys(data))
+    }
+
+    if (cover && String(cover).trim().length) {
+      localStorage.setItem('generated_cover_letter', String(cover))
+      console.log('✅ saved generated_cover_letter (len=%d)', String(cover).length)
+    } else {
+      console.warn('⚠️ No cover_letter-like field found. Keys:', Object.keys(data))
+    }
+  }
+
+
+  return data // return in case caller wants links/metadata too
+}
+
+
 
 export default function JobKitPage() {
   const API_KEY = process.env.NEXT_PUBLIC_API_BASE as string
@@ -340,6 +370,18 @@ useEffect(() => {
       </main>
     )
   }
+
+  
+function buildAdditionalSkills() {
+  if (!result?.skills_match?.length) return 'N/A'
+  // indices of workedOn align to skills filtered by in_job (see your table + setter)
+  const jobSkills = result.skills_match.filter(s => s.in_job)
+  const picked = jobSkills
+    .map((s, i) => (workedOn[i] ? s.skill : ''))
+    .filter(Boolean)
+
+  return picked.length ? picked.join(', ') : 'N/A'
+}
 
   async function handleCompare(e: React.FormEvent) {
     e.preventDefault()
@@ -831,19 +873,28 @@ useEffect(() => {
                   if (!result?.report_id) return
                   setGenerating(true)
                   showStatus('Generating AI-optimized documents...', 'loading')
-                  
+
                   try {
-                    await generateDocuments(result.report_id)
+                    await generateDocuments({
+                      reportId: result.report_id,
+                      userEmail: user?.email ?? (typeof window !== 'undefined' ? localStorage.getItem('user_email') || '' : ''),
+                      additionalSkills: buildAdditionalSkills(),
+                      jobDescription: description?.trim() || undefined, // optional in API
+                      jobLink: jobUrl?.trim() || undefined,             // optional in API
+                    })
+
                     showStatus('Documents generated successfully!', 'success')
                     setTimeout(() => {
                       router.push('/job-kit/result')
                     }, 1000)
                   } catch (error) {
+                    console.error(error)
                     showStatus('Failed to generate documents', 'error')
                   } finally {
                     setGenerating(false)
                   }
-                }} 
+                }}
+
                 disabled={generating || !result?.report_id}
               >
                 {generating ? (
