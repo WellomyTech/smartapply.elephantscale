@@ -1,31 +1,31 @@
 // app/page.tsx
-'use client'
-export const dynamic = 'force-dynamic'
+"use client";
+export const dynamic = "force-dynamic";
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/components/AuthProvider'
-import LinkedInLoginButton from '@/components/LinkedInButton'
-import GoogleButton from '@/components/GoogleButton'
-import { Briefcase, Loader2, Sparkles, Zap, Target, Users } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
+import LinkedInLoginButton from "@/components/LinkedInButton";
+import GoogleButton from "@/components/GoogleButton";
+import { Briefcase, Loader2, Sparkles, Zap, Target, Users } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function HomePage() {
-  const { user, isLoading } = useAuth()
-  const router = useRouter()
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push('/dashboard')
+      router.push("/dashboard");
     }
-  }, [isLoading, user, router])
+  }, [isLoading, user, router]);
 
   if (isLoading) {
     return (
       <div className="min-h-[70vh] grid place-items-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   return (
@@ -35,9 +35,11 @@ export default function HomePage() {
         <div className="text-center space-y-8 mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
             <Sparkles className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">AI-Powered Job Application Platform</span>
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              AI-Powered Job Application Platform
+            </span>
           </div>
-          
+
           <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               SmartApply
@@ -46,7 +48,8 @@ export default function HomePage() {
               Build. Prepare. Perform. Get Hired.
             </p>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Transform your job search with AI-powered resume optimization, interview preparation, and personalized application strategies.
+              Transform your job search with AI-powered resume optimization,
+              interview preparation, and personalized application strategies.
             </p>
           </div>
         </div>
@@ -60,7 +63,8 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-semibold">AI Resume Builder</h3>
               <p className="text-sm text-muted-foreground">
-                Create ATS-optimized resumes tailored to specific job descriptions with AI assistance.
+                Create ATS-optimized resumes tailored to specific job
+                descriptions with AI assistance.
               </p>
             </CardContent>
           </Card>
@@ -72,7 +76,8 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-semibold">Interview Prep</h3>
               <p className="text-sm text-muted-foreground">
-                Practice with AI-powered mock interviews and get personalized feedback.
+                Practice with AI-powered mock interviews and get personalized
+                feedback.
               </p>
             </CardContent>
           </Card>
@@ -84,7 +89,8 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-semibold">Job Matching</h3>
               <p className="text-sm text-muted-foreground">
-                Find the perfect opportunities with intelligent job matching algorithms.
+                Find the perfect opportunities with intelligent job matching
+                algorithms.
               </p>
             </CardContent>
           </Card>
@@ -116,5 +122,5 @@ export default function HomePage() {
         </div>
       </div>
     </main>
-  )
+  );
 }
