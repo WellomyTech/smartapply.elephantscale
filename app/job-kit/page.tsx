@@ -140,8 +140,8 @@ export async function generateDocuments({
   body.set('report_id', String(reportId))
   body.set('user_email', userEmail)
   body.set('additional_skills', additionalSkills)
-  if (jobDescription) body.set('job_description', jobDescription)
-  if (jobLink) body.set('job_link', jobLink)
+  if (jobDescription) body.set('job_description', jobDescription||'')
+  if (jobLink) body.set('job_link', jobLink||'')  // 👈 NEW
 
   const res = await fetch(`${API_BASE}generate-resume`, {
     method: 'POST',
@@ -848,7 +848,8 @@ function buildAdditionalSkills() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl">
+
+              {/* <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-yellow-500" />
@@ -864,7 +865,8 @@ function buildAdditionalSkills() {
                     ))}
                   </ul>
                 </CardContent>
-              </Card>
+              </Card> */}
+
 
               <Button 
                 size="lg" 
