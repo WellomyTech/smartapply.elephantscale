@@ -119,7 +119,7 @@ export default function JobInfoPage() {
     const form = new FormData()
     form.append('user_email', email)
     form.append('additional_skills', selectedSkills.join(', '))
-    //form.append('job_description', jobInfoToSend)
+    form.append('job_description', jobInfoToSend)
     if (jobData.id || jobData.report_id) {
       form.append('report_id', (jobData.id || jobData.report_id).toString())
     }
@@ -255,9 +255,9 @@ export default function JobInfoPage() {
           <ExternalLink className="h-4 w-4" /> View Job Posting
         </a>
       )}
-      {/* <div className="mt-6 p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-200/30 dark:border-gray-700/30">
+      <div className="mt-6 p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-200/30 dark:border-gray-700/30">
         <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{jobData?.job_description}</p>
-      </div> */}
+      </div>
     </div>
   )
 

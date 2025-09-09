@@ -661,6 +661,9 @@ export default function InterviewVoiceDemo() {
 }
 
 
+
+
+
 // "use client"
 
 // import { useEffect, useRef, useState } from "react"
@@ -1085,6 +1088,7 @@ export default function InterviewVoiceDemo() {
 //   </div>
 // </div>
 
+
 //             {/* Controls */}
 //             {/* <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 sm:px-0">
 //               <div className="bg-black/50 backdrop-blur-sm rounded-full px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 shadow-xl">
@@ -1161,6 +1165,7 @@ export default function InterviewVoiceDemo() {
 //                 </Sheet>
 //               </div>
 //             </div> */}
+
 
 //             {/* Controls bar */}
 // <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-2 sm:px-0">

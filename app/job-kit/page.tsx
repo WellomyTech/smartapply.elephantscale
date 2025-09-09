@@ -140,8 +140,8 @@ export async function generateDocuments({
   body.set('report_id', String(reportId))
   body.set('user_email', userEmail)
   body.set('additional_skills', additionalSkills)
-  if (jobDescription) body.set('job_description', jobDescription||'')
-  if (jobLink) body.set('job_link', jobLink||'')  // 👈 NEW
+  if (jobDescription) body.set('job_description', jobDescription)
+  if (jobLink) body.set('job_link', jobLink)
 
   const res = await fetch(`${API_BASE}generate-resume`, {
     method: 'POST',
@@ -573,7 +573,14 @@ function buildAdditionalSkills() {
                         <Briefcase className="inline h-4 w-4 mr-1" />
                         Job Title <span className="text-red-500">*</span>
                       </Label>
-                      
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Enter the exact job title from the job posting. This helps our AI understand the role requirements and tailor your resume accordingly.</p>
+                        </TooltipContent>
+                      </Tooltip>
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -600,7 +607,14 @@ function buildAdditionalSkills() {
                         <Building2 className="inline h-4 w-4 mr-1" />
                         Company Name <span className="text-red-500">*</span>
                       </Label>
-                      
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Enter the company name exactly as it appears in the job posting. This helps personalize your cover letter and resume.</p>
+                        </TooltipContent>
+                      </Tooltip>
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -636,6 +650,14 @@ function buildAdditionalSkills() {
                         <p>Paste the complete URL of the job posting. Make sure it's a valid link starting with https://. This allows you to apply directly after generating your documents.</p>
                       </TooltipContent>
                     </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Paste the complete URL of the job posting. Make sure it's a valid link starting with https://. This allows you to apply directly after generating your documents.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                   <Input
                     id="job-link"
@@ -660,6 +682,14 @@ function buildAdditionalSkills() {
                       <FileText className="inline h-4 w-4 mr-1" />
                       Job Description <span className="text-red-500">*</span>
                     </Label>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy and paste the complete job description from the job board. Include requirements, responsibilities, and qualifications for the most accurate AI analysis.</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                       <TooltipTrigger>
                         <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -818,8 +848,7 @@ function buildAdditionalSkills() {
                 </CardContent>
               </Card>
 
-
-              {/* <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl">
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-yellow-500" />
@@ -835,8 +864,7 @@ function buildAdditionalSkills() {
                     ))}
                   </ul>
                 </CardContent>
-              </Card> */}
-
+              </Card>
 
               <Button 
                 size="lg" 
