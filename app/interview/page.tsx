@@ -93,7 +93,7 @@ function usePersistentSpeakingIndicator(active: boolean) {
 
 export default function InterviewVoiceDemo() {
   const [status, setStatus] = useState<Status>("idle");
-  const [reportId, setReportId] = useState<string | null>(null);
+  const [reportId, setReportId] = useState<number | null>(null); // number, not string
   const [jobtitle, setJobTitle] = useState<string | null>(null);
   const [companyname, setCompanyName] = useState<string | null>(null);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
@@ -172,7 +172,13 @@ export default function InterviewVoiceDemo() {
 
   // ===== Effects =====
   useEffect(() => {
-    setReportId(localStorage.getItem("report_id"));
+    // Load and coerce report_id from localStorage → number
+    const ridRaw = localStorage.getItem("report_id");
+    const ridNum = ridRaw !== null ? Number(ridRaw) : null;
+    setReportId(
+      ridNum !== null && Number.isFinite(ridNum) ? ridNum : null
+    );
+
     setJobTitle(localStorage.getItem("job_title"));
     setCompanyName(localStorage.getItem("company_name"));
 
@@ -298,9 +304,10 @@ export default function InterviewVoiceDemo() {
       await startCamera(); // request cam + mic and show video immediately
       await vapiRef.current.start(ASSISTANT_ID, {
         variableValues: {
-          report_id: reportId,
-          company_name: companyname,
-          job_title: jobtitle,
+          // send as NUMBER
+          report_id: reportId as number,
+          company_name: companyname ?? undefined,
+          job_title: jobtitle ?? undefined,
         },
       });
     } catch (e) {
@@ -369,7 +376,8 @@ export default function InterviewVoiceDemo() {
           </div>
           <div className="flex items-center gap-3">
             <div className="bg-black/30 px-3 py-1.5 rounded-lg text-sm font-medium text-white/90 border border-white/20">
-              Meeting ID: {reportId || "—"}
+              {/* Coerce number to string only for display */}
+              Meeting ID: {reportId != null ? String(reportId) : "—"}
             </div>
             {status !== "idle" && (
               <div className="bg-red-500/20 px-3 py-1.5 rounded-lg text-sm font-medium text-red-200 border border-red-400/30 flex items-center gap-2">
@@ -575,7 +583,7 @@ export default function InterviewVoiceDemo() {
                             Report ID
                           </label>
                           <p className="text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
-                            {reportId || "Not set"}
+                            {reportId != null ? String(reportId) : "Not set"}
                           </p>
                         </div>
                         <div>
@@ -651,6 +659,7 @@ export default function InterviewVoiceDemo() {
     </main>
   );
 }
+
 
 // "use client"
 

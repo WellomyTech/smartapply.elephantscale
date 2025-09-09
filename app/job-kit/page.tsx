@@ -573,14 +573,7 @@ function buildAdditionalSkills() {
                         <Briefcase className="inline h-4 w-4 mr-1" />
                         Job Title <span className="text-red-500">*</span>
                       </Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Enter the exact job title from the job posting. This helps our AI understand the role requirements and tailor your resume accordingly.</p>
-                        </TooltipContent>
-                      </Tooltip>
+                      
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -607,14 +600,7 @@ function buildAdditionalSkills() {
                         <Building2 className="inline h-4 w-4 mr-1" />
                         Company Name <span className="text-red-500">*</span>
                       </Label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Enter the company name exactly as it appears in the job posting. This helps personalize your cover letter and resume.</p>
-                        </TooltipContent>
-                      </Tooltip>
+                      
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -650,14 +636,6 @@ function buildAdditionalSkills() {
                         <p>Paste the complete URL of the job posting. Make sure it's a valid link starting with https://. This allows you to apply directly after generating your documents.</p>
                       </TooltipContent>
                     </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Paste the complete URL of the job posting. Make sure it's a valid link starting with https://. This allows you to apply directly after generating your documents.</p>
-                      </TooltipContent>
-                    </Tooltip>
                   </div>
                   <Input
                     id="job-link"
@@ -682,14 +660,6 @@ function buildAdditionalSkills() {
                       <FileText className="inline h-4 w-4 mr-1" />
                       Job Description <span className="text-red-500">*</span>
                     </Label>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Copy and paste the complete job description from the job board. Include requirements, responsibilities, and qualifications for the most accurate AI analysis.</p>
-                      </TooltipContent>
-                    </Tooltip>
                     <Tooltip>
                       <TooltipTrigger>
                         <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600" />
