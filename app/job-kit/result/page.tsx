@@ -198,7 +198,7 @@ export default function JobKitResultPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Analysis
           </Button>
-          <div className="flex gap-3">
+          {/* <div className="flex gap-3">
             <DashboardButton />
             <Button 
               variant="outline" 
@@ -208,7 +208,7 @@ export default function JobKitResultPage() {
               <LogOut className="mr-2 h-4 w-4" /> 
               Logout
             </Button>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">

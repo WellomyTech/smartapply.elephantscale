@@ -96,7 +96,7 @@ export default function QAPage() {
   };
 
   return (
-    <main className="px-4 py-8">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
       {/* <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Interview Q&amp;A</h1>
