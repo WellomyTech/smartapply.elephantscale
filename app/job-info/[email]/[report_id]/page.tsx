@@ -710,10 +710,10 @@ useEffect(() => {
   return (
     <>
       <StatusBar message={status.message} type={status.type} visible={status.visible} onClose={hideStatus} />
-      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-8">
-        <div className="max-w-5xl mx-auto">
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {jobMeta}
-          <div className="flex flex-col items-center gap-6 mt-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-md rounded-2xl border border-white/20 dark:border-gray-700/30 p-8 shadow-xl text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl">

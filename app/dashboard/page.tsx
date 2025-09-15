@@ -114,6 +114,7 @@ useEffect(() => {
     setResumeFile(f)
     setError("")
     localSetFileName("resume", f)
+
     
     // Automatically upload the resume when selected
     if (f) {
@@ -179,6 +180,7 @@ useEffect(() => {
       setHasResume(true) // Update the hasResume state
       clearInterval(messageInterval)
       showStatus('Resume uploaded successfully!', 'success')
+
     } catch (error) {
       clearInterval(messageInterval)
       showStatus('Failed to upload resume', 'error')
@@ -281,9 +283,11 @@ useEffect(() => {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Welcome to Your Career Hub
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Upload your documents and let AI transform your job search experience
-            </p>
+            {!hasResume && (
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Upload your documents and let AI transform your job search experience
+              </p>
+            )}
           </div>
 
           {/* User Card */}
@@ -311,171 +315,42 @@ useEffect(() => {
             </CardContent>
           </Card>
 
-          {/* Upload Cards */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Resume */}
-            <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
-                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <FileText className="h-5 w-5" />
+          {/* Only show upload section if resume is NOT uploaded */}
+          {!hasResume ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Resume */}
+              <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <h2 className="text-lg font-semibold">Upload Resume (PDF) *</h2>
                   </div>
-                  <h2 className="text-lg font-semibold">Upload Resume (PDF) *</h2>
-                </div>
-                {hasResume && (
-                  <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                    <p className="text-green-700 dark:text-green-300 font-medium text-sm">✓ Resume uploaded and locked</p>
-                  </div>
-                )}
-                <label
-                  htmlFor="resume"
-                  className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-40 cursor-pointer transition-all duration-300 ${
-                    hasResume 
-                      ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-600" 
-                      : "hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 border-gray-300 dark:border-gray-600"
-                  }`}
-                >
-              <Input
-                id="resume"
-                type="file"
-                accept="application/pdf"
-                className="hidden"
-                ref={resumeInputRef}
-                onChange={onResumeChange}
-                disabled={hasResume}
-              />
-              {resumeFile ? (
-                <p className="text-sm">{resumeFile.name}</p>
-              ) : (
-                <p className={`text-sm ${hasResume ? "text-muted-foreground" : "text-muted-foreground"}`}>
-                  {hasResume
-                    ? "Resume uploaded"
-                    : localStorage.getItem("resume_file_name")
-                    ? `Last selected: ${localStorage.getItem("resume_file_name")}`
-                    : "Click to upload PDF"}
-                </p>
-              )}
-            </label>
-          </CardContent>
-        </Card>
-
-            {/* Cover Letter */}
-            <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3 text-purple-600 dark:text-purple-400">
-                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                    <Upload className="h-5 w-5" />
-                  </div>
-                  <h2 className="text-lg font-semibold">Upload Cover Letter (PDF)</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Optional: Enhance your applications with a personalized cover letter.
-                </p>
-
-                <label
-                  htmlFor="cover-letter"
-                  className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-40 cursor-pointer transition-all duration-300 ${
-                    !hasResume || hasCoverLetter 
-                      ? "opacity-60 cursor-not-allowed border-gray-300 dark:border-gray-600" 
-                      : "hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 border-gray-300 dark:border-gray-600"
-                  }`}
-                >
-              <Input
-                id="cover-letter"
-                type="file"
-                accept="application/pdf"
-                className="hidden"
-                ref={coverLetterInputRef}
-                onChange={onCoverLetterChange}
-                disabled={!hasResume || hasCoverLetter}
-              />
-              {coverLetterFile ? (
-                <p className="text-sm">{coverLetterFile.name}</p>
-              ) : (
-                <p className={`text-sm ${hasCoverLetter ? "text-muted-foreground" : "text-muted-foreground"}`}>
-                  {!hasResume
-                    ? "Upload resume first to unlock"
-                    : hasCoverLetter
-                    ? "Cover letter uploaded"
-                    : localStorage.getItem("cover_letter_file_name")
-                    ? `Last selected: ${localStorage.getItem("cover_letter_file_name")}`
-                    : "Click to upload PDF (optional)"}
-                </p>
-              )}
-            </label>
-
-            <Input
-              id="cover-letter"
-              type="file"
-              accept="application/pdf"
-              className="hidden"
-              ref={coverLetterInputRef}
-              onChange={onCoverLetterChange}
-              disabled={!hasResume || hasCoverLetter}
-            />
-
-            {hasResume && !hasCoverLetter && coverLetterFile && (
-              <Button
-                size="sm"
-                className="w-full mt-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={handleCoverLetterUpload}
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Uploading...
-                  </div>
-                ) : (
-                  "Upload Cover Letter"
-                )}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-        </div>
-
-        {/* Error message */}
-        {error && (
-          <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
-          </div>
-        )}
-
-        {/* Free credit badge */}
-        {!isPremium && freeRemain > 0 && hasResume && (
-          <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-            <p className="text-blue-700 dark:text-blue-300 font-medium">
-              {freeRemain} / 5 free credits remaining
-            </p>
-          </div>
-        )}
-
-        {/* Paywall modal */}
-        <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
-
-        {/* CTA buttons */}
-        {!hasResume ? (
-            <Button
-              size="lg"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              disabled={uploading}
-              onClick={() => resumeInputRef.current?.click()}
-            >
-              {uploading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Uploading...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  {resumeFile ? 'Upload Selected Resume' : 'Select & Upload Resume'}
-                </div>
-              )}
-            </Button>
-          ) : (
-            <Button 
+                  <label
+                    htmlFor="resume"
+                    className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-40 cursor-pointer transition-all duration-300 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 border-gray-300 dark:border-gray-600`}
+                  >
+                    <Input
+                      id="resume"
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      ref={resumeInputRef}
+                      onChange={onResumeChange}
+                      disabled={hasResume}
+                    />
+                    {resumeFile ? (
+                      <p className="text-sm">{resumeFile.name}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Click to upload PDF
+                      </p>
+                    )}
+                  </label>
+                  {/* Show Continue button after resume is uploaded */}
+                  {hasResume && (
+                    <Button 
               size="lg" 
               className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300" 
               onClick={handleContinue}
@@ -485,12 +360,84 @@ useEffect(() => {
                 Continue to Job Kit
               </div>
             </Button>
-        )}
+                  )}
+                </CardContent>
+              </Card>
 
-        {/* Job Scan List */}
-        <JobScanList reports={userData.reports} />
-      </div>
-    </main>
+              {/* Cover Letter */}
+              <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-3 text-purple-600 dark:text-purple-400">
+                    <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                      <Upload className="h-5 w-5" />
+                    </div>
+                    <h2 className="text-lg font-semibold">Upload Cover Letter (PDF)</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Optional: Enhance your applications with a personalized cover letter.
+                  </p>
+                  <label
+                    htmlFor="cover-letter"
+                    className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-40 cursor-pointer transition-all duration-300 hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 border-gray-300 dark:border-gray-600`}
+                  >
+                    <Input
+                      id="cover-letter"
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      ref={coverLetterInputRef}
+                      onChange={onCoverLetterChange}
+                      disabled={!resumeFile}
+                    />
+                    {coverLetterFile ? (
+                      <p className="text-sm">{coverLetterFile.name}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {resumeFile
+                          ? "Click to upload PDF (optional)"
+                          : "Upload resume first to unlock"}
+                      </p>
+                    )}
+                  </label>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div>
+                          <Button
+              size="lg"
+              className="w-full mt-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={handleContinue}
+            >
+              <div className="flex items-center gap-2 justify-center w-full">
+                <Briefcase className="h-5 w-5" />
+                Continue to Job Scan
+              </div>
+            </Button>
+              <JobScanList reports={userData.reports} />
+            </div>
+          )}
+
+          {/* Error message */}
+          {error && (
+            <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+            </div>
+          )}
+
+          {/* Free credit badge */}
+          {!isPremium && freeRemain > 0 && hasResume && (
+            <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+              <p className="text-blue-700 dark:text-blue-300 font-medium">
+                {freeRemain} / 5 free credits remaining
+              </p>
+            </div>
+          )}
+
+          {/* Paywall modal */}
+          <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
+        </div>
+      </main>
     </>
   )
 }

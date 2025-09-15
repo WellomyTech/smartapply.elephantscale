@@ -42,7 +42,7 @@ export default function DashboardButton({ className = '' }: { className?: string
       onClick={handleDashboardClick}
     >
       <Home className="w-4 h-4" />
-      Dashboard
+      
     </Button>
   )
 }

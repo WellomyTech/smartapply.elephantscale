@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -21,6 +21,34 @@ export default function QAPage() {
   const [reportId, setReportId] = useState<string | null>(null);
   const [raw, setRaw] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+
+  // --- NEW: header height state
+  const [headerH, setHeaderH] = useState<number>(64); // sensible default (64px)
+
+  useEffect(() => {
+    // We expect your global header to have id="site-header".
+    // If not, set that id on your SiteHeader component.
+    const header = document.getElementById('site-header') || document.querySelector('header') as HTMLElement | null;
+
+    const update = () => {
+      if (header?.offsetHeight) setHeaderH(header.offsetHeight);
+    };
+
+    update();
+
+    // Keep in sync if the header size changes (responsive)
+    const ro = header ? new ResizeObserver(update) : null;
+    if (header && ro) ro.observe(header);
+
+    // Also update on window resize just in case
+    const onResize = () => update();
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      ro?.disconnect();
+    };
+  }, []);
 
   const jobTitle = typeof window !== 'undefined' ? localStorage.getItem('job_title') || '' : '';
   const companyName = typeof window !== 'undefined' ? localStorage.getItem('company_name') || '' : '';
@@ -96,44 +124,32 @@ export default function QAPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
-      {/* <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Interview Q&amp;A</h1>
-          <p className="text-sm text-muted-foreground">Build. Prepare. Perform. Get Hired.</p>
-        </div>
-        <div className="flex gap-2">
-          <DashboardButton />
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> Logout
-          </Button>
-        </div>
-      </div> */}
+    <main
+      // 👇 This ensures the content starts *below* the header, whatever its size.
+      style={{ paddingTop: `${headerH}px` }}
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8"
+    >
+      <section className="max-w-screen-2xl mx-auto px-6 sm:px-6 lg:px-8 space-y-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6">
+          <div className="min-w-0">
+            <h2 className="text-xl font-semibold break-words">{jobTitle || ''}</h2>
+            <p className="text-muted-foreground break-words">
+              {companyName ? `@ ${companyName}` : ''}
+            </p>
+          </div>
 
-      <section className="max-w-screen-2x2 mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6">
-        {/* Left: title + company */}
-        <div className="min-w-0">
-          <h2 className="text-xl font-semibold break-words">{jobTitle || ''}</h2>
-          <p className="text-muted-foreground break-words">
-            {companyName ? `@ ${companyName}` : ''}
-          </p>
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+            <Button variant="outline" onClick={handleRegenerate} className="text-sm w-full sm:w-auto">
+              Regenerate
+            </Button>
+            <Button onClick={handleCopyAll} className="text-sm w-full sm:w-auto">
+              Copy All
+            </Button>
+            <Button onClick={handleDownload} className="text-sm w-full sm:w-auto">
+              Download .md
+            </Button>
+          </div>
         </div>
-
-        {/* Right: actions */}
-        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-          <Button variant="outline" onClick={handleRegenerate} className="text-sm w-full sm:w-auto">
-            Regenerate
-          </Button>
-          <Button onClick={handleCopyAll} className="text-sm w-full sm:w-auto">
-            Copy All
-          </Button>
-          <Button onClick={handleDownload} className="text-sm w-full sm:w-auto">
-            Download .md
-          </Button>
-        </div>
-      </div>
-
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-6">
@@ -162,6 +178,8 @@ export default function QAPage() {
     </main>
   );
 }
+
+/* ... QACard, parseQAText, toMarkdown ... */
 
 function QACard({ index, q, a }: { index: number; q: string; a: string }) {
   const copyOne = async () => {
