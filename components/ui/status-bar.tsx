@@ -55,12 +55,12 @@ const statusConfig = {
   },
 }
 
-export function StatusBar({ 
-  message, 
-  type, 
-  visible, 
-  onClose, 
-  autoHide = true, 
+export function StatusBar({
+  message,
+  type,
+  visible,
+  onClose,
+  autoHide = true,
   duration = 5000,
   showProgress = false,
   progressValue = 0
@@ -71,22 +71,14 @@ export function StatusBar({
   const config = statusConfig[type]
   const Icon = config.icon
 
-  useEffect(() => {
-    setIsVisible(visible)
-  }, [visible])
-
-  useEffect(() => {
-    setAnimatedMessage(message)
-  }, [message])
+  useEffect(() => { setIsVisible(visible) }, [visible])
+  useEffect(() => { setAnimatedMessage(message) }, [message])
 
   // Animated dots for loading states
   useEffect(() => {
     if (type === "loading" && visible) {
       const interval = setInterval(() => {
-        setDots(prev => {
-          if (prev === "...") return ""
-          return prev + "."
-        })
+        setDots(prev => (prev === "..." ? "" : prev + "."))
       }, 500)
       return () => clearInterval(interval)
     } else {
@@ -114,7 +106,8 @@ export function StatusBar({
           config.bgColor,
           config.borderColor,
           "animate-in slide-in-from-top-2 fade-in-0",
-          type === "loading" && "animate-pulse"
+          // REMOVED animate-pulse on loading to prevent blinking
+          // type === "loading" && "animate-pulse"
         )}
       >
         {/* Main content */}
@@ -124,63 +117,58 @@ export function StatusBar({
               className={cn(
                 "h-5 w-5 flex-shrink-0",
                 config.iconColor,
+                // Keep only the spinner animation
                 type === "loading" && "animate-spin"
               )}
             />
-            {type === "loading" && (
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-current animate-spin opacity-30"></div>
-            )}
           </div>
-          <p className={cn("text-sm font-medium flex-1", config.textColor)}>
-            {animatedMessage}{type === "loading" && dots}
+          <p
+            className={cn("text-sm font-medium flex-1", config.textColor)}
+            aria-live="polite"
+          >
+            {animatedMessage}
+            {type === "loading" && dots}
           </p>
           {onClose && type !== "loading" && (
             <button
-              onClick={() => {
-                setIsVisible(false)
-                onClose()
-              }}
-              className={cn(
-                "ml-2 hover:opacity-70 transition-opacity text-lg leading-none",
-                config.textColor
-              )}
+              onClick={() => { setIsVisible(false); onClose() }}
+              className={cn("ml-2 hover:opacity-70 transition-opacity text-lg leading-none", config.textColor)}
+              aria-label="Close status"
             >
               ×
             </button>
           )}
         </div>
 
-        {/* Progress bar for loading states */}
+        {/* Progress bar */}
         {(type === "loading" || showProgress) && (
           <div className="w-full bg-white/20 dark:bg-black/20 rounded-full h-1.5 overflow-hidden">
-            <div 
+            <div
               className={cn(
                 "h-full rounded-full transition-all duration-300 ease-out",
-                type === "loading" 
-                  ? "bg-gradient-to-r from-blue-400 to-blue-600 animate-pulse" 
+                // Make the bar steady; no pulse
+                type === "loading"
+                  ? "bg-blue-600/60" // steady indeterminate-looking bar
                   : "bg-gradient-to-r from-emerald-400 to-emerald-600"
               )}
-              style={{ 
-                width: type === "loading" 
-                  ? "100%" 
-                  : `${Math.min(100, Math.max(0, progressValue))}%` 
+              style={{
+                width: type === "loading"
+                  ? "100%"
+                  : `${Math.min(100, Math.max(0, progressValue))}%`
               }}
-            >
-              {type === "loading" && (
-                <div className="h-full w-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-              )}
-            </div>
+            />
           </div>
         )}
 
-        {/* Animated background for loading */}
-        {type === "loading" && (
+        {/* OPTIONAL animated background — comment out to remove any residual flicker */}
+        {/* {type === "loading" && (
           <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/5 via-indigo-500/10 to-blue-500/5 animate-gradient-x"></div>
-        )}
+        )} */}
       </div>
     </div>
   )
 }
+
 
 // Hook for managing status bar state
 export function useStatusBar() {

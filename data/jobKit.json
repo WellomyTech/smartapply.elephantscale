@@ -1,0 +1,33 @@
+{
+  "skills_match": [
+    { "skill": "Python software development", "in_job": true, "in_resume": true },
+    { "skill": "Lead role", "in_job": true, "in_resume": false },
+    { "skill": "Strong written/verbal communication and presentation skills", "in_job": true, "in_resume": true },
+    { "skill": "OOP", "in_job": true, "in_resume": false },
+    { "skill": "Unreal Engine", "in_job": true, "in_resume": false },
+    { "skill": "Understanding of stage technologies", "in_job": true, "in_resume": false },
+    { "skill": "Experience developing tools for VFX, animation, or real-time production environments", "in_job": true, "in_resume": false },
+    { "skill": "Understanding of volume capture workflows", "in_job": true, "in_resume": false }
+  ],
+  "gaps": [
+    "Lead role",
+    "OOP",
+    "Unreal Engine",
+    "Understanding of stage technologies",
+    "Experience developing tools for VFX, animation, or real-time production environments",
+    "Understanding of volume capture workflows"
+  ],
+  "bonus_points": [
+    "Experience with AI integration and machine learning applications.",
+    "Experience with AWS cloud infrastructure.",
+    "Hands-on experience in backend development."
+  ],
+  "recommendations": [
+    "Consider gaining experience in a leadership role to meet the qualifications for being a lead software engineer.",
+    "Expand knowledge in object-oriented programming (OOP) as it's a key requirement for designing APIs.",
+    "Gain experience or knowledge in Unreal Engine as it's a key requirement for the role.",
+    "Gain understanding of stage technologies including OLAT, LED walls, motion capture, and camera tracking.",
+    "Consider gaining experience in developing tools for VFX, animation, or real-time production environments."
+  ],
+  "google_doc_link": "https://docs.google.com/document/d/1APZQhDBO1V4FUDt1W-Z89GfqlE4KQQE5jZcIZ0JQ-aw/edit"
+}
