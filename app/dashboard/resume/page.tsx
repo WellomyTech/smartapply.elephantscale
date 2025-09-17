@@ -2,7 +2,7 @@
 
 import React, { ChangeEvent, useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { LogOut, Upload, Sparkles, FileText, Briefcase } from "lucide-react"
+import { LogOut, Upload, Sparkles, FileText, Briefcase, Target, Zap, CheckCircle, ArrowRight } from "lucide-react"
 
 import { useAuth } from "@/components/AuthProvider"
 import { useResume } from "@/components/ResumeProvider"
@@ -404,17 +404,122 @@ useEffect(() => {
             </div>
           ) : (
             <div>
-                          <Button
-              size="lg"
-              className="w-full mt-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={handleContinue}
-            >
-              <div className="flex items-center gap-2 justify-center w-full">
-                <Briefcase className="h-5 w-5" />
-                Run a New Job Match
-              </div>
-            </Button>
-              <JobScanList reports={userData.reports} />
+              <Button
+                size="lg"
+                className="w-full mt-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={handleContinue}
+              >
+                <div className="flex items-center gap-2 justify-center w-full">
+                  <Briefcase className="h-5 w-5" />
+                  Run a New Job Match
+                </div>
+              </Button>
+
+              {/* Show onboarding UI if no reports exist */}
+              {(!userData.reports || userData.reports.length === 0) ? (
+                <div className="mt-8 space-y-6">
+                  {/* Welcome message for first-time users */}
+                  <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+                    <CardContent className="p-6 text-center">
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
+                          <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                        </div>
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                        Great! Your Resume is Ready
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">
+                        You've successfully uploaded your resume. Now let's find the perfect job matches for you!
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  {/* How it works section */}
+                  <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl">
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-blue-600" />
+                        How SmartApply Works
+                      </h3>
+                      
+                      <div className="grid gap-4 md:grid-cols-3">
+                        {/* Step 1 */}
+                        <div className="flex flex-col items-center text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                          <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-3">
+                            <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">1. Find Jobs</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Paste job descriptions from LinkedIn, Indeed, or any job board
+                          </p>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="flex flex-col items-center text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                          <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3">
+                            <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">2. AI Analysis</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Our AI analyzes the job requirements against your resume
+                          </p>
+                        </div>
+
+                        {/* Step 3 */}
+                        <div className="flex flex-col items-center text-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                          <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30 mb-3">
+                            <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
+                          </div>
+                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">3. Get Results</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Receive tailored resume and cover letter for each job
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Call to action */}
+                  <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                    <CardContent className="p-6 text-center">
+                      <h3 className="text-xl font-semibold mb-2">Ready to Get Started?</h3>
+                      <p className="mb-4 opacity-90">
+                        Click "Run a New Job Match" above to analyze your first job opportunity
+                      </p>
+                      <div className="flex items-center justify-center gap-2 text-sm opacity-75">
+                        <span>It only takes 30 seconds</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Tips section */}
+                  <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200 mb-4">
+                        💡 Pro Tips for Best Results
+                      </h3>
+                      <ul className="space-y-2 text-sm text-amber-700 dark:text-amber-300">
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-500 mt-1">•</span>
+                          Copy the complete job description including requirements and responsibilities
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-500 mt-1">•</span>
+                          Include company information when available for better personalization
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-500 mt-1">•</span>
+                          Try multiple job postings to see how your resume adapts to different roles
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <JobScanList reports={userData.reports} />
+              )}
             </div>
           )}
 
