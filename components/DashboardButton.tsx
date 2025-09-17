@@ -26,12 +26,12 @@ export default function DashboardButton({ className = '' }: { className?: string
     ]
     appKeys.forEach((key) => localStorage.removeItem(key))
 
-    if (pathname === '/home') {
+    if (pathname === '/dashboard') {
       // ✅ Already on dashboard → force full reload
       window.location.reload()
     } else {
       // ✅ Navigate to dashboard with full reload
-      window.location.href = '/home'
+      window.location.href = '/dashboard'
     }
   }
 

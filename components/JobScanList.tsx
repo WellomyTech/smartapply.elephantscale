@@ -10,11 +10,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { FileText, Loader2 } from 'lucide-react'
+import { FileText, Loader2, Pencil, Download } from 'lucide-react'
 import { StatusBar, useStatusBar } from "@/components/ui/status-bar"
 
 // at the top
 import { formatLocalFromUTC, timeAgoFromUTC } from '@/lib/dates'
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 
 
 interface Report {
@@ -24,6 +25,7 @@ interface Report {
   created_at?: string
   applied?: boolean        // <-- Add this
   r_interview?: boolean    // <-- Add this
+  has_updated_resume?: number | boolean // <-- Add this
 }
 
 interface JobScanListProps {
@@ -185,8 +187,29 @@ export default function JobScanList({ reports }: JobScanListProps) {
 
   // Helper to format date/time
   function formatDateTime(dateString?: string) {
-  return formatLocalFromUTC(dateString)
-}
+    return formatLocalFromUTC(dateString)
+  }
+
+  // New: Download handler (same-page download)
+  const handleDownload = async (reportId: number) => {
+    try {
+      showStatus('Preparing download…', 'info')
+      const res = await fetch(`${API_URL}download-resume-docx?report_id=${encodeURIComponent(reportId)}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `resume_${reportId}.docx`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      showStatus('Download started', 'success')
+    } catch (e) {
+      showStatus('Failed to download resume', 'error')
+    }
+  }
 
   // Sort reports by created_at descending (latest first)
   const sortedReports = [...reports].sort((a, b) => {
@@ -195,174 +218,182 @@ export default function JobScanList({ reports }: JobScanListProps) {
   })
 
   return (
-    <div className="mt-8 space-y-3">
-      <StatusBar
-        message={status.message}
-        type={status.type}
-        visible={status.visible}
-        onClose={hideStatus}
-      />
-      <h2 className="text-xl font-semibold text-foreground mb-2">Your Applications</h2>
+    <TooltipProvider>
+      <div className="mt-8 space-y-3">
+        <StatusBar
+          message={status.message}
+          type={status.type}
+          visible={status.visible}
+          onClose={hideStatus}
+        />
+        <h2 className="text-xl font-semibold text-foreground mb-2">Your Applications</h2>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        {/* Use sortedReports instead of reports */}
-        {sortedReports.map((report) => (
-          <div
-            key={report.id}
-            className="group w-full"
-          >
-            <div className="h-56 bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between transition-all duration-300 border-2 border-blue-100 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md p-6">
-              {/* Top: Job title + company */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
-                  <span className="text-lg font-semibold text-blue-700 dark:text-blue-300 break-words">
-                    {report.job_title || 'Untitled role'}
-                  </span>
-                </div>
-                <div className="text-sm text-muted-foreground break-words">
-                  {report.job_company || '—'}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {report.created_at
-                    ? <>Scanned: {formatLocalFromUTC(report.created_at)} <span className="opacity-70">({timeAgoFromUTC(report.created_at)})</span></>
-                    : ''}
+        <div className="grid gap-8 md:grid-cols-2">
+          {sortedReports.map((report) => {
+            const canDownload = report.has_updated_resume === 1 || report.has_updated_resume === true
+            return (
+              <div key={report.id} className="group w-full">
+                <div className="h-56 bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between transition-all duration-300 border-2 border-blue-100 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md p-6">
+                  {/* Top: Job title + company */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
+                      <span className="text-lg font-semibold text-blue-700 dark:text-blue-300 break-words">
+                        {report.job_title || 'Untitled role'}
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground break-words">
+                      {report.job_company || '—'}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {report.created_at
+                        ? <>Scanned: {formatLocalFromUTC(report.created_at)} <span className="opacity-70">({timeAgoFromUTC(report.created_at)})</span></>
+                        : ''}
+                    </div>
+                  </div>
+                  {/* Middle: Status */}
+                  <div className="flex items-center gap-4 mt-2">
+                    {/* Applied Button/Label */}
+                    {appliedMap[report.id] ? (
+                      <span
+                        className="text-green-600 font-medium text-xs cursor-pointer transition-colors"
+                        style={{ position: 'relative' }}
+                        tabIndex={0}
+                        onClick={() => handleUnmarkAsApplied(report.id)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleUnmarkAsApplied(report.id) }}
+                        onMouseEnter={e => e.currentTarget.textContent = 'Mark as Not Applied'}
+                        onMouseLeave={e => e.currentTarget.textContent = 'Applied'}
+                        aria-label="Mark as not applied"
+                      >
+                        Applied
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs px-3 py-1"
+                        onClick={() => handleMarkAsApplied(report.id)}
+                      >
+                        Mark as Applied
+                      </Button>
+                    )}
+                    {/* Interview Checkbox */}
+                    <label className="flex items-center gap-1 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!interviewMap[report.id]}
+                        onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
+                      />
+                      Interview Received
+                    </label>
+                  </div>
+                  {/* Bottom: Actions */}
+                  <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end w-full sm:w-auto mt-4">
+                    {canDownload ? (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label="Download"
+                        onClick={() => handleDownload(report.id)}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              aria-label="Download"
+                              disabled
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="end" className="text-xs">
+                          Please generate resume first
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="Edit resume info"
+                      onClick={() => {
+                        const userEmail =
+                          localStorage.getItem('user_email') || localStorage.getItem('userEmail')
+                        if (!userEmail) {
+                          alert('User email not found!')
+                          return
+                        }
+                        router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-              {/* Middle: Status */}
-              <div className="flex items-center gap-4 mt-2">
-                {/* Applied Button/Label */}
-                {appliedMap[report.id] ? (
-                  <span
-                    className="text-green-600 font-medium text-xs cursor-pointer transition-colors"
-                    style={{ position: 'relative' }}
-                    tabIndex={0}
-                    onClick={() => handleUnmarkAsApplied(report.id)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleUnmarkAsApplied(report.id) }}
-                    onMouseEnter={e => e.currentTarget.textContent = 'Mark as Not Applied'}
-                    onMouseLeave={e => e.currentTarget.textContent = 'Applied'}
-                    aria-label="Mark as not applied"
-                  >
-                    Applied
-                  </span>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs px-3 py-1"
-                    onClick={() => handleMarkAsApplied(report.id)}
-                  >
-                    Mark as Applied
-                  </Button>
-                )}
-                {/* Interview Checkbox */}
-                <label className="flex items-center gap-1 text-xs cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={!!interviewMap[report.id]}
-                    onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
-                  />
-                  Interview Received
-                </label>
+            )
+          })}
+        </div>
+
+        {/* Dialog unchanged below */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Resume Info</DialogTitle>
+              <DialogDescription>Details from your previous scan.</DialogDescription>
+            </DialogHeader>
+            {loading ? (
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
               </div>
-              {/* Bottom: Actions */}
-              <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end w-full sm:w-auto mt-4">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => {
-                    const userEmail =
-                      localStorage.getItem('user_email') || localStorage.getItem('userEmail')
-                    if (!userEmail) {
-                      alert('User email not found!')
-                      return
-                    }
-                    router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`)
-                  }}
-                >
-                  Resume Info
-                </Button>
-                {/* Uncomment below if you want Q&A and Interview buttons */}
-                {/* <Button
-                  variant="secondary"
-                  className="w-full sm:w-auto"
-                  onClick={() => handleViewQA(report.id, report.job_title, report.job_company)}
-                >
-                  Interview Q&A
-                </Button>
-                <Button
-                  className="w-full sm:w-auto"
-                  onClick={() => handleInterview(report.id, report.job_title, report.job_company)}
-                  disabled={generatingId === report.id}
-                >
-                  {generatingId === report.id ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating…
-                    </span>
-                  ) : (
-                    'Mock Interview'
-                  )}
-                </Button> */}
+            ) : selectedReport ? (
+              <div className="space-y-3">
+                <p><strong>Job Title:</strong> {selectedReport.job_title}</p>
+                <p><strong>Company:</strong> {selectedReport.job_company}</p>
+                <p className="text-sm"><strong>Description:</strong></p>
+                <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-sm">
+                  {selectedReport.job_description}
+                </pre>
+                <div className="grid gap-3">
+                  <div>
+                    <p className="font-medium text-sm">Skills Match</p>
+                    <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
+                      {JSON.stringify(selectedReport.skills_match, null, 2)}
+                    </pre>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Gaps</p>
+                    <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
+                      {JSON.stringify(selectedReport.gaps, null, 2)}
+                    </pre>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Bonus Points</p>
+                    <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
+                      {JSON.stringify(selectedReport.bonus_points, null, 2)}
+                    </pre>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Recommendations</p>
+                    <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
+                      {JSON.stringify(selectedReport.recommendations, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ) : null}
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Dialog unchanged below */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Resume Info</DialogTitle>
-            <DialogDescription>Details from your previous scan.</DialogDescription>
-          </DialogHeader>
-          {loading ? (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
-            </div>
-          ) : selectedReport ? (
-            <div className="space-y-3">
-              <p><strong>Job Title:</strong> {selectedReport.job_title}</p>
-              <p><strong>Company:</strong> {selectedReport.job_company}</p>
-              <p className="text-sm"><strong>Description:</strong></p>
-              <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-sm">
-                {selectedReport.job_description}
-              </pre>
-              <div className="grid gap-3">
-                <div>
-                  <p className="font-medium text-sm">Skills Match</p>
-                  <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
-                    {JSON.stringify(selectedReport.skills_match, null, 2)}
-                  </pre>
-                </div>
-                <div>
-                  <p className="font-medium text-sm">Gaps</p>
-                  <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
-                    {JSON.stringify(selectedReport.gaps, null, 2)}
-                  </pre>
-                </div>
-                <div>
-                  <p className="font-medium text-sm">Bonus Points</p>
-                  <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
-                    {JSON.stringify(selectedReport.bonus_points, null, 2)}
-                  </pre>
-                </div>
-                <div>
-                  <p className="font-medium text-sm">Recommendations</p>
-                  <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
-                    {JSON.stringify(selectedReport.recommendations, null, 2)}
-                  </pre>
-                </div>
-              </div>
-              <div className="flex justify-end pt-2">
-                <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
-              </div>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
-    </div>
+    </TooltipProvider>
   )
 
 }

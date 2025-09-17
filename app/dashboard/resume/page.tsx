@@ -77,27 +77,27 @@ export default function Dashboard() {
   }, [user?.email])
 
   /** ---- RUN-ONCE GUARD for the dashboard fetch ---- */
-const fetchedRef = useRef(false);
+  const fetchedRef = useRef(false);
 
-useEffect(() => {
-  if (authLoading || !user?.email) return;
-  if (fetchedRef.current) return;
-  fetchedRef.current = true;
+  useEffect(() => {
+    if (authLoading || !user?.email) return;
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
 
-  const url = `${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`;
+    const url = `${API_URL}user-dashboard?user_email=${encodeURIComponent(user.email)}`;
 
-  fetchJsonOnce(url)
-    .then((data) => {
-      setHasResume(data.has_resume === 1);
-      setHasCoverLetter(data.has_cover_letter === 1);
-      setUserData(data);
-    })
-    .catch((error) => {
-      console.error("Failed to fetch dashboard:", error);
-      setHasResume(false);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [user?.email, authLoading]);  // (omit API_URL to avoid re-trigger)
+    fetchJsonOnce(url)
+      .then((data) => {
+        setHasResume(data.has_resume === 1);
+        setHasCoverLetter(data.has_cover_letter === 1);
+        setUserData(data);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch dashboard:", error);
+        setHasResume(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email, authLoading]);  // (omit API_URL to avoid re-trigger)
 
 
   const localSetFileName = (
@@ -115,7 +115,6 @@ useEffect(() => {
     setError("")
     localSetFileName("resume", f)
 
-    
     // Automatically upload the resume when selected
     if (f) {
       handleResumeUpload(e)
@@ -272,15 +271,15 @@ useEffect(() => {
         visible={status.visible}
         onClose={hideStatus}
       />
-      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <main className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Header with gradient */}
-          <div className="text-center space-y-4 mb-12">
+          <div className="text-center space-y-3 mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
               <Sparkles className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Smart Apply Dashboard</span>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Welcome to AI Resume Generation, {user.name.split(" ")[0]}!
             </h1>
             {!hasResume && (
@@ -290,46 +289,21 @@ useEffect(() => {
             )}
           </div>
 
-          {/* User Card */}
-          {/* <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl">
-            <CardContent className="flex items-center gap-4 p-6">
-              {user?.picture ? (
-                <img
-                  src={user.picture}
-                  alt={user.name}
-                  className="h-16 w-16 rounded-full object-cover ring-4 ring-blue-500/20"
-                />
-              ) : (
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-lg font-semibold text-white shadow-lg">
-                  {user?.name?.split(" ").map((n: string) => n[0]).join("")}
-                </div>
-              )}
-              <div className="flex-1">
-                <p className="text-xl font-semibold text-slate-900 dark:text-white">{user?.name}</p>
-                <p className="text-sm text-muted-foreground">{user?.email ?? "LinkedIn member"}</p>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium">Active</span>
-              </div>
-            </CardContent>
-          </Card> */}
-
           {/* Only show upload section if resume is NOT uploaded */}
           {!hasResume ? (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2">
               {/* Resume */}
-              <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
-                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                      <FileText className="h-5 w-5" />
+              <Card className="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl border-2 border-slate-200/50 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <CardContent className="p-6 space-y-5">
+                  <div className="flex items-center gap-3 text-blue-700 dark:text-blue-300">
+                    <div className="p-2 rounded-lg bg-blue-100/70 dark:bg-blue-900/30">
+                      <FileText className="h-6 w-6" />
                     </div>
-                    <h2 className="text-lg font-semibold">Upload Resume (PDF) *</h2>
+                    <h2 className="text-lg font-semibold tracking-tight">Upload Resume (PDF) *</h2>
                   </div>
                   <label
                     htmlFor="resume"
-                    className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-40 cursor-pointer transition-all duration-300 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 border-gray-300 dark:border-gray-600`}
+                    className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl h-40 cursor-pointer transition-all duration-300 border-slate-200 dark:border-slate-700 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20"
                   >
                     <Input
                       id="resume"
@@ -350,35 +324,35 @@ useEffect(() => {
                   </label>
                   {/* Show Continue button after resume is uploaded */}
                   {hasResume && (
-                    <Button 
-              size="lg" 
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300" 
-              onClick={handleContinue}
-            >
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                Continue to Job Kit
-              </div>
-            </Button>
+                    <Button
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                      onClick={handleContinue}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-5 w-5" />
+                        Continue to Job Kit
+                      </div>
+                    </Button>
                   )}
                 </CardContent>
               </Card>
 
               {/* Cover Letter */}
-              <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center gap-3 text-purple-600 dark:text-purple-400">
-                    <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                      <Upload className="h-5 w-5" />
+              <Card className="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl border-2 border-slate-200/50 dark:border-slate-700 hover:border-purple-400 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <CardContent className="p-6 space-y-5">
+                  <div className="flex items-center gap-3 text-purple-700 dark:text-purple-300">
+                    <div className="p-2 rounded-lg bg-purple-100/70 dark:bg-purple-900/30">
+                      <Upload className="h-6 w-6" />
                     </div>
-                    <h2 className="text-lg font-semibold">Upload Cover Letter (PDF)</h2>
+                    <h2 className="text-lg font-semibold tracking-tight">Upload Cover Letter (PDF)</h2>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Optional: Enhance your applications with a personalized cover letter.
                   </p>
                   <label
                     htmlFor="cover-letter"
-                    className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-40 cursor-pointer transition-all duration-300 hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 border-gray-300 dark:border-gray-600`}
+                    className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl h-40 cursor-pointer transition-all duration-300 border-slate-200 dark:border-slate-700 hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-900/20"
                   >
                     <Input
                       id="cover-letter"
@@ -406,7 +380,7 @@ useEffect(() => {
             <div>
               <Button
                 size="lg"
-                className="w-full mt-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full mt-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={handleContinue}
               >
                 <div className="flex items-center gap-2 justify-center w-full">
@@ -417,9 +391,9 @@ useEffect(() => {
 
               {/* Show onboarding UI if no reports exist */}
               {(!userData.reports || userData.reports.length === 0) ? (
-                <div className="mt-8 space-y-6">
+                <div className="mt-8 space-y-8">
                   {/* Welcome message for first-time users */}
-                  <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+                  <Card className="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl border-2 border-slate-200/50 dark:border-slate-700">
                     <CardContent className="p-6 text-center">
                       <div className="flex items-center justify-center mb-4">
                         <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
@@ -429,14 +403,14 @@ useEffect(() => {
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                         Great! Your Resume is Ready
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      <p className="text-gray-600 dark:text-gray-300 mb-2">
                         You've successfully uploaded your resume. Now let's find the perfect job matches for you!
                       </p>
                     </CardContent>
                   </Card>
 
                   {/* How it works section */}
-                  <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20 shadow-xl">
+                  <Card className="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl border-2 border-slate-200/50 dark:border-slate-700">
                     <CardContent className="p-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-blue-600" />
@@ -445,7 +419,7 @@ useEffect(() => {
                       
                       <div className="grid gap-4 md:grid-cols-3">
                         {/* Step 1 */}
-                        <div className="flex flex-col items-center text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                        <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
                           <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-3">
                             <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                           </div>
@@ -456,7 +430,7 @@ useEffect(() => {
                         </div>
 
                         {/* Step 2 */}
-                        <div className="flex flex-col items-center text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                        <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
                           <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3">
                             <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                           </div>
@@ -467,7 +441,7 @@ useEffect(() => {
                         </div>
 
                         {/* Step 3 */}
-                        <div className="flex flex-col items-center text-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                        <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                           <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30 mb-3">
                             <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
                           </div>
@@ -481,7 +455,7 @@ useEffect(() => {
                   </Card>
 
                   {/* Call to action */}
-                  <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                  <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl shadow-xl">
                     <CardContent className="p-6 text-center">
                       <h3 className="text-xl font-semibold mb-2">Ready to Get Started?</h3>
                       <p className="mb-4 opacity-90">
@@ -495,7 +469,7 @@ useEffect(() => {
                   </Card>
 
                   {/* Tips section */}
-                  <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                  <Card className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl shadow-xl border-2 border-amber-200 dark:border-amber-800">
                     <CardContent className="p-6">
                       <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200 mb-4">
                         💡 Pro Tips for Best Results
@@ -525,18 +499,16 @@ useEffect(() => {
 
           {/* Error message */}
           {error && (
-            <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <div className="text-center p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800">
               <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
             </div>
           )}
 
           {/* Free credit badge */}
           {!isPremium && freeRemain > 0 && hasResume && (
-            <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <div className="text-center p-3 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800">
               <p className="text-blue-700 dark:text-blue-300 font-medium">
-
                 No Jobs Scanned Yet? Start new Job Match now!
-                {/* {freeRemain} / 5 free credits remaining */}
               </p>
             </div>
           )}

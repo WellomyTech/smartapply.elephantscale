@@ -25,7 +25,7 @@ export default function SocialAuthRedirectPage() {
             body: JSON.stringify(user),
           })
 
-          router.replace('/home')
+          router.replace('/dashboard')
         } catch {
           router.replace('/?error=invalid_user_data')
         }

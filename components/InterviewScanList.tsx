@@ -136,7 +136,7 @@ export default function InterviewScanList({ reports }: InterviewScanListProps) {
                     'Technical Interview'
                   )}
                 </Button>
-                <Button
+                {/* <Button
                   className="w-full font-semibold bg-pink-500 hover:bg-pink-600 text-white"
                   onClick={() => handleGenerateInterview(report, 'behavioral')}
                   disabled={generatingId === report.id && generatingType === 'behavioral'}
@@ -149,7 +149,7 @@ export default function InterviewScanList({ reports }: InterviewScanListProps) {
                   ) : (
                     'Behavioral Interview'
                   )}
-                </Button>
+                </Button> */}
               </div>
             </CardContent>
           </Card>
