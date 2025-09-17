@@ -496,25 +496,76 @@ export default function InterviewVoiceDemo() {
       {/* IDLE – Ready screen */}
       {status === "idle" && (
         <section className="h-[100svh] w-full grid place-items-center px-6">
-          <div className="w-full max-w-xl bg-white/95 rounded-3xl shadow-2xl border border-gray-100 p-10 text-center">
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Ready to Begin?</h2>
-            <p className="text-lg text-gray-500 mb-8">
-              Start your professional, AI-powered interview session. Make sure your camera and microphone are ready!
-            </p>
-            <Button
-              onClick={handleStart}
-              disabled={!reportId}
-              size="lg"
-              className="text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-10 py-4 text-lg font-bold rounded-xl shadow-xl transition-all duration-200"
-            >
-              Start Interview
-            </Button>
-            {!reportId && (
-              <p className="text-base font-medium text-red-400 mt-6">
-                Please ensure you have a valid report ID to start the interview.
+          {reportId ? (
+            // User has a resume/report - show ready to interview UI
+            <div className="w-full max-w-xl bg-white/95 rounded-3xl shadow-2xl border border-gray-100 p-10 text-center">
+              <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Ready to Begin?</h2>
+              <p className="text-lg text-gray-500 mb-8">
+                Start your professional, AI-powered interview session. Make sure your camera and microphone are ready!
               </p>
-            )}
-          </div>
+              <Button
+                onClick={handleStart}
+                size="lg"
+                className="text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-10 py-4 text-lg font-bold rounded-xl shadow-xl transition-all duration-200"
+              >
+                Start Interview
+              </Button>
+            </div>
+          ) : (
+            // First-time user without resume - show onboarding UI
+            <div className="w-full max-w-2xl bg-white/95 rounded-3xl shadow-2xl border border-gray-100 p-12 text-center">
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Welcome to SmartApply!</h2>
+                <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+                  Get started with AI-powered interview practice tailored to your resume and target job.
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 mb-8 border border-blue-100">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">To begin your interview session:</h3>
+                <div className="space-y-4 text-left">
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">1</div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Upload your resume</p>
+                      <p className="text-gray-600">We'll analyze your skills and experience</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">2</div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Add job details</p>
+                      <p className="text-gray-600">Tell us about the position you're targeting</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">3</div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Start practicing</p>
+                      <p className="text-gray-600">Get personalized interview questions and feedback</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => window.location.href = '/job-kit'}
+                size="lg"
+                className="text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-12 py-4 text-lg font-bold rounded-xl shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                Get Started - Upload Resume
+              </Button>
+              
+              <p className="text-sm text-gray-500 mt-6">
+                Already uploaded your resume? The interview will be available once your profile is complete.
+              </p>
+            </div>
+          )}
         </section>
       )}
 
