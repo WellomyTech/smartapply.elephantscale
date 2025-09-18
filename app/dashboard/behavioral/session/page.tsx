@@ -49,7 +49,7 @@ const TOPIC_CONFIG: Record<
     },
   },
   teamwork: {
-    title: 'Teamwork',
+    title: 'Team Player',
     blurb: 'Showcase collaboration, conflict resolution, and empathy.',
     icon: Users,
     color: {

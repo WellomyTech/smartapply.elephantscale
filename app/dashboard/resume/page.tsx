@@ -2,7 +2,7 @@
 
 import React, { ChangeEvent, useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { LogOut, Upload, Sparkles, FileText, Briefcase, Target, Zap, CheckCircle, ArrowRight } from "lucide-react"
+import { LogOut, Upload, Sparkles, FileText, Briefcase, Target, Zap, CheckCircle, ArrowRight, Plus } from "lucide-react"
 
 import { useAuth } from "@/components/AuthProvider"
 import { useResume } from "@/components/ResumeProvider"
@@ -275,10 +275,7 @@ export default function Dashboard() {
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Header with gradient */}
           <div className="text-center space-y-3 mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
-              <Sparkles className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Smart Apply Dashboard</span>
-            </div>
+            
             <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Welcome to AI Resume Generation, {user.name.split(" ")[0]}!
             </h1>
@@ -378,17 +375,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div>
-              <Button
-                size="lg"
-                className="w-full mt-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={handleContinue}
-              >
-                <div className="flex items-center gap-2 justify-center w-full">
-                  <Briefcase className="h-5 w-5" />
-                  Run a New Job Match
-                </div>
-              </Button>
-
+              {/* Removed the old "Apply New Job" full-width button */}
               {/* Show onboarding UI if no reports exist */}
               {(!userData.reports || userData.reports.length === 0) ? (
                 <div className="mt-8 space-y-8">
@@ -416,39 +403,79 @@ export default function Dashboard() {
                         <Sparkles className="h-5 w-5 text-blue-600" />
                         How SmartApply Works
                       </h3>
-                      
-                      <div className="grid gap-4 md:grid-cols-3">
+
+                      {/* Horizontal layout: 4 steps in a row (responsive) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
                         {/* Step 1 */}
-                        <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                          <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-3">
-                            <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        <div className="relative p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 h-full">
+                          <div className="absolute -top-3 -left-3 h-7 w-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                            1
                           </div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">1. Find Jobs</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Paste job descriptions from LinkedIn, Indeed, or any job board
-                          </p>
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                              <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">Find Jobs</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Paste job descriptions from LinkedIn, Indeed, or any job board.
+                              </p>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Step 2 */}
-                        <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-                          <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3">
-                            <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        <div className="relative p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 h-full">
+                          <div className="absolute -top-3 -left-3 h-7 w-7 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                            2
                           </div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">2. AI Analysis</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Our AI analyzes the job requirements against your resume
-                          </p>
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                              <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">AI Analysis</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                We run an ATS-style scan to match requirements with your resume.
+                              </p>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Step 3 */}
-                        <div className="flex flex-col items-center text-center p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                          <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30 mb-3">
-                            <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        <div className="relative p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 h-full">
+                          <div className="absolute -top-3 -left-3 h-7 w-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                            3
                           </div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">3. Get Results</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Receive tailored resume and cover letter for each job
-                          </p>
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                              <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">Get Results</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Receive a tailored resume and cover letter for each job.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Step 4 */}
+                        <div className="relative p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 h-full">
+                          <div className="absolute -top-3 -left-3 h-7 w-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                            4
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                              <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">Practice Interview</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Prepare with Technical or Behavioral questions tailored to the role.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -459,7 +486,11 @@ export default function Dashboard() {
                     <CardContent className="p-6 text-center">
                       <h3 className="text-xl font-semibold mb-2">Ready to Get Started?</h3>
                       <p className="mb-4 opacity-90">
-                        Click "Run a New Job Match" above to analyze your first job opportunity
+                        Click the
+                        <span className="inline-flex items-center justify-center mx-1 h-6 w-6 rounded-full bg-white/90 text-green-700 shadow-sm align-middle">
+                          <Plus className="h-4 w-4" />
+                        </span>
+                        (bottom-right) to analyze your first job opportunity.
                       </p>
                       <div className="flex items-center justify-center gap-2 text-sm opacity-75">
                         <span>It only takes 30 seconds</span>
@@ -516,6 +547,18 @@ export default function Dashboard() {
           {/* Paywall modal */}
           <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
         </div>
+
+        {/* Floating + button (only when resume is uploaded) */}
+        {hasResume && (
+          <Button
+            size="icon"
+            aria-label="Start a new job scan"
+            className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full p-0 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-2xl"
+            onClick={handleContinue}
+          >
+            <Plus className="h-7 w-7" />
+          </Button>
+        )}
       </main>
     </>
   )

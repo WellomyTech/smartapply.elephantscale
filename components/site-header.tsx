@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
-import { LogOut, User } from "lucide-react"
+import { LogOut, Sparkles, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/components/AuthProvider"
 import DashboardButton from "@/components/DashboardButton"
@@ -107,6 +107,13 @@ export default function SiteHeader() {
               className="h-10 w-auto cursor-pointer"
             />
           </div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
+          <Sparkles className="h-4 w-4 text-blue-600" />
+          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            SmartApply
+          </span>
+        </div>
 
           {/* Right: Dashboard + Profile + Logout */}
           {!isHome && (

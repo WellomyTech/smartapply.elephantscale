@@ -29,7 +29,8 @@ const poppins = Poppins({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} ${poppins.variable}`}>
+      {/* Add suppressHydrationWarning to body to avoid extension-induced mismatches */}
+      <body suppressHydrationWarning className={`${inter.className} ${poppins.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
             <ResumeProvider>

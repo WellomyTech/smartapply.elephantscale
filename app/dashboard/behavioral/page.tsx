@@ -12,12 +12,12 @@ export default function BehavioralDashboardPage() {
             Behavioral Coach
           </span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-          Choose Your Focus
+        <h1 className="text-2xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+          Choose a Topic to Practice
         </h1>
-        <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+        {/* <p className="text-lg text-muted-foreground max-w-xl mx-auto">
           Practice behavioral interview topics with AI voice agent
-        </p>
+        </p> */}
       </div>
 
       {/* Cards */}
@@ -59,7 +59,7 @@ export default function BehavioralDashboardPage() {
               <Users className="h-10 w-10 text-indigo-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-indigo-700 dark:text-indigo-300 mb-1 tracking-tight">
-              Teamwork
+              Team Player
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
               Showcase collaboration, conflict resolution, and empathy.
