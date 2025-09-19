@@ -346,7 +346,7 @@ export default function JobInfoPage() {
     }, 800)
 
     try {
-      const response = await fetch(`${API_KEY}download-resume-docx?report_id=${reportId}`)
+      const response = await fetch(`${API_KEY}download-custom-resume-docx?report_id=${reportId}`)
       if (!response.ok) throw new Error('Failed to download resume DOCX')
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)

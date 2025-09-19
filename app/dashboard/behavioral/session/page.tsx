@@ -74,10 +74,6 @@ function SessionSkeleton() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12">
       <div className="text-center space-y-3 mb-10 animate-pulse">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
-          <Sparkles className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Behavioral Coach</span>
-        </div>
         <div className="h-10 w-64 bg-slate-200/60 dark:bg-slate-700/60 rounded mx-auto" />
         <div className="h-5 w-80 bg-slate-200/60 dark:bg-slate-700/60 rounded mx-auto" />
       </div>
@@ -97,10 +93,6 @@ function SessionContent() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12">
       <div className="text-center space-y-3 mb-10">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
-          <Sparkles className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Behavioral Coach</span>
-        </div>
         <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
           {cfg.title} Practice
         </h1>
