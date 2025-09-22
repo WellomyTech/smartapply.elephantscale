@@ -17,7 +17,10 @@ import {
   ArrowLeft,
   FileText,
   Eye,
-  X, // added
+  X,
+  PencilLine,
+  Save,
+  X as XIcon,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardButton from '@/components/DashboardButton'
@@ -46,6 +49,9 @@ type SkillsMatchItem = {
   [k: string]: any
 }
 
+// Normalize CR/CRLF to LF so <pre> renders lines correctly
+const normalizeNewlines = (s: string) => s.replace(/\r\n?/g, '\n')
+
 export default function JobInfoPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_BASE as string
   const router = useRouter()
@@ -57,6 +63,16 @@ export default function JobInfoPage() {
 
   const [resumeText, setResumeText] = useState<string | null>(null)
   const [coverLetterText, setCoverLetterText] = useState<string | null>(null)
+
+  // Normalize for display BEFORE any early returns to keep hook order stable
+  const resumeDisplay = useMemo(() => normalizeNewlines(resumeText ?? ''), [resumeText])
+  const coverDisplay = useMemo(() => normalizeNewlines(coverLetterText ?? ''), [coverLetterText])
+
+  // Editing state
+  const [editingResume, setEditingResume] = useState(false)
+  const [resumeDraft, setResumeDraft] = useState<string>('')
+  const [editingCover, setEditingCover] = useState(false)
+  const [coverDraft, setCoverDraft] = useState<string>('')
 
   const [jobData, setJobData] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
@@ -75,14 +91,14 @@ export default function JobInfoPage() {
 
   // Popup state
   const [showApplyConfirm, setShowApplyConfirm] = useState(false)
-  const [submittingApplied, setSubmittingApplied] = useState(false) // NEW
-  const [showInterviewChoice, setShowInterviewChoice] = useState(false) // NEW
+  const [submittingApplied, setSubmittingApplied] = useState(false)
+  const [showInterviewChoice, setShowInterviewChoice] = useState(false)
 
   // Hard reload to dashboard helper
   function goToDashboardHardReload() {
     const url = `/dashboard/resume?ts=${Date.now()}`
     if (typeof window !== 'undefined') {
-      window.location.assign(url) // full reload
+      window.location.assign(url)
     } else {
       router.push('/dashboard/resume')
     }
@@ -153,8 +169,8 @@ export default function JobInfoPage() {
   // Populate in-page doc text from API result
   useEffect(() => {
     if (!jobData) return
-    if (jobData.updated_resume) setResumeText(String(jobData.updated_resume))
-    if (jobData.cover_letter) setCoverLetterText(String(jobData.cover_letter))
+    if (jobData.updated_resume) setResumeText(normalizeNewlines(String(jobData.updated_resume)))
+    if (jobData.cover_letter) setCoverLetterText(normalizeNewlines(String(jobData.cover_letter)))
   }, [jobData?.updated_resume, jobData?.cover_letter, jobData])
 
   // initialize workedOn to gaps length
@@ -179,6 +195,11 @@ export default function JobInfoPage() {
 
   const fallbackResume = `Your resume will appear here.`
   const fallbackCover = `Your cover letter will appear here.`
+
+  // Use normalized display strings for <pre>
+  // (moved above; keep here commented to avoid duplicate hooks)
+  // const resumeDisplay = useMemo(() => normalizeNewlines(resumeText ?? ''), [resumeText])
+  // const coverDisplay = useMemo(() => normalizeNewlines(coverLetterText ?? ''), [coverLetterText])
 
   const handleLogout = () => {
     logout()
@@ -224,7 +245,8 @@ export default function JobInfoPage() {
       return
     }
 
-    const email = (typeof window !== 'undefined' ? localStorage.getItem('user_email') : '') || user.email || ''
+    const email =
+      (typeof window !== 'undefined' ? localStorage.getItem('user_email') : '') || (user as any).email || ''
     const rid = String(jobData.id || jobData.report_id || reportParam || '')
 
     const form = new FormData()
@@ -271,7 +293,7 @@ export default function JobInfoPage() {
         updated = true
       }
 
-      // 2) Fallback to re-fetch report (in case backend writes async)
+      // 2) Fallback to re-fetch report
       if (!updated && email && rid) {
         try {
           const refRes = await fetch(
@@ -291,7 +313,7 @@ export default function JobInfoPage() {
             }
           }
         } catch {
-          // ignore re-fetch errors, will hard refresh
+          // ignore re-fetch errors
         }
       }
 
@@ -301,15 +323,12 @@ export default function JobInfoPage() {
       if (updated) {
         showStatus('Resume and cover letter generated successfully!', 'success')
       } else {
-        // 3) Last resort: refresh the page so it reflects latest server state
         showStatus('Finalizing your documents...', 'loading')
         try {
-          // Soft refresh for Next.js (no-op for pure client state, safe to call)
           if (typeof (router as any).refresh === 'function') {
             ;(router as any).refresh()
           }
         } finally {
-          // Hard reload to guarantee freshness
           if (typeof window !== 'undefined') window.location.reload()
         }
       }
@@ -321,11 +340,30 @@ export default function JobInfoPage() {
     }
   }
 
+  // Save edited content locally (and in-memory)
+  function saveEdits(which: 'resume' | 'cover') {
+    if (which === 'resume') {
+      const next = normalizeNewlines((resumeDraft || '').trim())
+      setResumeText(next)
+      setJobData((p: any) => ({ ...(p || {}), updated_resume: next }))
+      localStorage.setItem('generated_resume', next)
+      setEditingResume(false)
+      showStatus('Resume updated locally.', 'success')
+      return
+    }
+    const next = normalizeNewlines((coverDraft || '').trim())
+    setCoverLetterText(next)
+    setJobData((p: any) => ({ ...(p || {}), cover_letter: next }))
+    localStorage.setItem('generated_cover_letter', next)
+    setEditingCover(false)
+    showStatus('Cover letter updated locally.', 'success')
+  }
+
   const downloadResumeDocx = async () => {
-    const API_KEY = process.env.NEXT_PUBLIC_API_BASE as string
+    const text = (resumeText || '').trim()
     const reportId = localStorage.getItem('report_id')
-    if (!reportId) {
-      showStatus('No report ID found', 'error')
+    if (!text && !reportId) {
+      showStatus('No resume content found', 'error')
       return
     }
 
@@ -346,7 +384,31 @@ export default function JobInfoPage() {
     }, 800)
 
     try {
-      const response = await fetch(`${API_KEY}download-resume-docx?report_id=${reportId}`)
+      // Try: POST resume text directly if backend supports it
+      if (text) {
+        const fd = new FormData()
+        fd.append('resume_text', text)
+        if (reportId) fd.append('report_id', reportId)
+        const tryPost = await fetch(`${API_URL}generate-resume-docx`, { method: 'POST', body: fd })
+        if (tryPost.ok) {
+          const blob = await tryPost.blob()
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `${jobData?.job_title || 'resume'}_edited.docx`
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+          a.remove()
+          clearInterval(ticker)
+          showStatus('Resume downloaded successfully!', 'success')
+          return
+        }
+      }
+
+      // Fallback: server-side by report id
+      if (!reportId) throw new Error('no_report_id')
+      const response = await fetch(`${API_URL}download-custom-resume-docx?report_id=${reportId}`)
       if (!response.ok) throw new Error('Failed to download resume DOCX')
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -368,9 +430,9 @@ export default function JobInfoPage() {
   }
 
   const downloadCoverLetterDocx = async () => {
-    const coverLetter = localStorage.getItem('generated_cover_letter')
+    const coverLetter = (coverLetterText || localStorage.getItem('generated_cover_letter') || '').trim()
     if (!coverLetter) {
-      showStatus('No cover letter found. Please generate one first.', 'warning')
+      showStatus('No cover letter found. Please generate or edit first.', 'warning')
       return
     }
     setDownloadingCover(true)
@@ -434,12 +496,6 @@ export default function JobInfoPage() {
         ''
     )
     const rid = Number(ridStr)
-    const email = String(
-      emailParam ||
-        user?.email ||
-        (typeof window !== 'undefined' ? localStorage.getItem('user_email') : '') ||
-        ''
-    )
 
     if (!rid) {
       showStatus('Missing report ID. Please refresh and try again.', 'error')
@@ -447,7 +503,6 @@ export default function JobInfoPage() {
     }
 
     if (applied) {
-      // YES: call API and navigate to dashboard only on 200 OK
       setSubmittingApplied(true)
       showStatus('Saving your application status...', 'loading')
       const ok = await postJobStatus(rid, true)
@@ -457,18 +512,20 @@ export default function JobInfoPage() {
         if (ridStr) localStorage.setItem(`applied:${ridStr}`, 'yes')
         setShowApplyConfirm(false)
         showStatus('Great! We’ll track this application.', 'success')
-        goToDashboardHardReload() // CHANGED: hard reload to dashboard
+        goToDashboardHardReload()
       } else {
         showStatus('Failed to update status. Please try again.', 'error')
       }
       return
     }
 
-    // NO: optional best-effort update (no navigation)
     const ok = await postJobStatus(rid, false)
     if (ridStr) localStorage.setItem(`applied:${ridStr}`, 'no')
     setShowApplyConfirm(false)
-    showStatus(ok ? 'Got it. You can update this later.' : 'Could not save status, but you can try again later.', ok ? 'warning' : 'error')
+    showStatus(
+      ok ? 'Got it. You can update this later.' : 'Could not save status, but you can try again later.',
+      ok ? 'warning' : 'error'
+    )
   }
 
   // Open job link and show confirmation popup
@@ -496,8 +553,6 @@ export default function JobInfoPage() {
       }
       return
     }
-
-    // behavioral
     router.push('/dashboard/behavioral')
   }
 
@@ -512,7 +567,6 @@ export default function JobInfoPage() {
         Apply to Job Now
       </Button>
 
-      {/* Ready for Interview button -> opens choice popup */}
       <Button
         className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
         onClick={() => setShowInterviewChoice(true)}
@@ -529,7 +583,6 @@ export default function JobInfoPage() {
         Back to Dashboard
       </Button>
 
-      {/* Did you apply? popup */}
       {showApplyConfirm && (
         <div className="fixed inset-0 z-50">
           <div
@@ -590,7 +643,6 @@ export default function JobInfoPage() {
         </div>
       )}
 
-      {/* Interview type choice popup */}
       {showInterviewChoice && (
         <div className="fixed inset-0 z-50">
           <div
@@ -685,19 +737,16 @@ export default function JobInfoPage() {
                           key={`${gapSkill}-${idx}`}
                           className="border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
                         >
-                          {/* Skill name */}
                           <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                             {gapSkill}
                           </td>
 
-                          {/* In Job: always green tick */}
                           <td className="px-6 py-4 text-center">
                             <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
                               <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                           </td>
 
-                          {/* In Resume: ✅ only if in_resume === "Yes" */}
                           <td className="px-6 py-4 text-center">
                             {in_resume ? (
                               <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
@@ -710,7 +759,6 @@ export default function JobInfoPage() {
                             )}
                           </td>
 
-                          {/* Have you worked on it? */}
                           <td className="px-6 py-4 text-center">
                             <div className="flex justify-center gap-4">
                               <label className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg border border-emerald-200 dark:border-emerald-700/50 cursor-pointer transition-colors">
@@ -808,22 +856,67 @@ export default function JobInfoPage() {
               {/* Resume Card */}
               <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-white" />
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                        <FileText className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-white">AI-Optimized Resume</h2>
+                        <p className="text-blue-100 text-sm">Tailored for your target role</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-white">AI-Optimized Resume</h2>
-                      <p className="text-blue-100 text-sm">Tailored for your target role</p>
-                    </div>
+                    {!editingResume ? (
+                      <Button
+                        variant="secondary"
+                        className="bg-white/20 hover:bg-white/30 text-white"
+                        onClick={() => {
+                          setResumeDraft(resumeDisplay || '')
+                          setEditingResume(true)
+                        }}
+                      >
+                        <PencilLine className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          onClick={() => saveEdits('resume')}
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          className="bg-white/20 hover:bg-white/30 text-white"
+                          onClick={() => {
+                            setEditingResume(false)
+                            setResumeDraft('')
+                          }}
+                        >
+                          <XIcon className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <CardContent className="flex flex-col h-[600px] p-0">
                   <div className="flex-1 p-6 overflow-y-auto">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-6 h-full">
-                      <pre className="text-sm whitespace-pre-wrap break-words leading-relaxed font-mono">
-                        {resumeText || fallbackResume}
-                      </pre>
+                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-0 h-full">
+                      {!editingResume ? (
+                        <pre className="p-6 text-sm whitespace-pre-wrap break-words leading-relaxed font-mono">
+                          {resumeDisplay || fallbackResume}
+                        </pre>
+                      ) : (
+                        <textarea
+                          value={resumeDraft}
+                          onChange={(e) => setResumeDraft(e.target.value)}
+                          className="w-full h-full resize-none p-4 bg-transparent text-sm leading-relaxed font-mono outline-none"
+                          placeholder="Edit your resume content..."
+                        />
+                      )}
                     </div>
                   </div>
                   <div className="p-6 pt-0 space-y-3">
@@ -834,7 +927,7 @@ export default function JobInfoPage() {
                     <Button
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                       onClick={downloadResumeDocx}
-                      disabled={!resumeText || downloadingResume}
+                      disabled={downloadingResume}
                       aria-busy={downloadingResume}
                     >
                       {downloadingResume ? (
@@ -856,22 +949,67 @@ export default function JobInfoPage() {
               {/* Cover Letter Card */}
               <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl overflow-hidden">
                 <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                      <Eye className="h-5 w-5 text-white" />
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                        <Eye className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-white">Personalized Cover Letter</h2>
+                        <p className="text-emerald-100 text-sm">Crafted to highlight your strengths</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-white">Personalized Cover Letter</h2>
-                      <p className="text-emerald-100 text-sm">Crafted to highlight your strengths</p>
-                    </div>
+                    {!editingCover ? (
+                      <Button
+                        variant="secondary"
+                        className="bg-white/20 hover:bg-white/30 text-white"
+                        onClick={() => {
+                          setCoverDraft(coverDisplay || '')
+                          setEditingCover(true)
+                        }}
+                      >
+                        <PencilLine className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          onClick={() => saveEdits('cover')}
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          className="bg-white/20 hover:bg-white/30 text-white"
+                          onClick={() => {
+                            setEditingCover(false)
+                            setCoverDraft('')
+                          }}
+                        >
+                          <XIcon className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <CardContent className="flex flex-col h-[600px] p-0">
                   <div className="flex-1 p-6 overflow-y-auto">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-6 h-full">
-                      <pre className="text-sm whitespace-pre-wrap break-words leading-relaxed font-mono">
-                        {coverLetterText || fallbackCover}
-                      </pre>
+                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-0 h-full">
+                      {!editingCover ? (
+                        <pre className="p-6 text-sm whitespace-pre-wrap break-words leading-relaxed font-mono">
+                          {coverDisplay || fallbackCover}
+                        </pre>
+                      ) : (
+                        <textarea
+                          value={coverDraft}
+                          onChange={(e) => setCoverDraft(e.target.value)}
+                          className="w-full h-full resize-none p-4 bg-transparent text-sm leading-relaxed font-mono outline-none"
+                          placeholder="Edit your cover letter content..."
+                        />
+                      )}
                     </div>
                   </div>
                   <div className="p-6 pt-0 space-y-3">
@@ -882,7 +1020,7 @@ export default function JobInfoPage() {
                     <Button
                       className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                       onClick={downloadCoverLetterDocx}
-                      disabled={!coverLetterText || downloadingCover}
+                      disabled={downloadingCover}
                       aria-busy={downloadingCover}
                     >
                       {downloadingCover ? (
@@ -923,7 +1061,6 @@ export default function JobInfoPage() {
                         : 'No job link found. You can still apply using your downloaded documents.'}
                     </p>
 
-                    {/* Always show both buttons */}
                     <ActionButtons />
                   </div>
                 </CardContent>
@@ -942,7 +1079,6 @@ export default function JobInfoPage() {
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {jobMeta}
-
 
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-md rounded-2xl border border-white/20 dark:border-gray-700/30 p-8 shadow-xl text-center">
             <div className="flex justify-center mb-4">
@@ -970,4 +1106,7 @@ export default function JobInfoPage() {
     </>
   )
 }
+
+
+
 

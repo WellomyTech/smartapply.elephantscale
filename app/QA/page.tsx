@@ -4,9 +4,18 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import DashboardButton from '@/components/DashboardButton';
-import { LogOut } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/components/AuthProvider';
+import {
+  ArrowLeft,
+  Briefcase,
+  Building2,
+  Clipboard,
+  Download,
+  RefreshCw,
+  Sparkles,
+  LogOut,
+} from 'lucide-react';
 
 type QAPair = { q: string; a: string };
 
@@ -22,28 +31,19 @@ export default function QAPage() {
   const [raw, setRaw] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  // --- NEW: header height state
-  const [headerH, setHeaderH] = useState<number>(64); // sensible default (64px)
+  // --- header height state (keeps content below the app header)
+  const [headerH, setHeaderH] = useState<number>(64);
 
   useEffect(() => {
-    // We expect your global header to have id="site-header".
-    // If not, set that id on your SiteHeader component.
-    const header = document.getElementById('site-header') || document.querySelector('header') as HTMLElement | null;
-
+    const header = document.getElementById('site-header') || (document.querySelector('header') as HTMLElement | null);
     const update = () => {
       if (header?.offsetHeight) setHeaderH(header.offsetHeight);
     };
-
     update();
-
-    // Keep in sync if the header size changes (responsive)
     const ro = header ? new ResizeObserver(update) : null;
     if (header && ro) ro.observe(header);
-
-    // Also update on window resize just in case
     const onResize = () => update();
     window.addEventListener('resize', onResize);
-
     return () => {
       window.removeEventListener('resize', onResize);
       ro?.disconnect();
@@ -52,6 +52,7 @@ export default function QAPage() {
 
   const jobTitle = typeof window !== 'undefined' ? localStorage.getItem('job_title') || '' : '';
   const companyName = typeof window !== 'undefined' ? localStorage.getItem('company_name') || '' : '';
+  const interviewType = typeof window !== 'undefined' ? localStorage.getItem('interview_type') || '' : '';
 
   useEffect(() => {
     const getReportId = () => {
@@ -123,55 +124,96 @@ export default function QAPage() {
     router.push('/');
   };
 
+  // Centered container used across sections (keeps content inside the red lines)
+  const containerClass = 'mx-auto max-w-5xl px-4 sm:px-6 lg:px-8';
+
   return (
     <main
-      // 👇 This ensures the content starts *below* the header, whatever its size.
       style={{ paddingTop: `${headerH}px` }}
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8"
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pb-5"
     >
-      <section className="max-w-screen-2xl mx-auto px-6 sm:px-6 lg:px-8 space-y-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6">
-          <div className="min-w-0">
-            <h2 className="text-xl font-semibold break-words">{jobTitle || ''}</h2>
-            <p className="text-muted-foreground break-words">
-              {companyName ? `@ ${companyName}` : ''}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-            <Button variant="outline" onClick={handleRegenerate} className="text-sm w-full sm:w-auto">
-              Regenerate
-            </Button>
-            <Button onClick={handleCopyAll} className="text-sm w-full sm:w-auto">
-              Copy All
-            </Button>
-            <Button onClick={handleDownload} className="text-sm w-full sm:w-auto">
-              Download .md
-            </Button>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-6">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-muted-foreground font-medium">Generating Q&amp;A...</p>
-            <div className="w-full max-w-3xl space-y-4 mt-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="p-4 border rounded-xl bg-background shadow-sm animate-pulse">
-                  <div className="h-4 w-3/5 bg-muted rounded mb-3" />
-                  <div className="h-3 w-11/12 bg-muted rounded mb-2" />
-                  <div className="h-3 w-4/5 bg-muted rounded" />
-                </div>
-              ))}
+      {/* Hero */}
+      <section className={`${containerClass} pt-8`}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2 min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/30 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4 text-blue-600" />
+              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                Interview Q&A
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              Practice Answers Tailored to Your Role
+            </h1>
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+              {jobTitle ? (
+                <span className="inline-flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-indigo-500" />
+                  <span className="font-medium">{jobTitle}</span>
+                </span>
+              ) : null}
+              {companyName ? (
+                <span className="inline-flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-indigo-500" />
+                  <span className="font-medium">@ {companyName}</span>
+                </span>
+              ) : null}
+              {interviewType ? (
+                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  {interviewType.charAt(0).toUpperCase() + interviewType.slice(1)} Interview
+                </span>
+              ) : null}
             </div>
           </div>
+
+          
+        </div>
+      </section>
+
+      {/* Toolbar */}
+      <section className={`${containerClass} mt-6`}>
+        <Card className="bg-white/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50 shadow-lg rounded-2xl">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-slate-600 dark:text-slate-300">
+                These Q&A are generated specifically for your scanned role.
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" onClick={handleRegenerate} className="text-sm">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Regenerate
+                </Button>
+                <Button variant="outline" onClick={handleCopyAll} className="text-sm">
+                  <Clipboard className="h-4 w-4 mr-2" />
+                  Copy All
+                </Button>
+                <Button onClick={handleDownload} className="text-sm bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download .md
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Content */}
+      <section className={`${containerClass} mt-6 space-y-6`}>
+        {loading ? (
+          <LoadingSkeleton />
         ) : error ? (
-          <div className="p-6 border rounded-xl bg-red-50 text-red-800">{error}</div>
+          <Card className="bg-red-50 border-red-200 text-red-800 rounded-2xl">
+            <CardContent className="p-6">{error}</CardContent>
+          </Card>
         ) : parsed.length === 0 ? (
-          <div className="p-6 border rounded-xl bg-yellow-50 text-yellow-800">No Q&amp;A found from the API.</div>
+          <Card className="bg-amber-50 border-amber-200 text-amber-800 rounded-2xl">
+            <CardContent className="p-6">No Q&amp;A found from the API.</CardContent>
+          </Card>
         ) : (
-          <div className="space-y-4">
-            {parsed.map((item, idx) => (<QACard key={idx} index={idx + 1} q={item.q} a={item.a} />))}
+          <div className="grid gap-4 md:grid-cols-2">
+            {parsed.map((item, idx) => (
+              <QACard key={idx} index={idx + 1} q={item.q} a={item.a} />
+            ))}
           </div>
         )}
       </section>
@@ -179,7 +221,24 @@ export default function QAPage() {
   );
 }
 
-/* ... QACard, parseQAText, toMarkdown ... */
+// Attractive loading skeleton
+function LoadingSkeleton() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 space-y-6">
+      <div className="w-12 h-12 border-4 border-indigo-500/60 border-t-transparent rounded-full animate-spin" />
+      <p className="text-muted-foreground font-medium">Generating Q&amp;A...</p>
+      <div className="w-full max-w-5xl grid gap-4 md:grid-cols-2 mt-2">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="p-5 rounded-2xl border bg-white/70 dark:bg-slate-800/70 shadow-sm">
+            <div className="h-4 w-3/5 bg-slate-200/70 dark:bg-slate-700/50 rounded mb-3" />
+            <div className="h-3 w-11/12 bg-slate-200/70 dark:bg-slate-700/50 rounded mb-2" />
+            <div className="h-3 w-4/5 bg-slate-200/70 dark:bg-slate-700/50 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function QACard({ index, q, a }: { index: number; q: string; a: string }) {
   const copyOne = async () => {
@@ -189,35 +248,85 @@ function QACard({ index, q, a }: { index: number; q: string; a: string }) {
   };
 
   return (
-    <div className="p-5 border rounded-xl bg-background shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-base font-semibold">Q{index}: {q}</h3>
-        <Button variant="outline" size="sm" onClick={copyOne} className="text-xs">Copy</Button>
-      </div>
-      <div className="mt-2 text-sm whitespace-pre-wrap leading-6">{a}</div>
-    </div>
+    <Card className="bg-white/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50 shadow-lg rounded-2xl">
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-semibold">
+              <FileBadge index={index} />
+              Question {index}
+            </div>
+            <h3 className="text-base font-semibold leading-6 break-words">{q}</h3>
+          </div>
+          <Button variant="outline" size="sm" onClick={copyOne} className="text-xs">
+            <Clipboard className="h-3.5 w-3.5 mr-1.5" />
+            Copy
+          </Button>
+        </div>
+
+        <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 p-4">
+          <div className="text-[0.8rem] uppercase tracking-wide text-slate-500 mb-1">Answer</div>
+          <div className="text-sm whitespace-pre-wrap leading-6">{a}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function FileBadge({ index }: { index: number }) {
+  return (
+    <span className="inline-flex h-4 w-4 items-center justify-center rounded bg-indigo-500 text-white text-[10px] font-bold">
+      {index}
+    </span>
   );
 }
 
 function parseQAText(text: string): Array<{ q: string; a: string }> {
   if (!text) return [];
-  const trimmed = text.trim();
-  const blocks = trimmed.split(/\n---\n/g);
-  const result: Array<{ q: string; a: string }> = [];
-  for (const block of blocks) {
-    const qMatch = block.match(/Q\d+:\s*([\s\S]*?)(?=\nA\d+:|$)/i);
-    const aMatch = block.match(/A\d+:\s*([\s\S]*)/i);
-    if (qMatch && aMatch) result.push({ q: qMatch[1].trim(), a: aMatch[1].trim() });
+
+  // Normalize
+  let src = String(text).trim();
+  // Strip enclosing single/double quotes if present
+  if ((src.startsWith("'") && src.endsWith("'")) || (src.startsWith('"') && src.endsWith('"'))) {
+    src = src.slice(1, -1).trim();
   }
-  if (result.length === 0) {
-    const re = /Q\d+:\s*([\s\S]*?)\nA\d+:\s*([\s\S]*?)(?=\nQ\d+:|$)/gi;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(trimmed)) !== null) result.push({ q: m[1].trim(), a: m[2].trim() });
+  src = src.replace(/\r\n/g, "\n");
+  // Fix doubled apostrophes often coming from SQL-style escaping
+  src = src.replace(/''/g, "'");
+
+  const items: Array<{ q: string; a: string }> = [];
+
+  // Pattern 1: Numbered pairs Q1:/A1: (A may be on next line or same line)
+  const reNumbered =
+    /Q(\d+):\s*([\s\S]*?)(?:\n|\s{2,})A\1:\s*([\s\S]*?)(?=\s*Q\d+:|$)/gi;
+  let m: RegExpExecArray | null;
+  while ((m = reNumbered.exec(src)) !== null) {
+    items.push({ q: m[2].trim(), a: m[3].trim() });
   }
-  return result;
+  if (items.length) return items;
+
+  // Pattern 2: Unnumbered Q:/A: pairs
+  const reGeneric = /Q:\s*([\s\S]*?)(?:\n|\s{2,})A:\s*([\s\S]*?)(?=\s*Q:|$)/gi;
+  while ((m = reGeneric.exec(src)) !== null) {
+    items.push({ q: m[1].trim(), a: m[2].trim() });
+  }
+  if (items.length) return items;
+
+  // Pattern 3: Fallback — try looser split by next Q#
+  const reLoose =
+    /Q\d*:\s*([\s\S]*?)\s*A\d*:\s*([\s\S]*?)(?=\s*Q\d*:\s*|$)/gi;
+  while ((m = reLoose.exec(src)) !== null) {
+    items.push({ q: m[1].trim(), a: m[2].trim() });
+  }
+
+  return items;
 }
 
 function toMarkdown(items: Array<{ q: string; a: string }>): string {
   if (!items.length) return '';
-  return items.map((item, i) => `### Q${i + 1}: ${item.q}\n\n${item.a}\n\n${i < items.length - 1 ? '---\n' : ''}`).join('\n');
+  return items
+    .map(
+      (item, i) => `### Q${i + 1}: ${item.q}\n\n${item.a}\n\n${i < items.length - 1 ? '---\n' : ''}`
+    )
+    .join('\n');
 }

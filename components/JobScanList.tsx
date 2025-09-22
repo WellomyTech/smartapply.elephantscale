@@ -169,14 +169,22 @@ export default function JobScanList({ reports }: JobScanListProps) {
   const handleUnmarkAsApplied = (reportId: number) => {
     setAppliedMap(prev => {
       const updated = { ...prev, [reportId]: false }
-      postJobStatus(reportId, false, interviewMap[reportId])
+      // When unmarking applied, also clear interview flag
+      postJobStatus(reportId, false, false)
       showStatus('Job status updated', 'success')
       return updated
     })
+    // Reflect cleared interview flag locally
+    setInterviewMap(prev => ({ ...prev, [reportId]: false }))
   }
 
   // Handler for Interview checkbox
   const handleInterviewCheckbox = (reportId: number, checked: boolean) => {
+    // Only allow when Applied is true
+    if (!appliedMap[reportId]) {
+      showStatus('Please mark as Applied first.', 'warning')
+      return
+    }
     setInterviewMap(prev => {
       const updated = { ...prev, [reportId]: checked }
       postJobStatus(reportId, appliedMap[reportId], checked)
@@ -194,7 +202,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
   const handleDownload = async (reportId: number) => {
     try {
       showStatus('Preparing download…', 'info')
-      const res = await fetch(`${API_URL}download-resume-docx?report_id=${encodeURIComponent(reportId)}`)
+      const res = await fetch(`${API_URL}download-custom-resume-docx?report_id=${encodeURIComponent(reportId)}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -277,15 +285,18 @@ export default function JobScanList({ reports }: JobScanListProps) {
                         Mark as Applied
                       </Button>
                     )}
-                    {/* Interview Checkbox */}
-                    <label className="flex items-center gap-1 text-xs cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={!!interviewMap[report.id]}
-                        onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
-                      />
-                      Interview Received
-                    </label>
+
+                    {/* Interview checkbox: only show when Applied is true */}
+                    {appliedMap[report.id] && (
+                      <label className="flex items-center gap-1 text-xs cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!!interviewMap[report.id]}
+                          onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
+                        />
+                        Interview Received
+                      </label>
+                    )}
                   </div>
                   {/* Bottom: Actions */}
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end w-full sm:w-auto mt-4">

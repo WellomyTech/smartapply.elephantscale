@@ -79,19 +79,22 @@ export default function InterviewPage() {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      {/* New global header */}
+      <div className="rounded-2xl border border-slate-200/60 bg-gradient-to-r from-indigo-50 via-sky-50 to-purple-50 px-6 py-6 text-center shadow-sm">
+        {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 border border-slate-200 text-slate-700">
+          <Sparkles className="h-4 w-4 text-indigo-500" />
+          <span className="text-xs font-medium">Technical Interview Dashboard</span>
+        </div> */}
+        <h1 className="mt-3 text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-sky-600 bg-clip-text text-transparent">
+          Technical Interview Dashboard
+        </h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Generate role‑aligned technical questions, review answers, and get interview‑ready fast.
+        </p>
+      </div>
+
       {reports.length === 0 ? (
         <>
-          {/* Header */}
-          <div className="text-center space-y-3 mb-2">
-
-            <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Prepare for Interviews
-            </h1>
-            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-              Please do a Job Scan first, then come back to practice Technical or Behavioral interviews tailored to your target role.
-            </p>
-          </div>
-
           {/* Primary CTA */}
           <Card className="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl border-2 border-slate-200/50 dark:border-slate-700">
             <CardContent className="p-6">

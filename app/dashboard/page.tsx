@@ -3,9 +3,9 @@ import { Sparkles, FileText, Mic } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12">
+    <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
       {/* Header */}
-      <div className="text-center space-y-3 mb-12">
+      <div className="text-center space-y-3 mb-6">
         <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
           Choose Your Next Step
         </h1>
@@ -15,7 +15,7 @@ export default function HomePage() {
       </div>
 
       {/* Cards */}
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* ResumeForge Card - Blue */}
         <Link href="/dashboard/resume" className="group w-full md:w-96">
           <div className="h-56 bg-blue-50/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col items-center justify-center transition-all duration-300 border-2 border-blue-200 dark:border-blue-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md">

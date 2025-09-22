@@ -271,10 +271,10 @@ export default function Dashboard() {
         visible={status.visible}
         onClose={hideStatus}
       />
-      <main className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {/* Header with gradient */}
-          <div className="text-center space-y-3 mb-12">
+          <div className="rounded-2xl border border-slate-200/60 bg-gradient-to-r from-indigo-50 via-sky-50 to-purple-50 px-6 py-6 text-center shadow-sm">
             
             <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Welcome to AI Resume Generation, {user.name.split(" ")[0]}!
