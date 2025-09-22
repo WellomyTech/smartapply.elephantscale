@@ -85,6 +85,9 @@ export default function JobInfoPage() {
   const [downloadingResume, setDownloadingResume] = useState(false)
   const [downloadingCover, setDownloadingCover] = useState(false)
 
+  const [savingResume, setSavingResume] = useState(false)
+  const [savingCover, setSavingCover] = useState(false)
+
   const { isLoading: entLoading, isPremium } = useEntitlement()
   const [showPaywall, setShowPaywall] = useState(false)
   const { status, showStatus, hideStatus } = useStatusBar()
@@ -341,22 +344,58 @@ export default function JobInfoPage() {
   }
 
   // Save edited content locally (and in-memory)
-  function saveEdits(which: 'resume' | 'cover') {
-    if (which === 'resume') {
-      const next = normalizeNewlines((resumeDraft || '').trim())
-      setResumeText(next)
-      setJobData((p: any) => ({ ...(p || {}), updated_resume: next }))
-      localStorage.setItem('generated_resume', next)
-      setEditingResume(false)
-      showStatus('Resume updated locally.', 'success')
+  async function saveEdits(which: 'resume' | 'cover') {
+    const ridStr = String(
+      jobData?.id ||
+        jobData?.report_id ||
+        reportParam ||
+        (typeof window !== 'undefined' ? localStorage.getItem('report_id') : '') ||
+        ''
+    )
+    const rid = Number(ridStr)
+    if (!rid) {
+      showStatus('Missing report ID. Please refresh and try again.', 'error')
       return
     }
+
+    if (which === 'resume') {
+      const next = normalizeNewlines((resumeDraft || '').trim())
+      const cover = normalizeNewlines(((editingCover ? coverDraft : (coverLetterText || '')) || '').trim())
+
+      setSavingResume(true)
+      showStatus('Saving resume to server...', 'loading')
+      const ok = await updateJobStatus({ reportId: rid, resume_text: next, cover_letter: cover })
+      setSavingResume(false)
+
+      if (ok) {
+        setResumeText(next)
+        setJobData((p: any) => ({ ...(p || {}), updated_resume: next }))
+        localStorage.setItem('generated_resume', next)
+        setEditingResume(false)
+        showStatus('Resume saved successfully.', 'success')
+      } else {
+        showStatus('Failed to save resume. Please try again.', 'error')
+      }
+      return
+    }
+
     const next = normalizeNewlines((coverDraft || '').trim())
-    setCoverLetterText(next)
-    setJobData((p: any) => ({ ...(p || {}), cover_letter: next }))
-    localStorage.setItem('generated_cover_letter', next)
-    setEditingCover(false)
-    showStatus('Cover letter updated locally.', 'success')
+    const resume = normalizeNewlines(((editingResume ? resumeDraft : (resumeText || '')) || '').trim())
+
+    setSavingCover(true)
+    showStatus('Saving cover letter to server...', 'loading')
+    const ok = await updateJobStatus({ reportId: rid, resume_text: resume, cover_letter: next })
+    setSavingCover(false)
+
+    if (ok) {
+      setCoverLetterText(next)
+      setJobData((p: any) => ({ ...(p || {}), cover_letter: next }))
+      localStorage.setItem('generated_cover_letter', next)
+      setEditingCover(false)
+      showStatus('Cover letter saved successfully.', 'success')
+    } else {
+      showStatus('Failed to save cover letter. Please try again.', 'error')
+    }
   }
 
   const downloadResumeDocx = async () => {
@@ -464,14 +503,24 @@ export default function JobInfoPage() {
   }
 
   // API: update-job-status (report_id, applied, r_interview)
-  async function postJobStatus(reportId: number, applied?: boolean, r_interview?: boolean): Promise<boolean> {
+  type UpdateJobStatusArgs = {
+    reportId: number
+    applied?: boolean
+    r_interview?: boolean
+    resume_text?: string
+    cover_letter?: string
+  }
+
+  async function updateJobStatus(args: UpdateJobStatusArgs): Promise<boolean> {
     try {
       const params = new URLSearchParams()
-      params.append('report_id', String(reportId))
-      if (typeof applied === 'boolean') params.append('applied', String(applied))
-      if (typeof r_interview === 'boolean') params.append('r_interview', String(r_interview))
+      params.append('report_id', String(args.reportId))
+      if (typeof args.applied === 'boolean') params.append('applied', String(args.applied))
+      if (typeof args.r_interview === 'boolean') params.append('r_interview', String(args.r_interview))
+      if (typeof args.resume_text === 'string') params.append('resume_text', args.resume_text)
+      if (typeof args.cover_letter === 'string') params.append('cover_letter', args.cover_letter)
 
-      const res = await fetch(`${API_URL}update-job-status`, {
+      const res = await fetch(`${API_URL}update-resume`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -505,7 +554,7 @@ export default function JobInfoPage() {
     if (applied) {
       setSubmittingApplied(true)
       showStatus('Saving your application status...', 'loading')
-      const ok = await postJobStatus(rid, true)
+      const ok = await updateJobStatus({ reportId: rid, applied: true })
       setSubmittingApplied(false)
 
       if (ok) {
@@ -519,7 +568,7 @@ export default function JobInfoPage() {
       return
     }
 
-    const ok = await postJobStatus(rid, false)
+    const ok = await updateJobStatus({ reportId: rid, applied: false })
     if (ridStr) localStorage.setItem(`applied:${ridStr}`, 'no')
     setShowApplyConfirm(false)
     showStatus(
@@ -883,9 +932,19 @@ export default function JobInfoPage() {
                         <Button
                           className="bg-emerald-600 hover:bg-emerald-700 text-white"
                           onClick={() => saveEdits('resume')}
+                          disabled={savingResume}
                         >
-                          <Save className="h-4 w-4 mr-2" />
-                          Save
+                          {savingResume ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Save
+                            </>
+                          )}
                         </Button>
                         <Button
                           variant="secondary"

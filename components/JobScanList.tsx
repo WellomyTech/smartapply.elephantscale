@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { FileText, Loader2, Pencil, Download } from 'lucide-react'
+import { FileText, Loader2, Pencil, Download, Cpu, User } from 'lucide-react'
 import { StatusBar, useStatusBar } from "@/components/ui/status-bar"
 
 // at the top
@@ -155,6 +155,14 @@ export default function JobScanList({ reports }: JobScanListProps) {
     router.push(`/QA?report_id=${reportId}`)
   }
 
+  // New: Behavioral interview navigation
+  const handleBehavioral = (reportId: number, jobTitle?: string, companyName?: string) => {
+    localStorage.setItem('report_id', String(reportId))
+    localStorage.setItem('job_title', jobTitle || '')
+    localStorage.setItem('company_name', companyName || '')
+    router.push('/dashboard/behavioral')
+  }
+
   // Handler for "Mark as Applied"
   const handleMarkAsApplied = (reportId: number) => {
     setAppliedMap(prev => {
@@ -241,7 +249,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
             const canDownload = report.has_updated_resume === 1 || report.has_updated_resume === true
             return (
               <div key={report.id} className="group w-full">
-                <div className="h-56 bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between transition-all duration-300 border-2 border-blue-100 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md p-6">
+                <div className="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col gap-3 transition-all duration-300 border-2 border-blue-100 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md p-6">
                   {/* Top: Job title + company */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -260,91 +268,184 @@ export default function JobScanList({ reports }: JobScanListProps) {
                     </div>
                   </div>
                   {/* Middle: Status */}
-                  <div className="flex items-center gap-4 mt-2">
-                    {/* Applied Button/Label */}
-                    {appliedMap[report.id] ? (
-                      <span
-                        className="text-green-600 font-medium text-xs cursor-pointer transition-colors"
-                        style={{ position: 'relative' }}
-                        tabIndex={0}
-                        onClick={() => handleUnmarkAsApplied(report.id)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleUnmarkAsApplied(report.id) }}
-                        onMouseEnter={e => e.currentTarget.textContent = 'Mark as Not Applied'}
-                        onMouseLeave={e => e.currentTarget.textContent = 'Applied'}
-                        aria-label="Mark as not applied"
-                      >
-                        Applied
-                      </span>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs px-3 py-1"
-                        onClick={() => handleMarkAsApplied(report.id)}
-                      >
-                        Mark as Applied
-                      </Button>
-                    )}
+                  <div className="mt-2 flex items-center gap-4">
+                    {/* Left: Applied/Interview status */}
+                    <div className="flex items-center gap-4">
+                      {/* Applied Button/Label */}
+                      {appliedMap[report.id] ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="text-green-600 font-medium text-xs cursor-pointer transition-colors"
+                              style={{ position: 'relative' }}
+                              tabIndex={0}
+                              onClick={() => handleUnmarkAsApplied(report.id)}
+                              onKeyDown={e => { if (e.key === 'Enter') handleUnmarkAsApplied(report.id) }}
+                              onMouseEnter={e => e.currentTarget.textContent = 'Mark as Not Applied'}
+                              onMouseLeave={e => e.currentTarget.textContent = 'Applied'}
+                              aria-label="Mark as not applied"
+                            >
+                              Applied
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" align="start" className="text-xs">
+                            Click to mark as not applied
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs px-3 py-1"
+                              onClick={() => handleMarkAsApplied(report.id)}
+                            >
+                              Mark as Applied
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" align="start" className="text-xs">
+                            Mark this job as applied
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
 
-                    {/* Interview checkbox: only show when Applied is true */}
-                    {appliedMap[report.id] && (
-                      <label className="flex items-center gap-1 text-xs cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={!!interviewMap[report.id]}
-                          onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
-                        />
-                        Interview Received
-                      </label>
-                    )}
-                  </div>
-                  {/* Bottom: Actions */}
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end w-full sm:w-auto mt-4">
-                    {canDownload ? (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label="Download"
-                        onClick={() => handleDownload(report.id)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    ) : (
+                      {/* Interview checkbox: only show when Applied is true */}
+                      {appliedMap[report.id] && (
+                        <label className="flex items-center gap-1 text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={!!interviewMap[report.id]}
+                            onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
+                          />
+                          Interview Scheduled
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="ml-auto flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end">
+                       {canDownload ? (
+                         <Tooltip>
+                           <TooltipTrigger asChild>
+                             <Button
+                               variant="outline"
+                               size="icon"
+                               aria-label="Download"
+                               onClick={() => handleDownload(report.id)}
+                             >
+                               <Download className="h-4 w-4" />
+                             </Button>
+                           </TooltipTrigger>
+                           <TooltipContent side="top" align="end" className="text-xs">
+                             Download resume
+                           </TooltipContent>
+                         </Tooltip>
+                       ) : (
+                         <Tooltip>
+                           <TooltipTrigger asChild>
+                             <span className="inline-flex">
+                               <Button
+                                 variant="outline"
+                                 size="icon"
+                                 aria-label="Download"
+                                 disabled
+                               >
+                                 <Download className="h-4 w-4" />
+                               </Button>
+                             </span>
+                           </TooltipTrigger>
+                           <TooltipContent side="top" align="end" className="text-xs">
+                             Please Generate Resume First
+                           </TooltipContent>
+                         </Tooltip>
+                       )}
+
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="inline-flex">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              aria-label="Download"
-                              disabled
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            aria-label="Edit resume info"
+                            onClick={() => {
+                              const userEmail =
+                                localStorage.getItem('user_email') || localStorage.getItem('userEmail')
+                              if (!userEmail) {
+                                alert('User email not found!')
+                                return
+                              }
+                              router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`)
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top" align="end" className="text-xs">
-                          Please generate resume first
+                          Edit Job Details and Documents
                         </TooltipContent>
                       </Tooltip>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label="Edit resume info"
-                      onClick={() => {
-                        const userEmail =
-                          localStorage.getItem('user_email') || localStorage.getItem('userEmail')
-                        if (!userEmail) {
-                          alert('User email not found!')
-                          return
-                        }
-                        router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`)
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
+
+                       {/* Behavioral Interview */}
+                       <Tooltip>
+                         <TooltipTrigger asChild>
+                           <Button
+                             variant="outline"
+                             size="icon"
+                             aria-label="Behavioral interview"
+                             onClick={() => handleBehavioral(report.id, report.job_title, report.job_company)}
+                           >
+                             <User className="h-4 w-4" />
+                           </Button>
+                         </TooltipTrigger>
+                         <TooltipContent side="top" align="end" className="text-xs">
+                           Behavioral Interview Prep
+                         </TooltipContent>
+                       </Tooltip>
+ 
+                       {/* Technical Interview - enabled only after resume is generated */}
+                       {canDownload ? (
+                         <Tooltip>
+                           <TooltipTrigger asChild>
+                             <Button
+                               variant="outline"
+                               size="icon"
+                               aria-label="Technical interview"
+                               onClick={() => handleInterview(report.id, report.job_title, report.job_company)}
+                               disabled={generatingId === report.id}
+                             >
+                               {generatingId === report.id ? (
+                                 <Loader2 className="h-4 w-4 animate-spin" />
+                               ) : (
+                                 <Cpu className="h-4 w-4" />
+                               )}
+                             </Button>
+                           </TooltipTrigger>
+                           <TooltipContent side="top" align="end" className="text-xs">
+                             {generatingId === report.id ? 'Generating questions…' : 'Technical Interview Prep'}
+                           </TooltipContent>
+                         </Tooltip>
+                       ) : (
+                         <Tooltip>
+                           <TooltipTrigger asChild>
+                             <span className="inline-flex">
+                               <Button
+                                 variant="outline"
+                                 size="icon"
+                                 aria-label="Technical interview (disabled)"
+                                 disabled
+                                 className="opacity-60 cursor-not-allowed"
+                               >
+                                 <Cpu className="h-4 w-4" />
+                               </Button>
+                             </span>
+                           </TooltipTrigger>
+                           <TooltipContent side="top" align="end" className="text-xs">
+                             First Generate Resume then use this Interview Module
+                           </TooltipContent>
+                         </Tooltip>
+                       )}
+                     </div>
+                   </div>
                 </div>
               </div>
             )
