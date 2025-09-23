@@ -287,9 +287,9 @@ export default function JobScanList({ reports }: JobScanListProps) {
         ids.forEach(id => next.delete(id))
         return next
       })
-      showStatus(`Archived ${ids.length} ${ids.length === 1 ? 'scan' : 'scans'}`, 'success')
+      showStatus(`Successfully Deleted ${ids.length} ${ids.length === 1 ? 'scan' : 'scans'}`, 'success')
     } catch (e) {
-      showStatus('Failed to archive. Try again.', 'error')
+      showStatus('Failed to delete. Try again.', 'error')
     } finally {
       setArchiving(false)
     }
@@ -350,7 +350,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
               onClick={() => {
                 const ids = Array.from(selectedIds)
                 if (ids.length === 0) return
-                const ok = window.confirm(`Archive ${ids.length} ${ids.length === 1 ? 'selected scan' : 'selected scans'}?`)
+                const ok = window.confirm(`Delete ${ids.length} ${ids.length === 1 ? 'selected scan' : 'selected scans'}?`)
                 if (!ok) return
                 doArchive(ids)
               }}
