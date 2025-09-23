@@ -10,10 +10,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { FileText, Loader2, Pencil, Download } from 'lucide-react'
+import { FileText, Loader2, Pencil, Download, Cpu, User, Trash2 } from 'lucide-react'
 import { StatusBar, useStatusBar } from "@/components/ui/status-bar"
-
-// at the top
 import { formatLocalFromUTC, timeAgoFromUTC } from '@/lib/dates'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 
@@ -54,6 +52,26 @@ async function postJobStatus(reportId: number, applied?: boolean, r_interview?: 
   }
 }
 
+// NEW: archive helper for single/multiple ids
+async function archiveReports(reportIds: number[]) {
+  const params = new URLSearchParams()
+  params.append('report_ids', reportIds.join(','))
+  params.append('delete_original', 'true')
+  const res = await fetch(`${API_URL}archive-reports`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params.toString(),
+  })
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '')
+    throw new Error(`Archive failed: ${res.status} ${txt}`)
+  }
+  return res.json().catch(() => null)
+}
+
 export default function JobScanList({ reports }: JobScanListProps) {
   const router = useRouter()
   const { status, showStatus, hideStatus } = useStatusBar()
@@ -62,12 +80,21 @@ export default function JobScanList({ reports }: JobScanListProps) {
   const [appliedMap, setAppliedMap] = useState<{ [id: number]: boolean }>({})
   const [interviewMap, setInterviewMap] = useState<{ [id: number]: boolean }>({})
 
+  // Tabs: all | applied | interview
+  const [activeTab, setActiveTab] = useState<'all' | 'applied' | 'interview'>('all')
+
+  // NEW: selection + archiving state
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [archiving, setArchiving] = useState(false)
+
+  // NEW: locally hide archived rows (without refetch)
+  const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set())
+
   React.useEffect(() => {
     // Prefer localStorage, else use API response
     const appliedLS = JSON.parse(localStorage.getItem('applied_jobs') || '{}')
     const interviewLS = JSON.parse(localStorage.getItem('interview_jobs') || '{}')
 
-    // If localStorage is empty, use API response
     if (Object.keys(appliedLS).length === 0 && reports.length > 0) {
       const initialApplied: { [id: number]: boolean } = {}
       reports.forEach(r => {
@@ -89,7 +116,6 @@ export default function JobScanList({ reports }: JobScanListProps) {
     }
   }, [reports])
 
-  // Save to localStorage when changed
   React.useEffect(() => {
     localStorage.setItem('applied_jobs', JSON.stringify(appliedMap))
   }, [appliedMap])
@@ -102,26 +128,6 @@ export default function JobScanList({ reports }: JobScanListProps) {
   const [loading, setLoading] = useState(false)
   const [generatingId, setGeneratingId] = useState<number | string | null>(null)
   const [statusMsg, setStatusMsg] = useState<string | null>(null)
-
-  // async function fetchResumeInfo(reportId: number) {
-  //   setLoading(True)
-  //   try {
-  //     const userEmail = localStorage.getItem('user_email')
-  //     const res = await fetch(`${API_URL}user-dashboard?user_email=${userEmail}&report_id=${reportId}`)
-  //     const data = await res.json()
-  //     if (data?.report) {
-  //       setSelectedReport(data.report)
-  //       setIsModalOpen(true)
-  //     } else {
-  //       alert('No data found!')
-  //     }
-  //   } catch (err) {
-  //     console.error('Error fetching resume info:', err)
-  //     alert('Failed to fetch data')
-  //   } finally {
-  //     setLoading(False)
-  //   }
-  // }
 
   const handleInterview = async (reportId: number, jobTitle?: string, companyName?: string) => {
     setGeneratingId(reportId)
@@ -155,7 +161,13 @@ export default function JobScanList({ reports }: JobScanListProps) {
     router.push(`/QA?report_id=${reportId}`)
   }
 
-  // Handler for "Mark as Applied"
+  const handleBehavioral = (reportId: number, jobTitle?: string, companyName?: string) => {
+    localStorage.setItem('report_id', String(reportId))
+    localStorage.setItem('job_title', jobTitle || '')
+    localStorage.setItem('company_name', companyName || '')
+    router.push('/dashboard/behavioral')
+  }
+
   const handleMarkAsApplied = (reportId: number) => {
     setAppliedMap(prev => {
       const updated = { ...prev, [reportId]: true }
@@ -165,22 +177,17 @@ export default function JobScanList({ reports }: JobScanListProps) {
     })
   }
 
-  // Handler for "Unmark as Applied"
   const handleUnmarkAsApplied = (reportId: number) => {
     setAppliedMap(prev => {
       const updated = { ...prev, [reportId]: false }
-      // When unmarking applied, also clear interview flag
       postJobStatus(reportId, false, false)
       showStatus('Job status updated', 'success')
       return updated
     })
-    // Reflect cleared interview flag locally
     setInterviewMap(prev => ({ ...prev, [reportId]: false }))
   }
 
-  // Handler for Interview checkbox
   const handleInterviewCheckbox = (reportId: number, checked: boolean) => {
-    // Only allow when Applied is true
     if (!appliedMap[reportId]) {
       showStatus('Please mark as Applied first.', 'warning')
       return
@@ -193,12 +200,10 @@ export default function JobScanList({ reports }: JobScanListProps) {
     })
   }
 
-  // Helper to format date/time
   function formatDateTime(dateString?: string) {
     return formatLocalFromUTC(dateString)
   }
 
-  // New: Download handler (same-page download)
   const handleDownload = async (reportId: number) => {
     try {
       showStatus('Preparing download…', 'info')
@@ -219,11 +224,76 @@ export default function JobScanList({ reports }: JobScanListProps) {
     }
   }
 
-  // Sort reports by created_at descending (latest first)
-  const sortedReports = [...reports].sort((a, b) => {
+  // Base (exclude locally archived)
+  const baseReports = reports.filter(r => !hiddenIds.has(r.id))
+
+  // Sort latest first
+  const sortedReports = [...baseReports].sort((a, b) => {
     if (!a.created_at || !b.created_at) return 0
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   })
+
+  // Counts and filtered list based on tab
+  const counts = {
+    all: sortedReports.length,
+    applied: sortedReports.filter(r => (appliedMap[r.id] ?? !!r.applied)).length,
+    interview: sortedReports.filter(r => (interviewMap[r.id] ?? !!r.r_interview)).length,
+  }
+
+  const filteredReports = sortedReports.filter(r => {
+    const isApplied = appliedMap[r.id] ?? (typeof r.applied === 'boolean' ? r.applied : false)
+    const isInterview = interviewMap[r.id] ?? (typeof r.r_interview === 'boolean' ? r.r_interview : false)
+    if (activeTab === 'applied') return isApplied
+    if (activeTab === 'interview') return isInterview
+    return true
+  })
+
+  // Selection helpers
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  const areAllVisibleSelected = filteredReports.length > 0 &&
+    filteredReports.every(r => selectedIds.has(r.id))
+  const toggleSelectAllVisible = () => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (areAllVisibleSelected) {
+        filteredReports.forEach(r => next.delete(r.id))
+      } else {
+        filteredReports.forEach(r => next.add(r.id))
+      }
+      return next
+    })
+  }
+
+  // Archive handlers
+  const doArchive = async (ids: number[]) => {
+    if (ids.length === 0) return
+    setArchiving(true)
+    try {
+      await archiveReports(ids)
+      setHiddenIds(prev => {
+        const next = new Set(prev)
+        ids.forEach(id => next.add(id))
+        return next
+      })
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        ids.forEach(id => next.delete(id))
+        return next
+      })
+      showStatus(`Archived ${ids.length} ${ids.length === 1 ? 'scan' : 'scans'}`, 'success')
+    } catch (e) {
+      showStatus('Failed to archive. Try again.', 'error')
+    } finally {
+      setArchiving(false)
+    }
+  }
 
   return (
     <TooltipProvider>
@@ -236,120 +306,300 @@ export default function JobScanList({ reports }: JobScanListProps) {
         />
         <h2 className="text-xl font-semibold text-foreground mb-2">Your Applications</h2>
 
-        <div className="grid gap-8 md:grid-cols-2">
-          {sortedReports.map((report) => {
-            const canDownload = report.has_updated_resume === 1 || report.has_updated_resume === true
-            return (
-              <div key={report.id} className="group w-full">
-                <div className="h-56 bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between transition-all duration-300 border-2 border-blue-100 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md p-6">
-                  {/* Top: Job title + company */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
-                      <span className="text-lg font-semibold text-blue-700 dark:text-blue-300 break-words">
-                        {report.job_title || 'Untitled role'}
-                      </span>
-                    </div>
-                    <div className="text-sm text-muted-foreground break-words">
-                      {report.job_company || '—'}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {report.created_at
-                        ? <>Scanned: {formatLocalFromUTC(report.created_at)} <span className="opacity-70">({timeAgoFromUTC(report.created_at)})</span></>
-                        : ''}
-                    </div>
-                  </div>
-                  {/* Middle: Status */}
-                  <div className="flex items-center gap-4 mt-2">
-                    {/* Applied Button/Label */}
-                    {appliedMap[report.id] ? (
-                      <span
-                        className="text-green-600 font-medium text-xs cursor-pointer transition-colors"
-                        style={{ position: 'relative' }}
-                        tabIndex={0}
-                        onClick={() => handleUnmarkAsApplied(report.id)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleUnmarkAsApplied(report.id) }}
-                        onMouseEnter={e => e.currentTarget.textContent = 'Mark as Not Applied'}
-                        onMouseLeave={e => e.currentTarget.textContent = 'Applied'}
-                        aria-label="Mark as not applied"
-                      >
-                        Applied
-                      </span>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs px-3 py-1"
-                        onClick={() => handleMarkAsApplied(report.id)}
-                      >
-                        Mark as Applied
-                      </Button>
-                    )}
+        {/* Tabs + bulk actions */}
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          {/* Left: tabs */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant={activeTab === 'all' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('all')}
+            >
+              All Applications ({counts.all})
+            </Button>
+            <Button
+              size="sm"
+              variant={activeTab === 'applied' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('applied')}
+            >
+              Applied ({counts.applied})
+            </Button>
+            <Button
+              size="sm"
+              variant={activeTab === 'interview' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('interview')}
+            >
+              Interview Scheduled ({counts.interview})
+            </Button>
+          </div>
 
-                    {/* Interview checkbox: only show when Applied is true */}
-                    {appliedMap[report.id] && (
-                      <label className="flex items-center gap-1 text-xs cursor-pointer">
+          {/* Right: bulk actions */}
+          <div className="ml-auto flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={areAllVisibleSelected}
+                onChange={toggleSelectAllVisible}
+              />
+              Select all in view
+            </label>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={selectedIds.size === 0 || archiving}
+              onClick={() => {
+                const ids = Array.from(selectedIds)
+                if (ids.length === 0) return
+                const ok = window.confirm(`Archive ${ids.length} ${ids.length === 1 ? 'selected scan' : 'selected scans'}?`)
+                if (!ok) return
+                doArchive(ids)
+              }}
+            >
+              {archiving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete Selected
+            </Button>
+          </div>
+        </div>
+
+
+
+        {/* Empty state per tab */}
+        {filteredReports.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No applications in this view yet.
+          </p>
+        ) : (
+          <div className="grid gap-8 md:grid-cols-2">
+            {filteredReports.map((report) => {
+              const canDownload = report.has_updated_resume === 1 || report.has_updated_resume === true
+              const isSelected = selectedIds.has(report.id)
+              return (
+                <div key={report.id} className="group w-full">
+                  <div className="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col gap-3 transition-all duration-300 border-2 border-blue-100 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md p-6">
+                    {/* Top: selection + Job title + company */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        {/* NEW: row checkbox */}
                         <input
                           type="checkbox"
-                          checked={!!interviewMap[report.id]}
-                          onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
+                          className="h-4 w-4"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(report.id)}
+                          aria-label={`Select ${report.job_title || 'job'}`}
                         />
-                        Interview Received
-                      </label>
-                    )}
-                  </div>
-                  {/* Bottom: Actions */}
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end w-full sm:w-auto mt-4">
-                    {canDownload ? (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label="Download"
-                        onClick={() => handleDownload(report.id)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex">
+                        <FileText className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
+                        <span className="text-lg font-semibold text-blue-700 dark:text-blue-300 break-words">
+                          {report.job_title || 'Untitled role'}
+                        </span>
+                      </div>
+                      <div className="text-sm text-muted-foreground break-words">
+                        {report.job_company || '—'}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {report.created_at
+                          ? <>Scanned: {formatLocalFromUTC(report.created_at)} <span className="opacity-70">({timeAgoFromUTC(report.created_at)})</span></>
+                          : ''}
+                      </div>
+                    </div>
+
+                    {/* Middle: Status + Actions */}
+                    <div className="mt-2 flex items-center gap-4">
+                      {/* Left: Applied/Interview status */}
+                      <div className="flex items-center gap-4">
+                        {appliedMap[report.id] ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                className="text-green-600 font-medium text-xs cursor-pointer transition-colors"
+                                style={{ position: 'relative' }}
+                                tabIndex={0}
+                                onClick={() => handleUnmarkAsApplied(report.id)}
+                                onKeyDown={e => { if (e.key === 'Enter') handleUnmarkAsApplied(report.id) }}
+                                onMouseEnter={e => e.currentTarget.textContent = 'Mark as Not Applied'}
+                                onMouseLeave={e => e.currentTarget.textContent = 'Applied'}
+                                aria-label="Mark as not applied"
+                              >
+                                Applied
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" className="text-xs">
+                              Click to mark as not applied
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs px-3 py-1"
+                                onClick={() => handleMarkAsApplied(report.id)}
+                              >
+                                Mark as Applied
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" className="text-xs">
+                              Mark this job as applied
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+
+                        {appliedMap[report.id] && (
+                          <label className="flex items-center gap-1 text-xs cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={!!interviewMap[report.id]}
+                              onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
+                            />
+                            Interview Scheduled
+                          </label>
+                        )}
+                      </div>
+
+                      {/* Right: Actions */}
+                      <div className="ml-auto flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end">
+                        {canDownload ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Download"
+                                onClick={() => handleDownload(report.id)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="end" className="text-xs">
+                              Download resume
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <Button variant="outline" size="icon" aria-label="Download" disabled>
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="end" className="text-xs">
+                              Please Generate Resume First
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
                             <Button
                               variant="outline"
                               size="icon"
-                              aria-label="Download"
-                              disabled
+                              aria-label="Edit resume info"
+                              onClick={() => {
+                                const userEmail =
+                                  localStorage.getItem('user_email') || localStorage.getItem('userEmail')
+                                if (!userEmail) {
+                                  alert('User email not found!')
+                                  return
+                                }
+                                router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`)
+                              }}
                             >
-                              <Download className="h-4 w-4" />
+                              <Pencil className="h-4 w-4" />
                             </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" align="end" className="text-xs">
-                          Please generate resume first
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label="Edit resume info"
-                      onClick={() => {
-                        const userEmail =
-                          localStorage.getItem('user_email') || localStorage.getItem('userEmail')
-                        if (!userEmail) {
-                          alert('User email not found!')
-                          return
-                        }
-                        router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`)
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" align="end" className="text-xs">
+                            Edit Job Details and Documents
+                          </TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              aria-label="Behavioral interview"
+                              onClick={() => handleBehavioral(report.id, report.job_title, report.job_company)}
+                            >
+                              <User className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" align="end" className="text-xs">
+                            Behavioral Interview Prep
+                          </TooltipContent>
+                        </Tooltip>
+
+                        {canDownload ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Technical interview"
+                                onClick={() => handleInterview(report.id, report.job_title, report.job_company)}
+                                disabled={generatingId === report.id}
+                              >
+                                {generatingId === report.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Cpu className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="end" className="text-xs">
+                              {generatingId === report.id ? 'Generating questions…' : 'Technical Interview Prep'}
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  aria-label="Technical interview (disabled)"
+                                  disabled
+                                  className="opacity-60 cursor-not-allowed"
+                                >
+                                  <Cpu className="h-4 w-4" />
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="end" className="text-xs">
+                              First Generate Resume then use this Interview Module
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+
+                        {/* NEW: per-row archive */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              aria-label="Delete this scan"
+                              onClick={() => {
+                                const ok = window.confirm('Delete this scan?')
+                                if (!ok) return
+                                doArchive([report.id])
+                              }}
+                              disabled={archiving}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" align="end" className="text-xs">
+                            Delete this scan
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Dialog unchanged below */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
