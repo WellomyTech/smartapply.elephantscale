@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 
-type TopicKey = "communication" | "leadership" | "teamwork";
+type TopicKey = "communication" | "leadership" | "team_player";
 
 const TOPIC_CONFIG: Record<
   TopicKey,
@@ -75,7 +75,7 @@ const TOPIC_CONFIG: Record<
       gradientTo: "to-pink-600",
     },
   },
-  teamwork: {
+  team_player: {
     title: "Team Player",
     blurb: "Showcase collaboration, conflict resolution, and empathy.",
     icon: Users,
@@ -96,7 +96,7 @@ const PUBLIC_KEY = "4b3fb521-9ad5-439a-8224-cdb78e2e78e8";
 const ASSISTANT_IDS: Record<TopicKey, string> = {
   communication: "1e314056-262a-4975-a1f5-b60bef43f365",
   leadership: "3a3861ec-5e0d-4eef-8cdc-4011ab1f3c23",
-  teamwork: "540ab241-dbcc-4a76-a49e-6d2352bb95ae",
+  team_player: "540ab241-dbcc-4a76-a49e-6d2352bb95ae",
 };
 
 type Status = "idle" | "listening" | "thinking" | "speaking";
@@ -186,7 +186,7 @@ function SessionContent() {
   const sp = useSearchParams();
   const rawTopic = (sp.get("topic") || "").toLowerCase();
   const topic = (
-    ["communication", "leadership", "teamwork"].includes(rawTopic)
+    ["communication", "leadership", "team_player"].includes(rawTopic)
       ? rawTopic
       : "communication"
   ) as TopicKey;
@@ -289,57 +289,26 @@ function SessionContent() {
       document.head.appendChild(s);
     });
 
+  // Persist a session (stub API)
+  const saveSession = async (finalDuration: number) => {
+    try {
+      await fetch("/api/behavioral/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          report_id: reportId,
+          job_title: jobtitle,
+          company_name: companyname,
+          duration_sec: finalDuration,
+          // include scores if available later; this is just a stub call
+          scores: null,
+        }),
+      });
+    } catch {}
+  };
+
   // Vapi wiring + localStorage
-  // useEffect(() => {
-  //   const ridRaw = localStorage.getItem("report_id");
-  //   const ridInt = ridRaw !== null ? parseInt(ridRaw, 10) : null;
-  //   setReportId(Number.isInteger(ridInt as number) ? (ridInt as number) : null);
-  //   setJobTitle(localStorage.getItem("job_title"));
-  //   setCompanyName(localStorage.getItem("company_name"));
-
-  //   const vapi = new Vapi(PUBLIC_KEY);
-  //   vapiRef.current = vapi;
-
-  //   vapi.on("call-start", () => setStatus("listening"));
-  //   vapi.on("speech-start", () => setStatus("speaking"));
-  //   vapi.on("speech-end", () => {
-  //     flushBuffer("AI Interviewer", true);
-  //     setStatus("thinking");
-  //   });
-  //   vapi.on("call-end", () => {
-  //     flushBuffer("AI Interviewer", true);
-  //     flushBuffer("You", true);
-  //     setStatus("idle");
-  //     stopVideo();
-  //   });
-
-  //   vapi.on("message", (m: VapiMessage) => {
-  //     if (m.type !== "transcript") return;
-  //     const role = roleLabel(m.role);
-  //     const fullText = (m as any).transcript ?? "";
-
-  //     if (lastRoleRef.current && lastRoleRef.current !== role) {
-  //       flushBuffer(lastRoleRef.current, true);
-  //     }
-  //     lastRoleRef.current = role;
-
-  //     const lastSeen = lastSeenRef.current[role] || "";
-  //     const delta =
-  //       fullText && fullText.startsWith(lastSeen)
-  //         ? fullText.slice(lastSeen.length)
-  //         : fullText;
-  //     lastSeenRef.current[role] = fullText;
-
-  //     buffersRef.current[role] += delta;
-  //     flushBuffer(role, false);
-  //   });
-
-  //   return () => {
-  //     try {
-  //       vapi.stop();
-  //     } catch {}
-  //   };
-  // }, []);
   useEffect(() => {
     const ridRaw = localStorage.getItem("report_id");
     const ridInt = ridRaw !== null ? parseInt(ridRaw, 10) : null;
@@ -369,6 +338,10 @@ function SessionContent() {
     vapi.on("call-end", () => {
       // Mark call inactive first, then clean state.
       callOpenRef.current = false;
+
+      // save current timer value
+      void saveSession(timer);
+
       flushBuffer("AI Interviewer", true);
       flushBuffer("You", true);
       setStatus("idle");
@@ -817,6 +790,9 @@ function SessionContent() {
     // First, mark as not active so any late events are ignored
     callOpenRef.current = false;
 
+    // save current timer value
+    void saveSession(timer);
+
     try {
       vapiRef.current?.stop();
     } catch {}
@@ -894,6 +870,12 @@ function SessionContent() {
                   className="px-6 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm hover:shadow transition-all text-center"
                 >
                   Back to Topics
+                </Link>
+                <Link
+                  href={`/dashboard/behavioral/progress/${topic}`}
+                  className="px-6 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm hover:shadow transition-all text-center"
+                >
+                  View detailed progress
                 </Link>
               </div>
             </div>

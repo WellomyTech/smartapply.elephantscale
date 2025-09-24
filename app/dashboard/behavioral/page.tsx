@@ -17,7 +17,10 @@ export default function BehavioralDashboardPage() {
       {/* Cards */}
       <div className="flex flex-col md:flex-row gap-8">
         {/* Communication */}
-        <Link href="/dashboard/behavioral/session?topic=communication" className="group w-full md:w-96">
+        <Link
+          href="/dashboard/behavioral/session?topic=communication"
+          className="group w-full md:w-96"
+        >
           <div className="h-56 bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col items-center justify-center transition-all duration-300 border-2 border-blue-100 dark:border-slate-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md">
             <div className="flex items-center justify-center mb-2">
               <Mic className="h-10 w-10 text-blue-600 group-hover:scale-110 transition-transform" />
@@ -32,7 +35,10 @@ export default function BehavioralDashboardPage() {
         </Link>
 
         {/* Leadership */}
-        <Link href="/dashboard/behavioral/session?topic=leadership" className="group w-full md:w-96">
+        <Link
+          href="/dashboard/behavioral/session?topic=leadership"
+          className="group w-full md:w-96"
+        >
           <div className="h-56 bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col items-center justify-center transition-all duration-300 border-2 border-purple-100 dark:border-slate-700 hover:border-purple-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md">
             <div className="flex items-center justify-center mb-2">
               <Crown className="h-10 w-10 text-purple-600 group-hover:scale-110 transition-transform" />
@@ -46,8 +52,11 @@ export default function BehavioralDashboardPage() {
           </div>
         </Link>
 
-        {/* Teamwork */}
-        <Link href="/dashboard/behavioral/session?topic=teamwork" className="group w-full md:w-96">
+        {/* team_player */}
+        <Link
+          href="/dashboard/behavioral/session?topic=team_player"
+          className="group w-full md:w-96"
+        >
           <div className="h-56 bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col items-center justify-center transition-all duration-300 border-2 border-indigo-100 dark:border-slate-700 hover:border-indigo-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md">
             <div className="flex items-center justify-center mb-2">
               <Users className="h-10 w-10 text-indigo-600 group-hover:scale-110 transition-transform" />
