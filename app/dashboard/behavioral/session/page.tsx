@@ -33,6 +33,7 @@ import {
   VideoOff,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
+import { toast } from "sonner";
 
 type TopicKey = "communication" | "leadership" | "team_player";
 
@@ -767,6 +768,24 @@ function SessionContent() {
     setTranscript([]);
     resetBuffers();
 
+    // Read required values from localStorage on the client
+    //const rawName = typeof window !== "undefined" ? localStorage.getItem("name") : null;
+    const rawName = "Janvi Bhagat";
+    const rawEmail =
+      typeof window !== "undefined" ? localStorage.getItem("user_email") : null;
+
+    const nameTrimmed = (rawName ?? "").trim();
+    const candidate_name =
+      nameTrimmed.indexOf(" ") > 0 ? nameTrimmed.split(/\s+/)[0] : nameTrimmed;
+    const user_email = (rawEmail ?? "").trim();
+    const interview_type: TopicKey = topic;
+
+    // Validate required fields
+    if (!candidate_name || !user_email || !interview_type) {
+      toast.error("Missing name or email. Please complete your profile and try again.");
+      return;
+    }
+
     // Acquire camera before starting Vapi
     await ensureVideoOn();
 
@@ -774,14 +793,15 @@ function SessionContent() {
     try {
       await vapiRef.current.start(ASSISTANT_IDS[topic], {
         variableValues: {
-          report_id: reportId ?? undefined,
-          company_name: companyname ?? undefined,
-          job_title: jobtitle ?? undefined,
+          candidate_name,
+          user_email,
+          interview_type,
         },
       });
     } catch (e) {
       callOpenRef.current = false; // roll back if start fails
       console.error(e);
+      toast.error("Failed to start session. Please try again.");
       setStatus("idle");
     }
   };
