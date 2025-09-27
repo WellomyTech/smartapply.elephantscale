@@ -83,13 +83,15 @@ export default function InterviewScanList({ reports }: InterviewScanListProps) {
         visible={status.visible}
         onClose={hideStatus}
       />
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+      {/* Make items stretch and keep equal visual height via min-h on cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
         {sortedReports.map((report) => (
           <Card
             key={report.id}
-            className={`${softCardBg} ${softRing} border-0 shadow-lg hover:shadow-xl rounded-2xl transition-all duration-200`}
+            className={`${softCardBg} ${softRing} border-0 shadow-lg hover:shadow-xl rounded-2xl transition-all duration-200 h-full min-h-[360px] flex flex-col`}
           >
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col flex-1">
               {/* Header: Avatar + Title/Company */}
               <div className="flex items-start gap-4">
                 <div className="relative shrink-0">
@@ -105,14 +107,14 @@ export default function InterviewScanList({ reports }: InterviewScanListProps) {
                   </div>
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100">
-                      <Briefcase className="h-4 w-4 text-indigo-500" />
+                    <span className="inline-flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 truncate max-w-[220px]">
+                      <Briefcase className="h-4 w-4 text-indigo-500 shrink-0" />
                       {report.job_title || 'Untitled role'}
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100">
-                      <Building2 className="h-3.5 w-3.5" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100 truncate max-w-[180px]">
+                      <Building2 className="h-3.5 w-3.5 shrink-0" />
                       {report.job_company || '—'}
                     </span>
                   </div>
@@ -131,40 +133,31 @@ export default function InterviewScanList({ reports }: InterviewScanListProps) {
               {/* Divider */}
               <div className="my-5 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700" />
 
-              {/* Status Badges */}
-              <div className="flex flex-wrap gap-2">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${
-                    report.applied
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-slate-50 text-slate-600 border-slate-200'
-                  }`}
-                  title={report.applied ? 'You marked this job as applied' : 'Not applied yet'}
-                >
-                  {report.applied ? (
+              {/* Status Badges area (always reserved space for consistent height) */}
+              <div className="flex flex-wrap gap-2 min-h-[32px]">
+                {!!report.applied && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200"
+                    title="You marked this job as applied"
+                  >
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  ) : (
-                    <Circle className="w-4 h-4 text-slate-400" />
-                  )}
-                  {report.applied ? 'Applied' : 'Not Applied'}
-                </span>
+                    Applied
+                  </span>
+                )}
 
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${
-                    report.r_interview
-                      ? 'bg-purple-50 text-purple-700 border-purple-200'
-                      : 'bg-slate-50 text-slate-600 border-slate-200'
-                  }`}
-                  title={report.r_interview ? 'Interview received' : 'No interview yet'}
-                >
-                  {report.r_interview ? (
+                {!!report.r_interview && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-purple-50 text-purple-700 border-purple-200"
+                    title="Interview received"
+                  >
                     <CheckCircle2 className="w-4 h-4 text-purple-500" />
-                  ) : (
-                    <Circle className="w-4 h-4 text-slate-400" />
-                  )}
-                  {report.r_interview ? 'Interview Received' : 'No Interview'}
-                </span>
+                    Interview Received
+                  </span>
+                )}
               </div>
+
+              {/* Spacer pushes actions to bottom to align buttons across cards */}
+
 
               {/* Actions */}
               <div className="mt-5 grid gap-2">
@@ -196,7 +189,7 @@ export default function InterviewScanList({ reports }: InterviewScanListProps) {
                   )}
                 </Button>
 
-                {/* If you enable behavioral generation later, keep soft, light colors */}
+                {/* Behavioral (optional) */}
                 {/* <Button
                   className="w-full font-semibold text-white bg-gradient-to-r from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600 shadow-sm"
                   onClick={() => handleGenerateInterview(report, 'behavioral')}

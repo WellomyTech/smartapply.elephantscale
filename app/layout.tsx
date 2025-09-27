@@ -37,7 +37,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SiteHeader />
               <main className="min-h-[calc(100svh-56px)]">{children}</main>
               <SiteFooter />
-              <Analytics />
             </ResumeProvider>
           </AuthProvider>
         </ThemeProvider>
