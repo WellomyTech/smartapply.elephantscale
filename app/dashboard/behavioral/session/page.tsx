@@ -37,6 +37,8 @@ import { toast } from "sonner";
 
 type TopicKey = "communication" | "leadership" | "team_player";
 
+const API_URL = process.env.NEXT_PUBLIC_API_BASE;
+
 const TOPIC_CONFIG: Record<
   TopicKey,
   {
@@ -226,6 +228,18 @@ function SessionContent() {
   const callOpenRef = useRef(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
+  // NEW: capture starter values + call info + delayed post timer
+  const candidateNameRef = useRef<string>("");
+  const userEmailRef = useRef<string>("");
+  const interviewTypeRef = useRef<TopicKey>(topic);
+  const callStartInfoRef = useRef<string | null>(null);
+  const sendInfoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // NEW: structured data fetch guard + defaults
+  const hasFetchedStructuredRef = useRef(false);
+  const FETCH_MAX_WAIT_SECONDS = 240;
+  const FETCH_INTERVAL_SECONDS = 30;
+
   const myLabel = user?.name || user?.email?.split("@")[0] || "You";
   const roleLabel = (r: string): Line["role"] =>
     r === "assistant" ? "AI Interviewer" : "You";
@@ -309,6 +323,89 @@ function SessionContent() {
     } catch {}
   };
 
+  // Pick call id from various payload shapes
+  const pickCallId = (src: any): string | null => {
+    if (!src) return null;
+    const candidates = [
+      src.id,
+      src.call?.id,
+      src.data?.id,
+      src.session?.id,
+      src.sessionId,
+      src.conversationId,
+      src.metadata?.id,
+    ];
+    return (candidates.find(Boolean) as string) ?? null;
+  };
+
+  // NEW: send-call-info helper (posts 5s after call starts)
+  const sendCallInfo = async () => {
+    // require a call_id; avoid 422s
+    if (!callStartInfoRef.current) {
+      console.warn("send-call-info skipped: missing call_id");
+      return;
+    }
+    try {
+      const base = (API_URL || "").replace(/\/+$/, "");
+      const url =
+        base ? `${base}/api/behavioral/send-call-info` : `/api/behavioral/send-call-info`;
+
+      const form = new URLSearchParams();
+      form.set("user_email", userEmailRef.current || "");
+      form.set("name", candidateNameRef.current || "");
+      form.set("type", interviewTypeRef.current || "");
+      form.set("call_id", callStartInfoRef.current || "");
+
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: form.toString(),
+      });
+    } catch (e) {
+      console.error("send-call-info failed:", e);
+    }
+  };
+
+  const scheduleSendCallInfo = () => {
+    if (sendInfoTimeoutRef.current) clearTimeout(sendInfoTimeoutRef.current);
+    // start 5s countdown only after we have a call_id
+    if (!callStartInfoRef.current) return;
+    sendInfoTimeoutRef.current = setTimeout(() => {
+      if (callOpenRef.current) void sendCallInfo();
+    }, 5000);
+  };
+
+  // NEW: fetch structured data after the call ends
+  const fetchVapiStructuredData = async () => {
+    if (hasFetchedStructuredRef.current) return;
+    if (!callStartInfoRef.current) {
+      console.warn("fetch-vapi-structured-data skipped: missing call_id");
+      return;
+    }
+    hasFetchedStructuredRef.current = true;
+    try {
+      const base = (API_URL || "").replace(/\/+$/, "");
+      const url = base
+        ? `${base}/api/behavioral/fetch-vapi-structured-data`
+        : `/api/behavioral/fetch-vapi-structured-data`;
+
+      const form = new URLSearchParams();
+      form.set("call_id", callStartInfoRef.current);
+      form.set("user_email", userEmailRef.current || "");
+      form.set("type", interviewTypeRef.current || "");
+      form.set("max_wait_seconds", String(FETCH_MAX_WAIT_SECONDS));
+      form.set("interval_seconds", String(FETCH_INTERVAL_SECONDS));
+
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: form.toString(),
+      });
+    } catch (e) {
+      console.error("fetch-vapi-structured-data failed:", e);
+    }
+  };
+
   // Vapi wiring + localStorage
   useEffect(() => {
     const ridRaw = localStorage.getItem("report_id");
@@ -320,8 +417,18 @@ function SessionContent() {
     const vapi = new Vapi(PUBLIC_KEY);
     vapiRef.current = vapi;
 
-    vapi.on("call-start", () => {
+    vapi.on("call-start", (info?: any) => {
       if (!callOpenRef.current) return;
+      // capture call id from Vapi
+      const cid = pickCallId(info);
+      if (cid) {
+        callStartInfoRef.current = cid;
+        console.debug("Vapi call-start id:", cid);
+        // now that we have the id, arm the 5s post
+        scheduleSendCallInfo();
+      } else {
+        console.debug("Vapi call-start payload (no id):", info);
+      }
       setStatus("listening");
     });
 
@@ -340,8 +447,14 @@ function SessionContent() {
       // Mark call inactive first, then clean state.
       callOpenRef.current = false;
 
+      // cancel pending delayed post if any
+      if (sendInfoTimeoutRef.current) clearTimeout(sendInfoTimeoutRef.current);
+
       // save current timer value
       void saveSession(timer);
+
+      // NEW: fetch structured data once the call is over
+      void fetchVapiStructuredData();
 
       flushBuffer("AI Interviewer", true);
       flushBuffer("You", true);
@@ -764,42 +877,67 @@ function SessionContent() {
   //   setStatus("idle");
   // };
   const handleStart = async () => {
-    if (!vapiRef.current || callOpenRef.current) return; // prevent double-starts
+    if (!vapiRef.current || callOpenRef.current) return;
     setTranscript([]);
     resetBuffers();
 
-    // Read required values from localStorage on the client
-    //const rawName = typeof window !== "undefined" ? localStorage.getItem("name") : null;
-    const rawName = "Janvi Bhagat";
-    const rawEmail =
-      typeof window !== "undefined" ? localStorage.getItem("user_email") : null;
+    // reset structured-data flag for a new call
+    hasFetchedStructuredRef.current = false;
 
-    const nameTrimmed = (rawName ?? "").trim();
+    // Read name/email from localStorage.socialUser
+    const socialUserRaw =
+      typeof window !== "undefined" ? localStorage.getItem("socialUser") : null;
+    let socialUser: any = null;
+    try {
+      socialUser = socialUserRaw ? JSON.parse(socialUserRaw) : null;
+    } catch {
+      socialUser = null;
+    }
+
+    const rawName = (socialUser?.name || socialUser?.given_name || "").trim();
+    const rawEmailStored =
+      typeof window !== "undefined" ? localStorage.getItem("user_email") : null;
+    const rawEmail = (socialUser?.email || rawEmailStored || "").trim();
+
+    // Prefer given_name; otherwise first token of full name
     const candidate_name =
-      nameTrimmed.indexOf(" ") > 0 ? nameTrimmed.split(/\s+/)[0] : nameTrimmed;
-    const user_email = (rawEmail ?? "").trim();
+      (socialUser?.given_name || "").trim() ||
+      (rawName ? rawName.split(/\s+/)[0] : "");
+    const user_email = rawEmail;
     const interview_type: TopicKey = topic;
 
-    // Validate required fields
+    candidateNameRef.current = candidate_name;
+    userEmailRef.current = user_email;
+    interviewTypeRef.current = interview_type;
+
     if (!candidate_name || !user_email || !interview_type) {
       toast.error("Missing name or email. Please complete your profile and try again.");
       return;
     }
 
-    // Acquire camera before starting Vapi
     await ensureVideoOn();
 
-    callOpenRef.current = true; // mark active BEFORE vapi.start so early events are accepted
+    callOpenRef.current = true;
     try {
-      await vapiRef.current.start(ASSISTANT_IDS[topic], {
+      const started = await vapiRef.current.start(ASSISTANT_IDS[topic], {
         variableValues: {
           candidate_name,
           user_email,
           interview_type,
         },
       });
+
+      // capture id from start() response too
+      const cid = pickCallId(started);
+      if (cid) {
+        callStartInfoRef.current = cid;
+        console.debug("Vapi start() id:", cid);
+        scheduleSendCallInfo(); // 5s after id obtained
+      }
+      // call-start event will also set it if not present here
     } catch (e) {
-      callOpenRef.current = false; // roll back if start fails
+      callOpenRef.current = false;
+      if (sendInfoTimeoutRef.current) clearTimeout(sendInfoTimeoutRef.current);
       console.error(e);
       toast.error("Failed to start session. Please try again.");
       setStatus("idle");
@@ -810,12 +948,18 @@ function SessionContent() {
     // First, mark as not active so any late events are ignored
     callOpenRef.current = false;
 
+    // cancel pending delayed post if any
+    if (sendInfoTimeoutRef.current) clearTimeout(sendInfoTimeoutRef.current);
+
     // save current timer value
     void saveSession(timer);
 
     try {
       vapiRef.current?.stop();
     } catch {}
+
+    // Do not call fetchVapiStructuredData here directly to avoid double-call;
+    // vapi "call-end" handler above will trigger it once.
 
     flushBuffer("AI Interviewer", true);
     flushBuffer("You", true);
