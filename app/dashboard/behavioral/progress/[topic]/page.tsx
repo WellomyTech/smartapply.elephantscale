@@ -262,9 +262,7 @@ function SessionStrip({
             <div className="text-sm text-slate-500">
               {formatDate(s.timestamp ?? s.date ?? s.createdAt ?? s.updatedAt)}
             </div>
-            <div className="mt-1 font-semibold">
-              {cap((s.type as string) ?? (s.topic as string) ?? topic)}
-            </div>
+            {/* Removed interview name/title */}
             <div className="mt-2 text-slate-700 dark:text-slate-300">
               Grade:{" "}
               <span className="font-medium">{s.grade ?? s.score ?? "—"}</span>
