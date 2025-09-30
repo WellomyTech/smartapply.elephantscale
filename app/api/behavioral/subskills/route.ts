@@ -18,6 +18,8 @@ const SUBSKILLS: Record<Topic, string[]> = {
     "risk_management",
     "outcomes_impact",
     "learning_mindset",
+    "vision",
+    "delegation"
   ],
   team_player: [
     "collaboration",
@@ -27,6 +29,7 @@ const SUBSKILLS: Record<Topic, string[]> = {
     "reliability_followthrough",
     "feedback_practice",
     "outcomes_team_impact",
+    "adaptibility",
   ],
 };
 

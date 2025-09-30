@@ -46,10 +46,7 @@ export default function TopicProgressPage() {
 
       {/* Sessions horizontal scroller */}
       {!isLoading && data ? (
-        <SessionStrip
-          topic={topic}
-          sessions={(data as any)?.sessions ?? []}
-        />
+        <SessionStrip topic={topic} sessions={(data as any)?.sessions ?? []} />
       ) : null}
 
       {isLoading || !data ? (
@@ -149,17 +146,24 @@ function SessionStrip({
     // latest first
     list.sort((a, b) => {
       const ta =
-        parseToDateLite(a.timestamp ?? a.date ?? a.createdAt ?? a.updatedAt)?.getTime() ??
-        0;
+        parseToDateLite(
+          a.timestamp ?? a.date ?? a.createdAt ?? a.updatedAt
+        )?.getTime() ?? 0;
       const tb =
-        parseToDateLite(b.timestamp ?? b.date ?? b.createdAt ?? b.updatedAt)?.getTime() ??
-        0;
+        parseToDateLite(
+          b.timestamp ?? b.date ?? b.createdAt ?? b.updatedAt
+        )?.getTime() ?? 0;
       return tb - ta;
     });
     // fallback mock if empty
     if (list.length === 0) {
       return [
-        { id: "mock-1", date: new Date().toISOString(), type: topic, grade: "B+" },
+        {
+          id: "mock-1",
+          date: new Date().toISOString(),
+          type: topic,
+          grade: "B+",
+        },
         {
           id: "mock-2",
           date: new Date(Date.now() - 86400000).toISOString(),
@@ -169,6 +173,24 @@ function SessionStrip({
         {
           id: "mock-3",
           date: new Date(Date.now() - 2 * 86400000).toISOString(),
+          type: topic,
+          grade: "B",
+        },
+        {
+          id: "mock-4",
+          date: new Date(Date.now() - 3 * 86400000).toISOString(),
+          type: topic,
+          grade: "A-",
+        },
+        {
+          id: "mock-5",
+          date: new Date(Date.now() - 4 * 86400000).toISOString(),
+          type: topic,
+          grade: "B",
+        },
+        {
+          id: "mock-6",
+          date: new Date(Date.now() - 5 * 86400000).toISOString(),
           type: topic,
           grade: "B",
         },
@@ -210,7 +232,7 @@ function SessionStrip({
     const dt = parseToDateLite(d);
     if (!dt) return "—";
     return dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    };
+  };
 
   const cap = (s: string | undefined) =>
     s ? s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "";
@@ -244,7 +266,8 @@ function SessionStrip({
               {cap((s.type as string) ?? (s.topic as string) ?? topic)}
             </div>
             <div className="mt-2 text-slate-700 dark:text-slate-300">
-              Grade: <span className="font-medium">{s.grade ?? s.score ?? "—"}</span>
+              Grade:{" "}
+              <span className="font-medium">{s.grade ?? s.score ?? "—"}</span>
             </div>
           </div>
         ))}
