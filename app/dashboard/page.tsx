@@ -53,7 +53,7 @@ export default function HomePage() {
               <Mic className="h-10 w-10 text-rose-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-rose-700 dark:text-rose-300 mb-1 tracking-tight">
-              Behavioral Interview Agent
+              Behavioral Interview Agent 
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
               Ace your behavioral interviews by practicing with AI voice agent.
