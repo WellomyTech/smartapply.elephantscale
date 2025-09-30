@@ -210,7 +210,7 @@ function SessionStrip({
     const dt = parseToDateLite(d);
     if (!dt) return "—";
     return dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    };
+  };
 
   const cap = (s: string | undefined) =>
     s ? s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "";
@@ -240,9 +240,7 @@ function SessionStrip({
             <div className="text-sm text-slate-500">
               {formatDate(s.timestamp ?? s.date ?? s.createdAt ?? s.updatedAt)}
             </div>
-            <div className="mt-1 font-semibold">
-              {cap((s.type as string) ?? (s.topic as string) ?? topic)}
-            </div>
+            {/* Removed interview name/title */}
             <div className="mt-2 text-slate-700 dark:text-slate-300">
               Grade: <span className="font-medium">{s.grade ?? s.score ?? "—"}</span>
             </div>
