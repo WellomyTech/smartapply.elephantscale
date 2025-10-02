@@ -154,6 +154,10 @@ export default function JobInfoPage() {
           try {
             if (typeof report.gaps === 'string') report.gaps = JSON.parse(report.gaps)
           } catch {}
+          // NEW: parse selected_skills if it is a JSON string
+          try {
+            if (typeof report.selected_skills === 'string') report.selected_skills = JSON.parse(report.selected_skills)
+          } catch {}
           setJobData(report)
           if (report?.id || report?.report_id || reportParam) {
             localStorage.setItem('report_id', String(report.id || report.report_id || reportParam))
@@ -176,12 +180,17 @@ export default function JobInfoPage() {
     if (jobData.cover_letter) setCoverLetterText(normalizeNewlines(String(jobData.cover_letter)))
   }, [jobData?.updated_resume, jobData?.cover_letter, jobData])
 
-  // initialize workedOn to gaps length
+  // initialize workedOn to reflect selected_skills for each gap
   useEffect(() => {
     if (!jobData) return
-    const gaps = safeJsonArray(jobData.gaps)
-    setWorkedOn(Array(gaps.length).fill(false))
-  }, [jobData?.gaps, jobData])
+    const gapsArr = safeJsonArray(jobData.gaps)
+    const selected = new Set(
+      safeJsonArray(jobData.selected_skills).map((s) => s.toString().trim().toLowerCase())
+    )
+    setWorkedOn(
+      gapsArr.map((g) => selected.has(g.toString().trim().toLowerCase()))
+    )
+  }, [jobData?.gaps, jobData?.selected_skills, jobData])
 
   if (isLoading || loading || !jobData) {
     return (
@@ -1133,36 +1142,134 @@ export default function JobInfoPage() {
 
   // default view (no generated docs yet)
   return (
-    <>
-      <StatusBar message={status.message} type={status.type} visible={status.visible} onClose={hideStatus} />
-      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          {jobMeta}
+     <>
+        <StatusBar message={status.message} type={status.type} visible={status.visible} onClose={hideStatus} />
+        <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            {jobMeta}
 
-          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-md rounded-2xl border border-white/20 dark:border-gray-700/30 p-8 shadow-xl text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl">
-                <Target className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-md rounded-2xl border border-white/20 dark:border-gray-700/30 p-8 shadow-xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-lg">
+                  <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                  Skills Comparison
+                </h3>
+              </div>
+
+              <div className="overflow-x-auto bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-200/30 dark:border-gray-700/30">
+                <table className="w-full table-auto border-collapse">
+                  <thead className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-sm">
+                    <tr>
+                      <th className="px-6 py-4 text-left font-semibold text-gray-900 dark:text-white">Skill</th>
+                      <th className="px-6 py-4 text-center font-semibold text-gray-900 dark:text-white">In Job</th>
+                      <th className="px-6 py-4 text-center font-semibold text-gray-900 dark:text-white">In Resume</th>
+                      <th className="px-6 py-4 text-center font-semibold text-gray-900 dark:text-white">Have You Worked On It?</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gaps.map((gapSkill, idx) => {
+                      const match = skills_match.find(
+                        (s) => normalizeSkillName(s).toLowerCase() === gapSkill.toLowerCase()
+                      )
+                      const in_resume = (match?.in_resume?.toString().toLowerCase() === 'yes')
+
+                      return (
+                        <tr
+                          key={`${gapSkill}-${idx}`}
+                          className="border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
+                        >
+                          <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                            {gapSkill}
+                          </td>
+
+                          <td className="px-6 py-4 text-center">
+                            <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                              <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4 text-center">
+                            {in_resume ? (
+                              <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                                <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center justify-center w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full">
+                                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex justify-center gap-4">
+                              <label className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg border border-emerald-200 dark:border-emerald-700/50 cursor-pointer transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`worked-${idx}`}
+                                  checked={workedOn[idx] === true}
+                                  onChange={() =>
+                                    setWorkedOn((arr) => {
+                                      const copy = [...arr]
+                                      copy[idx] = true
+                                      return copy
+                                    })
+                                  }
+                                  className="form-radio h-4 w-4 text-emerald-600 border-emerald-300 focus:ring-emerald-500"
+                                />
+                                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Yes</span>
+                              </label>
+
+                              <label className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800/70 rounded-lg border border-gray-200 dark:border-gray-700/50 cursor-pointer transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`worked-${idx}`}
+                                  checked={workedOn[idx] === false}
+                                  onChange={() =>
+                                    setWorkedOn((arr) => {
+                                      const copy = [...arr]
+                                      copy[idx] = false
+                                      return copy
+                                    })
+                                  }
+                                  className="form-radio h-4 w-4 text-gray-600 border-gray-300 focus:ring-gray-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">No</span>
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-8 flex justify-center">
+                <Button
+                  size="lg"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleGenerateResume}
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="animate-spin mr-3 h-5 w-5" />
+                      Generating Resume...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-3 h-5 w-5" />
+                      Generate Resume and Cover Letter
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Ready to Optimize Your Application?
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Resume and cover letter not found for this job. Let's analyze the skills match and generate personalized documents.
-            </p>
-            <Button
-              size="lg"
-              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-              onClick={() => setShowSkills(true)}
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              Continue to Skills Match
-            </Button>
           </div>
-        </div>
-      </main>
-    </>
+        </main>
+      </>
   )
 }
 
