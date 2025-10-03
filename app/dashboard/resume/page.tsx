@@ -180,6 +180,9 @@ export default function Dashboard() {
       clearInterval(messageInterval)
       showStatus('Resume uploaded successfully!', 'success')
 
+      // Redirect to Job Suggestions page after a successful upload
+      router.push('/job-suggestions')
+
     } catch (error) {
       clearInterval(messageInterval)
       showStatus('Failed to upload resume', 'error')
