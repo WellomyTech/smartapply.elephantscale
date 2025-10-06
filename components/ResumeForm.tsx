@@ -6,12 +6,14 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from './AuthProvider'
+import { useRouter } from 'next/navigation'
 
 export function ResumeForm() {
   const { user } = useAuth()
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [jobUrl, setJobUrl] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
+  const router = useRouter()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -30,6 +32,8 @@ export function ResumeForm() {
       setJobUrl('')
       const fileInput = document.getElementById('resume-upload') as HTMLInputElement | null
       if (fileInput) fileInput.value = ''
+      // Navigate to Job Suggestions after generation
+      router.push('/job-suggestions')
     } catch (err) {
       console.error('Generation failed:', err)
     } finally {
