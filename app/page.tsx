@@ -9,6 +9,7 @@ import LinkedInLoginButton from '@/components/LinkedInButton'
 import GoogleButton from '@/components/GoogleButton'
 import { Briefcase, Loader2, Sparkles, Zap, Target, Users } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { redirectAfterLogin } from '@/lib/auth/redirectAfterLogin'
 
 export default function HomePage() {
   const { user, isLoading } = useAuth()
@@ -16,7 +17,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push('/dashboard')
+      redirectAfterLogin(router)
     }
   }, [isLoading, user, router])
 

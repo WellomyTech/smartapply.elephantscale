@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Pencil, Heart } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
+import RouteGuard from "@/components/RouteGuard";
 
 // Dummy data (replace later with LinkedIn API results)
 export type Job = {
@@ -301,9 +303,15 @@ function JobCard({
                 Applied ✓
               </button>
             ) : (
-              <button className="px-3 py-1.5 rounded-md bg-slate-900 text-white text-xs hover:bg-slate-800" onClick={() => onApply(job.id)}>
+              <Link
+                href={job.profileUrl ? `/application-options?linkedin_url=${encodeURIComponent(job.profileUrl)}` : "/application-options"}
+                onClick={() => {
+                  try { sessionStorage.setItem("applicationJob", JSON.stringify(job)); } catch {}
+                }}
+                className="px-3 py-1.5 rounded-md text-white text-xs bg-gradient-to-r from-purple-500 to-pink-500 shadow-sm transition-all duration-200 hover:brightness-105 hover:-translate-y-[1px] hover:shadow-md inline-flex items-center justify-center"
+              >
                 Apply Now
-              </button>
+              </Link>
             )}
           </div>
         </div>
@@ -313,6 +321,7 @@ function JobCard({
 }
 
 export default function JobSuggestionsPage() {
+  const [skills] = useState<string[]>(initialSkills);
   // Grouped skills and modal state
   const [skillGroups, setSkillGroups] = useState<SkillGroups>(initialSkillGroups);
   const [editOpen, setEditOpen] = useState(false);
@@ -323,6 +332,7 @@ export default function JobSuggestionsPage() {
   const [sortBy, setSortBy] = useState<"match" | "salary" | "date">("match");
   const [likedJobs, setLikedJobs] = useState<number[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<number[]>([]);
+  const router = useRouter();
 
   const displayedJobs = useMemo(() => {
     let list = jobs.slice();
@@ -336,7 +346,27 @@ export default function JobSuggestionsPage() {
 
   const toggleLike = (jobId: number) => setLikedJobs((prev) => (prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]));
   const openProfile = (url?: string) => { if (url && typeof window !== "undefined") window.location.href = url; };
-  const applyToJob = (jobId: number) => { setAppliedJobs((prev) => (prev.includes(jobId) ? prev : [...prev, jobId])); const job = jobs.find((j) => j.id === jobId); openProfile(job?.profileUrl); };
+  const applyToJob = (jobId: number) => {
+    const job = jobs.find((j) => j.id === jobId);
+    const href = (() => {
+      const url = job?.profileUrl || (job as any)?.linkedin_url || "";
+      const qs = url ? `?linkedin_url=${encodeURIComponent(url)}` : "";
+      return `/application-options${qs}`;
+    })();
+
+    if (typeof window !== "undefined" && job) {
+      try { sessionStorage.setItem("applicationJob", JSON.stringify(job)); } catch {}
+    }
+
+    router.push(href);
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        if (!window.location.pathname.includes("/application-options")) {
+          window.location.href = href;
+        }
+      }, 80);
+    }
+  };
 
   const countApplied = appliedJobs.length;
   const countLiked = likedJobs.length;
@@ -365,144 +395,146 @@ export default function JobSuggestionsPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
-      <div className="w-full max-w-6xl space-y-6">
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="space-y-2 text-left">
-            <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Job Suggestions
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-xl">Personalized matches based on your skills and preferences.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className={pill(statusFilter === "all")} onClick={() => setStatusFilter("all")}>
-              All
-            </button>
-            <button className={pill(statusFilter === "applied")} onClick={() => setStatusFilter("applied")}>
-              Applied <span className="ml-1 text-xs opacity-80">({countApplied})</span>
-            </button>
-            <button className={pill(statusFilter === "liked")} onClick={() => setStatusFilter("liked")}>
-              Liked <span className="ml-1 text-xs opacity-80">({countLiked})</span>
-            </button>
-            {/* Sort dropdown */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="ml-2 px-3 py-2 rounded-lg border bg-white text-sm dark:bg-slate-900 dark:border-slate-700"
-              aria-label="Sort jobs by"
-            >
-              <option value="match">Highest Matched</option>
-              <option value="salary">Salary (High → Low)</option>
-              <option value="date">Recently Added</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Grouped Skills summary */}
-        <SkillsSummary groups={skillGroups} onEdit={openEdit} />
-
-        {/* Edit Skills Modal */}
-        <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent className="sm:max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Edit Skills
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Tech suggestions */}
-              <div>
-                <div className="text-xs font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                  Tech Skills
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {suggestedTech.map((s) => {
-                    const selected = isSelected("tech", s);
-                    return (
-                      <button
-                        key={`tech-${s}`}
-                        type="button"
-                        onClick={() => toggleSelect("tech", s)}
-                        className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                          selected
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-transparent text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Soft suggestions */}
-              <div>
-                <div className="text-xs font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                  Soft Skills
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {suggestedSoft.map((s) => {
-                    const selected = isSelected("soft", s);
-                    return (
-                      <button
-                        key={`soft-${s}`}
-                        type="button"
-                        onClick={() => toggleSelect("soft", s)}
-                        className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                          selected
-                            ? "bg-indigo-600 text-white border-indigo-600"
-                            : "bg-transparent text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+    <RouteGuard requireResume>
+      <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
+        <div className="w-full max-w-6xl space-y-6">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div className="space-y-2 text-left">
+              <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Job Suggestions
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-xl">Personalized matches based on your skills and preferences.</p>
             </div>
-
-            <DialogFooter className="mt-4">
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="px-4 py-2 rounded-lg border bg-white text-sm dark:bg-slate-900 dark:border-slate-700"
-              >
-                Cancel
+            <div className="flex items-center gap-2">
+              <button className={pill(statusFilter === "all")} onClick={() => setStatusFilter("all")}>
+                All
               </button>
-              <button
-                type="button"
-                onClick={saveEdit}
-                className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm hover:bg-slate-800"
-              >
-                Save
+              <button className={pill(statusFilter === "applied")} onClick={() => setStatusFilter("applied")}>
+                Applied <span className="ml-1 text-xs opacity-80">({countApplied})</span>
               </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <button className={pill(statusFilter === "liked")} onClick={() => setStatusFilter("liked")}>
+                Liked <span className="ml-1 text-xs opacity-80">({countLiked})</span>
+              </button>
+              {/* Sort dropdown */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="ml-2 px-3 py-2 rounded-lg border bg-white text-sm dark:bg-slate-900 dark:border-slate-700"
+                aria-label="Sort jobs by"
+              >
+                <option value="match">Highest Matched</option>
+                <option value="salary">Salary (High → Low)</option>
+                <option value="date">Recently Added</option>
+              </select>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {displayedJobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              liked={likedJobs.includes(job.id)}
-              applied={appliedJobs.includes(job.id)}
-              onToggleLike={toggleLike}
-              onApply={applyToJob}
-              onOpenProfile={openProfile}
-            />
-          ))}
-        </div>
+          {/* Grouped Skills summary */}
+          <SkillsSummary groups={skillGroups} onEdit={openEdit} />
 
-        <div className="text-center">
-          <Link href="/dashboard" className="inline-block mt-6 text-sm text-slate-700 dark:text-slate-300 hover:underline">
-            Back to Dashboard
-          </Link>
+          {/* Edit Skills Modal */}
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  Edit Skills
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Tech suggestions */}
+                <div>
+                  <div className="text-xs font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                    Tech Skills
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedTech.map((s) => {
+                      const selected = isSelected("tech", s);
+                      return (
+                        <button
+                          key={`tech-${s}`}
+                          type="button"
+                          onClick={() => toggleSelect("tech", s)}
+                          className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                            selected
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-transparent text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Soft suggestions */}
+                <div>
+                  <div className="text-xs font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                    Soft Skills
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedSoft.map((s) => {
+                      const selected = isSelected("soft", s);
+                      return (
+                        <button
+                          key={`soft-${s}`}
+                          type="button"
+                          onClick={() => toggleSelect("soft", s)}
+                          className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                            selected
+                              ? "bg-indigo-600 text-white border-indigo-600"
+                              : "bg-transparent text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="mt-4">
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="px-4 py-2 rounded-lg border bg-white text-sm dark:bg-slate-900 dark:border-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={saveEdit}
+                  className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm hover:bg-slate-800"
+                >
+                  Save
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {displayedJobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                liked={likedJobs.includes(job.id)}
+                applied={appliedJobs.includes(job.id)}
+                onToggleLike={toggleLike}
+                onApply={applyToJob}
+                onOpenProfile={openProfile}
+              />
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link href="/dashboard" className="inline-block mt-6 text-sm text-slate-700 dark:text-slate-300 hover:underline">
+              Back to Dashboard
+            </Link>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </RouteGuard>
   );
 }
