@@ -304,6 +304,41 @@ function SessionContent() {
       document.head.appendChild(s);
     });
 
+  // Attach/re-attach stream to <video> when UI or stream changes (same logic as interview/page.tsx)
+  const attachStreamToVideo = async () => {
+    const vid = videoRef.current;
+    const stream = videoStream;
+    if (!vid) return;
+
+    if (!stream) {
+      (vid as HTMLVideoElement).srcObject = null;
+      return;
+    }
+
+    vid.muted = true;
+    (vid as any).playsInline = true;
+
+    try {
+      (vid as any).srcObject = stream;
+    } catch {
+      (vid as any).srcObject = stream;
+    }
+
+    const onLoaded = async () => {
+      try {
+        await vid.play();
+      } catch {
+        // ignore autoplay block; user gesture will play
+      }
+    };
+
+    if (vid.readyState >= 2) {
+      await onLoaded();
+    } else {
+      vid.addEventListener("loadedmetadata", onLoaded, { once: true });
+    }
+  };
+
   // Persist a session (stub API)
   const saveSession = async (finalDuration: number) => {
     try {
@@ -510,61 +545,13 @@ function SessionContent() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [transcript]);
 
-  // Bind video element when stream changes
-  // useEffect(() => {
-  //   const vid = videoRef.current;
-  //   if (!vid) return;
-  //   vid.srcObject = videoStream ?? null;
-  //   if (videoStream) {
-  //     vid.muted = true;
-  //     vid.playsInline = true;
-  //     (async () => {
-  //       for (let i = 0; i < 4; i++) {
-  //         try {
-  //           await vid.play();
-  //           break;
-  //         } catch {
-  //           await new Promise((r) => setTimeout(r, 120));
-  //         }
-  //       }
-  //     })();
-  //   }
-  // }, [videoStream]);
+  // Bind video element when stream OR UI status changes (fixes camera toggle on this page)
   useEffect(() => {
-    const vid = videoRef.current;
-    if (!vid) return;
-
-    if (!videoStream) {
-      vid.srcObject = null;
-      return;
-    }
-
-    vid.muted = true; // required for autoplay on many browsers
-    (vid as any).playsInline = true;
-
-    try {
-      vid.srcObject = videoStream;
-    } catch {
-      // Older Safari fallback
-      (vid as any).srcObject = videoStream;
-    }
-
-    const onLoaded = async () => {
-      try {
-        await vid.play();
-      } catch {}
-    };
-
-    if (vid.readyState >= 2) {
-      onLoaded();
-    } else {
-      vid.addEventListener("loadedmetadata", onLoaded, { once: true });
-    }
-
+    attachStreamToVideo();
     return () => {
-      vid.removeEventListener("loadedmetadata", onLoaded);
+      // no-op; cleanup handled elsewhere
     };
-  }, [videoStream]);
+  }, [videoStream, status]);
 
   // Camera control
   // const getVideo = async (): Promise<MediaStream | null> => {
@@ -625,15 +612,65 @@ function SessionContent() {
   //   stopVideo();
   // };
 
+  // Small helper to format and show camera errors consistently
+  const showCameraError = (msg: string, detail?: unknown) => {
+    console.error("[camera]", msg, detail ?? "");
+    setCameraError(msg);
+    toast.error(msg);
+  };
+
+  // Optional: pre-check permission to give immediate guidance
+  const checkCameraPermission = async (): Promise<boolean> => {
+    try {
+      // localhost is secure, but surface helpful msg if not
+      if (!window.isSecureContext) {
+        showCameraError("Camera requires HTTPS or localhost. Please use https:// or localhost.");
+        return false;
+      }
+      // Not all browsers support Permissions API for 'camera'
+      // In Chrome it's 'camera', in others it may not exist.
+      if ((navigator as any).permissions?.query) {
+        // Cast to avoid TS issues across browsers
+        const status = await (navigator as any).permissions.query({ name: "camera" as any });
+        if (status.state === "denied") {
+          showCameraError("Camera permission is blocked in the browser. Allow camera in Site settings and reload.");
+          return false;
+        }
+      }
+    } catch {
+      // Ignore; we'll attempt getUserMedia next which will still error with details
+    }
+    return true;
+  };
+
+  const pickFirstVideoDevice = async (): Promise<MediaDeviceInfo | null> => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter((d) => d.kind === "videoinput");
+      return cams[0] ?? null;
+    } catch (e) {
+      console.warn("enumerateDevices failed", e);
+      return null;
+    }
+  };
+
   const getVideo = async (): Promise<MediaStream | null> => {
     setCameraError(null);
-    // Prefer front camera; try HD; fall back gracefully
+
+    const ok = await checkCameraPermission();
+    if (!ok) return null;
+
+    // Prefer a specific deviceId if available
+    const device = await pickFirstVideoDevice();
+
     const trials: MediaStreamConstraints[] = [
       {
         video: {
+          deviceId: device?.deviceId ? { exact: device.deviceId } : undefined,
           facingMode: "user",
           width: { ideal: 1280 },
           height: { ideal: 720 },
+          frameRate: { ideal: 30, max: 60 },
         },
         audio: false,
       },
@@ -646,20 +683,39 @@ function SessionContent() {
         const media = await navigator.mediaDevices.getUserMedia(constraints);
         const vt = media.getVideoTracks()[0];
         if (vt) return media;
-      } catch (e) {
-        // continue
+      } catch (e: any) {
+        // Try next constraint, but keep last meaningful error
+        const name = e?.name || "Error";
+        const msg = e?.message || "";
+        if (name === "NotAllowedError") {
+          showCameraError("Camera access was denied. Click the camera icon in the address bar to allow and reload.", e);
+          return null;
+        }
+        if (name === "NotReadableError") {
+          showCameraError("Camera is busy (used by another app). Close other apps (Zoom/Teams) and retry.", e);
+          return null;
+        }
+        if (name === "OverconstrainedError") {
+          // Fall through to try less strict constraints
+          console.warn("Overconstrained; trying fallback constraints", constraints, e);
+          continue;
+        }
+        if (name === "NotFoundError") {
+          showCameraError("No camera device found. Check Windows Privacy settings > Camera.", e);
+          return null;
+        }
+        console.warn("getUserMedia failed; trying fallback", name, msg, constraints);
       }
     }
-    setCameraError(
-      "Couldn't start your camera. Check browser permissions and HTTPS."
-    );
+
+    showCameraError("Couldn't start your camera. Check browser permissions and HTTPS.");
     return null;
   };
 
   const ensureVideoOn = async () => {
     let stream = videoStream;
 
-    // If we already have a stream but it's disabled, just enable it.
+    // If we already have a live track, just re-enable it
     const existingTrack = stream?.getVideoTracks()[0];
     if (existingTrack && existingTrack.readyState === "live") {
       if (!existingTrack.enabled) existingTrack.enabled = true;
@@ -679,37 +735,40 @@ function SessionContent() {
   };
 
   const stopVideo = () => {
-    // Fully stop tracks only when ending the session
     if (videoStream) {
       videoStream.getTracks().forEach((t) => {
-        try {
-          t.stop();
-        } catch {}
+        try { t.stop(); } catch {}
       });
     }
     setVideoStream(null);
     setIsVideoOff(true);
-    if (videoRef.current) videoRef.current.srcObject = null;
+    if (videoRef.current) (videoRef.current as HTMLVideoElement).srcObject = null;
   };
 
   const toggleVideo = async () => {
+    // If we have a track, toggle enabled; if ended, reacquire
     const track = videoStream?.getVideoTracks()[0];
-    if (track && track.readyState === "live") {
+    if (track) {
+      if (track.readyState !== "live") {
+        await ensureVideoOn();
+        return;
+      }
       const nextEnabled = !track.enabled;
       track.enabled = nextEnabled;
       setIsVideoOff(!nextEnabled);
       if (!nextEnabled && videoRef.current) {
-        // keep element but blank it; don't stop the track
-        videoRef.current.pause();
+        try { videoRef.current.pause(); } catch {}
       } else if (nextEnabled && videoRef.current) {
-        try {
-          await videoRef.current.play();
-        } catch {}
+        try { await videoRef.current.play(); } catch {}
       }
+      // Ensure the stream is attached after state/UI changes
+      await attachStreamToVideo();
       return;
     }
-    // No active track? Acquire one.
+
+    // No active stream? Acquire one now and attach.
     await ensureVideoOn();
+    await attachStreamToVideo();
   };
 
   const toggleMute = () => setIsMuted((v) => !v);
