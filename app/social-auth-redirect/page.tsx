@@ -1,8 +1,9 @@
- 'use client'
+'use client'
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import { redirectAfterLogin } from '@/lib/auth/redirectAfterLogin'
 
 export default function SocialAuthRedirectPage() {
   const router = useRouter()
@@ -17,15 +18,15 @@ export default function SocialAuthRedirectPage() {
           const userJson = Buffer.from(decodeURIComponent(userParam), "base64").toString()
           const user = JSON.parse(userJson)
           localStorage.setItem('socialUser', JSON.stringify(user))
-          localStorage.setItem('user_email', user.email)
+          if (user?.email) localStorage.setItem('user_email', user.email)
 
           fetch(`${API_URL}auth/user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(user),
-          })
+          }).catch(() => {})
 
-          router.replace('/dashboard')
+          redirectAfterLogin(router)
         } catch {
           router.replace('/?error=invalid_user_data')
         }
