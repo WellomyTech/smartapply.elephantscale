@@ -7,6 +7,7 @@ import { useResume } from '@/components/ResumeProvider'
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import PricingModal from '@/components/PricingModal'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -209,6 +210,8 @@ export default function JobKitPage() {
 
   const [email, setEmail] = useState(user?.email ?? '')
   const [loading, setLoading] = useState(false)
+  const [showPricing, setShowPricing] = useState(false)
+  const [pendingPayment, setPendingPayment] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<CompareApiResponse | null>(null)
   const [workedOn, setWorkedOn] = useState<boolean[]>([])
@@ -548,10 +551,11 @@ result?.skills_match?.forEach((row) => {
                 )}
 
                 <Button
-                  type="submit"
+                  type="button"
                   size="lg"
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                   disabled={compareDisabled}
+                  onClick={() => setShowPricing(true)}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -570,6 +574,48 @@ result?.skills_match?.forEach((row) => {
                     </div>
                   )}
                 </Button>
+                <PricingModal
+                  open={showPricing}
+                  onOpenChange={setShowPricing}
+                  onSelect={async (item) => {
+                    setPendingPayment(true)
+                    // Simulate payment success: in real app, redirect to Stripe and handle webhook/callback
+                    // For demo, close modal and trigger resume generation
+                    setShowPricing(false)
+                    setLoading(true)
+                    try {
+                      // Use same logic as handleCompare, but only after payment
+                      const compareRes = await compareResumeJob({
+                        jobDescription: description || '',
+                        jobTitle: jobTitle?.trim() || undefined,
+                        jobCompany: jobCompany?.trim() || undefined,
+                        jobLink: jobUrl?.trim() || undefined,
+                      })
+                      if ((compareRes as Compare422).status === 422) {
+                        const err = compareRes as Compare422
+                        const missing = err.detail?.missing_fields?.length ? err.detail.missing_fields : ['job_title', 'job_company']
+                        setMissingFields(missing)
+                        setJobTitleInput(jobTitle || ''); setJobCompanyInput(jobCompany || '')
+                        setShowMissingModal(true); setLoading(false); return
+                      }
+                      if ('error' in (compareRes as any) && !(compareRes as any).skills_match) {
+                        const err = compareRes as Compare422
+                        setError(err.error || 'An error occurred.')
+                        setResult(null); setLoading(false); return
+                      }
+                      const ok = compareRes as CompareApiResponse
+                      if (ok.job_title && typeof window !== 'undefined') localStorage.setItem('job_title', ok.job_title)
+                      if (ok.job_company && typeof window !== 'undefined') localStorage.setItem('job_company', ok.job_company)
+                      if (jobUrl && typeof window !== 'undefined') localStorage.setItem('job_url', jobUrl)
+                      setResult(ok)
+                    } catch (err: any) {
+                      setError(err?.message ?? 'An error occurred.')
+                    } finally {
+                      setLoading(false)
+                      setPendingPayment(false)
+                    }
+                  }}
+                />
               </form>
             </CardContent>
           </Card>
