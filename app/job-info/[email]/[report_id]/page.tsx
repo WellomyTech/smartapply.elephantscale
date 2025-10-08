@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import dynamicImport from "next/dynamic"; // ADD
+// import dynamicImport from "next/dynamic"; // REMOVED
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,10 +28,7 @@ import DashboardButton from "@/components/DashboardButton";
 import { StatusBar, useStatusBar } from "@/components/ui/status-bar";
 import { useEntitlement } from "@/hooks/useEntitlement";
 
-// import PricingModal (client-only)
-const PricingModal = dynamicImport(() => import("@/components/PricingModal"), {
-  ssr: false,
-}); // CHANGE
+// PricingModal removed
 
 function safeJsonArray(val: any): string[] {
   if (!val) return [];
@@ -106,8 +103,7 @@ export default function JobInfoPage() {
   const { isLoading: entLoading, isPremium /* canGenerate */ } =
     useEntitlement();
 
-  // Add modal state
-  const [showPaywall, setShowPaywall] = useState(false);
+  // Pricing modal state removed
   const { status, showStatus, hideStatus } = useStatusBar();
 
   // Popup state
@@ -228,7 +224,7 @@ export default function JobInfoPage() {
         <div className="min-h-[60vh] grid place-items-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-        <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
+  {/* PricingModal removed */}
       </>
     );
   }
@@ -1023,13 +1019,13 @@ export default function JobInfoPage() {
                 size="lg"
                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => {
-                  !isPremium ? setShowPaywall(true) : setShowSkills(true);
+                  setShowSkills(true);
                 }}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Reselect/Add Skills
               </Button>
-              <PricingModal open={showPaywall} onOpenChange={setShowPaywall} />
+              {/* PricingModal removed */}
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8">
