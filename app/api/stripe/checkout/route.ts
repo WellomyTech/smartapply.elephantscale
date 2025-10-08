@@ -1,71 +1,56 @@
 // Creates a Stripe Checkout Session and returns { url }.
-// • Logs every request/response when DEBUG_LOG_CHECKOUT=true
-// • Accepts POST { priceId: string, email?: string }
+// Authoritative server: infers mode/credits from server catalog and ignores client-provided mode.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import type Stripe from 'stripe'
+import { lookupByPriceId } from '@/lib/pricing-server'
 
-function reqEnv(key: string): string {
-  const v = process.env[key]
-  if (!v) throw new Error(`Missing env: ${key}`)
-  return v
-}
-
-interface Body {
-  priceId?: string
-  email?: string
-}
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  let body: Body
   try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
+    const { priceId, quantity = 1, successUrl, cancelUrl, userEmail } = await req.json()
 
-  const priceId = body.priceId
-  if (!priceId?.startsWith('price_')) {
-    return NextResponse.json({ error: 'Missing priceId' }, { status: 400 })
-  }
-
-  const origin =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    req.headers.get('origin') ||
-    'http://localhost:3000'
-
-  const params: Stripe.Checkout.SessionCreateParams = {
-    mode:
-      priceId === reqEnv('NEXT_PUBLIC_PRICE_MONTHLY')
-        ? 'subscription'
-        : 'payment',
-    customer_email: body.email || undefined,
-    line_items: [{ price: priceId, quantity: 1 }],
-    metadata: { user_email: body.email || '' },
-    success_url: `${origin}/job-kit?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/job-info?canceled=1`,
-    payment_method_types: ['card'],
-    allow_promotion_codes: true,
-  }
-
-  if (process.env.DEBUG_LOG_CHECKOUT === 'true') {
-    console.log('➡️  Creating session with', params)
-  }
-
-  try {
-    const session = await stripe.checkout.sessions.create(params)
-
-    if (process.env.DEBUG_LOG_CHECKOUT === 'true') {
-      console.log('✅ Stripe session:', session.id)
+    if (!priceId) {
+      return NextResponse.json({ error: 'Missing priceId' }, { status: 400 })
     }
+
+    const catalogItem = lookupByPriceId(priceId)
+    if (!catalogItem) {
+      return NextResponse.json({ error: 'Unknown priceId' }, { status: 400 })
+    }
+
+    const origin =
+      req.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+
+    const mode = catalogItem.mode
+
+    // Base metadata stored on the checkout session
+    const baseMeta: Record<string, string> = {
+      priceId,
+      itemKind: catalogItem.kind,
+      ...(catalogItem.kind === 'plan'
+        ? { planId: catalogItem.planId }
+        : { packId: catalogItem.packId }),
+      ...(userEmail ? { user_email: String(userEmail) } : {}),
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode,
+      line_items: [{ price: priceId, quantity }],
+      success_url: successUrl || `${origin}/pricing/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `${origin}/pricing/cancel`,
+      allow_promotion_codes: true,
+      customer_email: userEmail || undefined,
+      metadata: baseMeta,
+      ...(mode === 'subscription'
+        ? { subscription_data: { metadata: baseMeta } as any }
+        : {}),
+    })
 
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
-    console.error('❌ Stripe error', err?.message || err)
-    return NextResponse.json(
-      { error: 'Stripe checkout failed', detail: err?.message },
-      { status: 500 },
-    )
+    console.error('[stripe/checkout] error', err)
+    return NextResponse.json({ error: 'Checkout create failed' }, { status: 500 })
   }
 }
