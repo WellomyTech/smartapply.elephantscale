@@ -6,9 +6,9 @@ export default function HomePage() {
     <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
       {/* Header */}
       <div className="text-center space-y-3 mb-6">
-        <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-          Choose Your Next Step
-        </h1>
+    <h1 className="text-4xl md:text-5xl font-extrabold" style={{ color: '#0096D6' }}>
+      Choose Your Next Step
+    </h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">
           Accelerate your career journey with AI agents
         </p>

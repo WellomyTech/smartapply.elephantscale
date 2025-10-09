@@ -400,7 +400,7 @@ export default function JobSuggestionsPage() {
         <div className="w-full max-w-6xl space-y-6">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="space-y-2 text-left">
-              <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-brand-blue">
                 Job Suggestions
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl">Personalized matches based on your skills and preferences.</p>

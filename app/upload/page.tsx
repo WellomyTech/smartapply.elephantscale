@@ -27,9 +27,9 @@ export default function UploadPage() {
   }, [])
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
+    <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-brand-blue/10 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
       <div className="w-full max-w-3xl space-y-6">
-        <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-brand-blue">
           Upload Your Resume
         </h1>
         {hasResume ? (

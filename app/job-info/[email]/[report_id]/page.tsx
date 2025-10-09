@@ -1403,19 +1403,19 @@ export default function JobInfoPage() {
             <div className="mt-8 flex justify-center">
               <Button
                 size="lg"
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-8 py-4 bg-brand-blue hover:bg-brand-blue/80 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-brand-blue"
                 onClick={handleGenerateResume}
                 disabled={generating}
               >
                 {generating ? (
                   <>
-                    <Loader2 className="animate-spin mr-3 h-5 w-5" />
-                    Generating Resume...
+                    <Loader2 className="animate-spin mr-3 h-5 w-5 text-brand-blue" />
+                    <span className="text-brand-blue">Generating Resume...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="mr-3 h-5 w-5" />
-                    Generate Resume and Cover Letter
+                    <Sparkles className="mr-3 h-5 w-5 text-brand-blue" />
+                    <span className="text-brand-blue">Generate Resume and Cover Letter</span>
                   </>
                 )}
               </Button>

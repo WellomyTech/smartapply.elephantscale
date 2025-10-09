@@ -50,9 +50,9 @@ export default function ApplicationOptionsPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-10">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-brand-blue/10 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-10">
       <div className="w-full max-w-3xl text-center space-y-8">
-        <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-brand-blue">
           How would you like to continue?
         </h1>
 
@@ -68,7 +68,7 @@ export default function ApplicationOptionsPage() {
             <div className="max-w-md mx-auto">
               <Button
                 onClick={handleCustomize}
-                className="w-full py-5 text-lg rounded-xl text-white font-medium bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md hover:shadow-lg transition-all duration-200"
+                className="w-full py-5 text-lg rounded-xl text-white font-medium bg-brand-blue hover:bg-brand-blue/90 shadow-md hover:shadow-lg transition-all duration-200"
               >
                 Customize Resume
               </Button>
@@ -86,7 +86,7 @@ export default function ApplicationOptionsPage() {
             <div className="max-w-md mx-auto">
               <Button
                 onClick={handleProceed}
-                className="w-full h-12 text-base rounded-xl text-white bg-gradient-to-r from-purple-500 to-pink-500 shadow-md transition-all duration-200 hover:brightness-105 hover:-translate-y-[1px] hover:shadow-lg"
+                className="w-full h-12 text-base rounded-xl text-white bg-brand-blue hover:bg-brand-blue/90 shadow-md transition-all duration-200 hover:brightness-105 hover:-translate-y-[1px] hover:shadow-lg"
               >
                 Skip & Proceed to Apply
               </Button>

@@ -130,19 +130,19 @@ export default function QAPage() {
   return (
     <main
       style={{ paddingTop: `${headerH}px` }}
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pb-5"
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-brand-blue/10 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pb-5"
     >
       {/* Hero */}
       <section className={`${containerClass} pt-8`}>
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2 min-w-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/30 backdrop-blur-sm">
-              <Sparkles className="h-4 w-4 text-blue-600" />
-              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-blue/10 to-purple-500/10 border border-brand-blue/30 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4 text-brand-blue" />
+              <span className="text-xs font-medium text-brand-blue dark:text-brand-blue">
                 Interview Q&A
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-brand-blue">
               Practice Answers Tailored to Your Role
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
