@@ -278,8 +278,7 @@ export default function Dashboard() {
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {/* Header with gradient */}
           <div className="rounded-2xl border border-slate-200/60 bg-gradient-to-r from-indigo-50 via-sky-50 to-purple-50 px-6 py-6 text-center shadow-sm">
-            
-            <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-extrabold" style={{ color: '#0096D6' }}>
               Welcome to AI Resume Generation, {user.name.split(" ")[0]}!
             </h1>
             {!hasResume && (

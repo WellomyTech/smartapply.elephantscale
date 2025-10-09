@@ -414,16 +414,16 @@ result?.skills_match?.forEach((row) => {
   return (
   <TooltipProvider>
     <StatusBar message={status.message} type={status.type} visible={status.visible} onClose={hideStatus} />
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-brand-blue/10 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
       <div className="container mx-auto px-4 space-y-8">
         {/* Header */}
         <div className="text-center space-y-4 mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
-            <Target className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">AI-Powered Job Analysis</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-brand-blue/10 to-purple-500/10 border border-brand-blue/20 backdrop-blur-sm">
+            <Target className="h-4 w-4 text-brand-blue" />
+            <span className="text-sm font-medium text-brand-blue dark:text-brand-blue">AI-Powered Job Analysis</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            Job Kit Scanner
+          <h1 className="text-4xl md:text-5xl font-bold text-brand-blue drop-shadow-md">
+            <span className="text-brand-blue">Job Kit Scanner</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Compare your resume against job requirements and get AI-powered recommendations
@@ -432,8 +432,8 @@ result?.skills_match?.forEach((row) => {
 
         {/* Nav */}
         <div className="flex items-center justify-between mb-8">
-          <Button variant="outline" onClick={() => router.back()} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 rounded-xl hover:bg-white/90">
-            <Target className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={() => router.back()} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-brand-blue rounded-xl hover:bg-brand-blue/10 text-brand-blue border-2">
+            <Target className="mr-2 h-4 w-4 text-brand-blue" />
             Back
           </Button>
         </div>
@@ -441,8 +441,8 @@ result?.skills_match?.forEach((row) => {
         {!result ? (
           <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl">
             <CardHeader className="pb-4">
-              <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                <Search className="h-6 w-6 text-blue-600" />
+              <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2 text-brand-blue">
+                <Search className="h-6 w-6 text-brand-blue" />
                 Job Analysis Form
               </CardTitle>
             </CardHeader>
@@ -553,7 +553,7 @@ result?.skills_match?.forEach((row) => {
                 <Button
                   type="button"
                   size="lg"
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full bg-brand-blue hover:bg-brand-blue/80 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-brand-blue"
                   disabled={compareDisabled}
                   onClick={() => setShowPricing(true)}
                 >
@@ -622,8 +622,8 @@ result?.skills_match?.forEach((row) => {
         ) : (
           <Card className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-200/30 backdrop-blur-sm rounded-2xl shadow-xl">
             <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-t-2xl">
-              <CardTitle className="text-white text-lg font-bold text-center flex items-center justify-center gap-2">
-                <Check className="h-5 w-5" />
+              <CardTitle className="text-brand-blue text-lg font-bold text-center flex items-center justify-center gap-2">
+                <Check className="h-5 w-5 text-brand-blue" />
                 Analysis Complete - Recruiter's View
               </CardTitle>
             </CardHeader>
@@ -645,14 +645,12 @@ result?.skills_match?.forEach((row) => {
         {result && (
           <div className="space-y-8">
             <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-white/20 shadow-2xl rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                  <Target className="h-6 w-6 text-blue-600" />
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    AI Job Scan Results
-                  </span>
-                </CardTitle>
-              </CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                    <Target className="h-6 w-6 text-brand-blue" />
+                    <span className="text-brand-blue">AI Job Scan Results</span>
+                  </CardTitle>
+                </CardHeader>
               <CardContent className="p-6 pt-0">
 
                 {/* --- Your requested table UI (gaps-only, anchored to workedOn by gap index) --- */}
@@ -840,7 +838,7 @@ result?.skills_match?.forEach((row) => {
 
             <Button
               size="lg"
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg"
+              className="w-full bg-brand-blue hover:bg-brand-blue/80 text-white font-bold py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg border-2 border-brand-blue"
               onClick={async () => {
                 if (!result?.report_id) return
                 setGenerating(true)
@@ -882,12 +880,12 @@ result?.skills_match?.forEach((row) => {
               {generating ? (
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Generating AI-Optimized Resume...
+                  <span className="text-brand-blue">Generating AI-Optimized Resume...</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <FileText className="h-6 w-6" />
-                  Generate AI Resume & Cover Letter
+                  <FileText className="h-6 w-6 text-brand-blue" />
+                  <span className="text-brand-blue">Generate AI Resume & Cover Letter</span>
                 </div>
               )}
             </Button>

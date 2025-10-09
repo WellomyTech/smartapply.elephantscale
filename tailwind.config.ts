@@ -25,20 +25,29 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        
-        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
-        secondary:{ DEFAULT: "hsl(var(--secondary))", foreground:"hsl(var(--secondary-foreground))" },
+
+        // Elephant Scale brand color
+        'brand-blue': {
+          DEFAULT: '#00A4E4',
+          hover: '#008EC6',
+          disabled: 'rgba(0,164,228,0.6)',
+          foreground: '#FFFFFF',
+        },
+
+        // Override primary, accent, etc. to use brand-blue
+        primary: { DEFAULT: '#00A4E4', foreground: '#FFFFFF', hover: '#008EC6', disabled: 'rgba(0,164,228,0.6)' },
+        secondary: { DEFAULT: '#00A4E4', foreground: '#FFFFFF', hover: '#008EC6', disabled: 'rgba(0,164,228,0.6)' },
+        accent: { DEFAULT: '#00A4E4', foreground: '#FFFFFF', hover: '#008EC6', disabled: 'rgba(0,164,228,0.6)' },
         muted:   { DEFAULT: "hsl(var(--muted))", foreground:"hsl(var(--muted-foreground))" },
-        accent:  { DEFAULT: "hsl(var(--accent))", foreground:"hsl(var(--accent-foreground))" },
         destructive:{ DEFAULT: "hsl(var(--destructive))", foreground:"hsl(var(--destructive-foreground))" },
         card:    { DEFAULT: "hsl(var(--card))", foreground:"hsl(var(--card-foreground))" },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          primary: '#00A4E4',
+          "primary-foreground": '#FFFFFF',
+          accent: '#00A4E4',
+          "accent-foreground": '#FFFFFF',
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
