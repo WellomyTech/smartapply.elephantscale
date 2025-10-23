@@ -45,7 +45,7 @@ export default function HomePage() {
             </p>
           </div>
         </Link>
-
+        
         {/* Behavioral Card - Rose */}
         <Link href="/dashboard/behavioral" className="group w-full md:w-96">
           <div className="h-56 bg-rose-50/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col items-center justify-center transition-all duration-300 border-2 border-rose-200 dark:border-rose-700 hover:border-rose-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md">
@@ -57,6 +57,22 @@ export default function HomePage() {
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
               Ace your behavioral interviews by practicing with AI voice agent.
+            </p>
+          </div>
+        </Link>
+        </div>
+
+      <div className="flex flex-col md:flex-row gap-9 mt-6">
+         <Link href="/ai-carrer/dashboard" className="group w-full md:w-96">
+          <div className="h-56 bg-blue-50/80 dark:bg-slate-800/80 rounded-2xl shadow-xl flex flex-col items-center justify-center transition-all duration-300 border-2 border-blue-200 dark:border-blue-700 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-md">
+            <div className="flex items-center justify-center mb-2">
+              <FileText className="h-10 w-10 text-blue-600 group-hover:scale-110 transition-transform" />
+            </div>
+            <h2 className="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-1 tracking-tight">
+              AI Career Analysis
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-center px-6">
+              Get personalized career path recommendations with AI-powered insights.
             </p>
           </div>
         </Link>

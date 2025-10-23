@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (serialized === lastSerialized.current) return
     lastSerialized.current = serialized
 
-    if (user) localStorage.setItem('socialUser', serialized)
+    if (user) localStorage.setItem('socialUser', serialized!)
     else localStorage.removeItem('socialUser')
   }, [user])
 
