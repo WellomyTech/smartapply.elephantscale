@@ -86,7 +86,7 @@ export default function ResumeUpload() {
   })
 
   const handleContinue = () => {
-    router.push("/analysis")
+    router.push("/ai-career/analysis")
   }
 
   const handleBack = () => {

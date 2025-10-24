@@ -16,7 +16,7 @@ export default function Dashboard() {
   }, [user, router])
 
   const handleStartAnalysis = () => {
-    router.push("/ai-carrer/upload")
+    router.push("/ai-career/upload")
   }
 
   const goToTester = () => {
