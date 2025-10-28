@@ -1,5 +1,5 @@
 "use client"
-
+// Resume Upload Page for AI Career Analysis Application
 import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
