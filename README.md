@@ -1,6 +1,6 @@
 
 ```
-smartapply.elephantscale
+smartapply.wellomytech
 ├─ app
 │  ├─ api
 │  │  ├─ behavioral
@@ -176,9 +176,7 @@ smartapply.elephantscale
 │  │  ├─ favicon.svg
 │  │  ├─ logo-es-dark.svg
 │  │  └─ logo-es-light.svg
-│  ├─ elephantscale-logo-face.png
-│  ├─ elephantscale-logo-white.png
-│  ├─ elephantscale-logo.png
+│  ├─ wellomy-logo.webp
 │  ├─ placeholder-logo.png
 │  ├─ placeholder-logo.svg
 │  ├─ placeholder-user.jpg

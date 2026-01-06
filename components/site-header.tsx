@@ -73,13 +73,13 @@ export default function SiteHeader() {
     if (typeof window === "undefined") return;
 
     const confirmed = window.confirm(
-      "You will be transferred to Elephant Scale Main Website. \nDo you want to proceed?"
+      "You will be transferred to WellomyTech Main Website. \nDo you want to proceed?"
     );
 
     if (!confirmed) return; // ❌ No: dismiss
 
     // ✅ Yes: open in a new tab
-    window.open("https://elephantscale.com/", "_blank", "noopener,noreferrer");
+    window.open("https://www.wellomytech.com/", "_blank", "noopener,noreferrer");
   };
 
   const handleProfileClick = () => {
@@ -99,8 +99,8 @@ export default function SiteHeader() {
           {/* Left: Logo + (mobile actions) */}
           <div className="flex items-center gap-3">
             <Image
-              src="/elephantscale-logo.png"
-              alt="Elephant Scale"
+              src="/wellomy-logo.webp"
+              alt="WellomyTech"
               onClick={handleSymbol}
               width={100}
               height={40}

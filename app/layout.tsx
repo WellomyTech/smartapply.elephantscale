@@ -13,9 +13,9 @@ import { Analytics } from "@vercel/analytics/next"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Smart Job Kit Generator",
-  description: "Generate personalized job application materials with AI",
-  generator: "v0.dev",
+  title: "SmartApply by WellomyTech",
+  description: "AI-powered job application platform - Build, Prepare, Perform, Get Hired",
+  generator: "WellomyTech",
 }
 
 import { Poppins } from 'next/font/google'

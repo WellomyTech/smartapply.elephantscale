@@ -49,7 +49,7 @@ const jobs: Job[] = [
   {
     id: 2,
     title: "Frontend Engineer",
-    company: "ElephantScale",
+    company: "WellomyTech",
     location: "Austin, TX",
     mode: "Hybrid",
     type: "Full-time",
