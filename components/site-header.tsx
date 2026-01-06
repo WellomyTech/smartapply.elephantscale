@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import { LogOut, Sparkles, User, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/components/AuthProvider"
 import DashboardButton from "@/components/DashboardButton"
 import { useEffect, useState } from "react"
@@ -18,11 +19,12 @@ export default function SiteHeader() {
   // Get profile info from localStorage or user context
   const [avatar, setAvatar] = useState<string | null>(null)
   const [name, setName] = useState<string>("")
+  const [lang, setLang] = useState<string>("en")
 
   useEffect(() => {
     // Try to get from user context first, fallback to localStorage
-    if (user?.avatarUrl) setAvatar(user.avatarUrl)
-    if (user?.name) setName(user.name)
+    if ((user as any)?.avatarUrl) setAvatar((user as any).avatarUrl)
+    if ((user as any)?.name) setName((user as any).name)
 
     // Try to get from keySocialUser in localStorage
     if (typeof window !== "undefined") {
@@ -37,15 +39,28 @@ export default function SiteHeader() {
     }
 
     // Fallbacks
-    if (!user?.avatarUrl && typeof window !== "undefined") {
+    if (!(user as any)?.avatarUrl && typeof window !== "undefined") {
       const storedAvatar = localStorage.getItem("avatarUrl")
       if (storedAvatar) setAvatar(storedAvatar)
     }
-    if (!user?.name && typeof window !== "undefined") {
+    if (!(user as any)?.name && typeof window !== "undefined") {
       const storedName = localStorage.getItem("name")
       if (storedName) setName(storedName)
     }
   }, [user])
+
+  // Initialize language from localStorage or browser setting
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const stored = window.localStorage.getItem("lang")
+      const initial = stored || (navigator?.language?.slice(0, 2) || "en")
+      setLang(initial)
+      document.documentElement.lang = initial
+    } catch {
+      // noop
+    }
+  }, [])
 
   const handleLogout = async () => {
     if (typeof window === "undefined") return
@@ -63,7 +78,7 @@ export default function SiteHeader() {
     try {
       // supports both sync/async logout
       const maybePromise = logout()
-      if (maybePromise instanceof Promise) await maybePromise
+      await Promise.resolve(maybePromise as any)
     } finally {
       router.push("/") // ✅ Yes: go to home
     }
@@ -89,6 +104,22 @@ export default function SiteHeader() {
   const getInitial = () => {
     if (name) return name.charAt(0).toUpperCase()
     return "U"
+  }
+
+  const handleLanguageChange = (value: string) => {
+    if (typeof window === "undefined") return
+    try {
+      setLang(value)
+      window.localStorage.setItem("lang", value)
+      document.documentElement.lang = value
+      // Also persist as a cookie so the server picks it up
+      const oneYear = 60 * 60 * 24 * 365
+      document.cookie = `lang=${value}; path=/; max-age=${oneYear}; samesite=lax`
+      // Refresh to allow any client components to react if they read lang
+      router.refresh()
+    } catch (e) {
+      console.error("Failed to set language", e)
+    }
   }
 
   return (
@@ -165,6 +196,22 @@ export default function SiteHeader() {
             <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
               SmartApply
             </span>
+          </div>
+
+          {/* Language Selector (always visible) */}
+          <div className="flex items-center sm:ml-auto">
+            <Select value={lang} onValueChange={handleLanguageChange}>
+              <SelectTrigger aria-label="Language selector" className="w-28 sm:w-36 rounded-full">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">🇺🇸 English</SelectItem>
+                <SelectItem value="es">🇪🇸 Español</SelectItem>
+                <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
+                <SelectItem value="hi">🇮🇳 हिन्दी</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Right: Dashboard + Profile + Logout (desktop/tablet only) */}

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { StatusBar, useStatusBar } from "@/components/ui/status-bar"
 import JobScanList from "@/components/JobScanList"
 import DashboardButton from "@/components/DashboardButton"
+import { useTranslations } from "next-intl"
 
 /** ---- in-flight fetch de-dupe (no logic change) ---- */
 /** ---- JSON fetch with in-flight + persistent cache ---- */
@@ -59,6 +60,7 @@ export default function Dashboard() {
   } = useEntitlement()
   const [showPaywall, setShowPaywall] = useState(false)
   const { status, showStatus, hideStatus } = useStatusBar()
+  const t = useTranslations('resume')
 
   const resumeInputRef = useRef<HTMLInputElement | null>(null)
   const coverLetterInputRef = useRef<HTMLInputElement | null>(null)
@@ -133,12 +135,12 @@ export default function Dashboard() {
     if (!file) return
 
     if (file.type !== 'application/pdf') {
-      showStatus('Please upload a PDF file', 'error')
+      showStatus(t('status.onlyPdf'), 'error')
       return
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      showStatus('File size must be less than 10MB', 'error')
+      showStatus(t('status.sizeLimit'), 'error')
       return
     }
 
@@ -146,10 +148,10 @@ export default function Dashboard() {
     
     // Dynamic loading messages with animations
     const loadingMessages = [
-      'Uploading resume',
-      'Processing document',
-      'Analyzing content',
-      'Almost done'
+      t('status.resLoading1'),
+      t('status.resLoading2'),
+      t('status.resLoading3'),
+      t('status.resLoading4')
     ]
     
     let messageIndex = 0
@@ -178,14 +180,14 @@ export default function Dashboard() {
       setResumeFile(file)
       setHasResume(true) // Update the hasResume state
       clearInterval(messageInterval)
-      showStatus('Resume uploaded successfully!', 'success')
+      showStatus(t('status.resSuccess'), 'success')
 
       // Redirect to Job Suggestions page after a successful upload
       router.push('/job-suggestions')
 
     } catch (error) {
       clearInterval(messageInterval)
-      showStatus('Failed to upload resume', 'error')
+      showStatus(t('status.resError'), 'error')
     } finally {
       setUploading(false)
     }
@@ -198,10 +200,10 @@ export default function Dashboard() {
     
     // Dynamic loading messages for cover letter upload
     const loadingMessages = [
-      'Uploading cover letter',
-      'Processing document',
-      'Validating format',
-      'Finalizing upload'
+      t('status.coverLoading1'),
+      t('status.coverLoading2'),
+      t('status.coverLoading3'),
+      t('status.coverLoading4')
     ]
     
     let messageIndex = 0
@@ -226,14 +228,14 @@ export default function Dashboard() {
         setHasCoverLetter(true);
         setCoverLetterFile(null);
         localStorage.removeItem("cover_letter_file_name");
-        showStatus("Cover letter uploaded successfully! ✨", "success");
+        showStatus(t('status.coverSuccess'), "success")
       } else {
-        const errorMsg = data.detail || "Cover letter upload failed. Try again.";
+        const errorMsg = data.detail || t('status.coverFail');
         setError(errorMsg);
         showStatus(errorMsg, "error");
       }
     } catch {
-      const errorMsg = "Network error. Try again.";
+      const errorMsg = t('status.networkError');
       setError(errorMsg);
       showStatus(errorMsg, "error");
     } finally {
@@ -243,7 +245,7 @@ export default function Dashboard() {
 
   const handleContinue = () => {
     if (canGenerate) {
-      showStatus("Redirecting to Job Kit...", "info")
+      showStatus(t('status.redirecting'), "info")
       router.push("/job-kit")
     } else {
       setShowPaywall(true)
@@ -256,14 +258,14 @@ export default function Dashboard() {
   }
 
   if (authLoading || entLoading) {
-    return <p className="text-center mt-10 text-muted-foreground">Loading dashboard...</p>
+    return <p className="text-center mt-10 text-muted-foreground">{t('loadingDashboard')}</p>
   }
   if (!user) {
     router.replace('/')
     return null
   }
   if (!userData) {
-    return <p className="text-center mt-10 text-muted-foreground">Loading dashboard...</p>
+    return <p className="text-center mt-10 text-muted-foreground">{t('loadingDashboard')}</p>
   }
 
   return (
@@ -280,11 +282,11 @@ export default function Dashboard() {
           <div className="rounded-2xl border border-slate-200/60 bg-gradient-to-r from-indigo-50 via-sky-50 to-purple-50 px-6 py-6 text-center shadow-sm">
             
             <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Welcome to AI Resume Generation, {user.name.split(" ")[0]}!
+              {t('header.title', { name: (user.name || '').split(' ')[0] || '' })}
             </h1>
             {!hasResume && (
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Upload your documents and let AI transform your job search experience
+                {t('header.subtitle')}
               </p>
             )}
           </div>
@@ -299,7 +301,7 @@ export default function Dashboard() {
                     <div className="p-2 rounded-lg bg-blue-100/70 dark:bg-blue-900/30">
                       <FileText className="h-6 w-6" />
                     </div>
-                    <h2 className="text-lg font-semibold tracking-tight">Upload Resume (PDF) *</h2>
+                    <h2 className="text-lg font-semibold tracking-tight">{t('upload.resumeTitle')}</h2>
                   </div>
                   <label
                     htmlFor="resume"
@@ -317,9 +319,7 @@ export default function Dashboard() {
                     {resumeFile ? (
                       <p className="text-sm">{resumeFile.name}</p>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Click to upload PDF
-                      </p>
+                      <p className="text-sm text-muted-foreground">{t('upload.resumeClick')}</p>
                     )}
                   </label>
                   {/* Show Continue button after resume is uploaded */}
@@ -331,7 +331,7 @@ export default function Dashboard() {
                     >
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-5 w-5" />
-                        Continue to Job Kit
+                        {t('upload.continue')}
                       </div>
                     </Button>
                   )}
@@ -345,11 +345,9 @@ export default function Dashboard() {
                     <div className="p-2 rounded-lg bg-purple-100/70 dark:bg-purple-900/30">
                       <Upload className="h-6 w-6" />
                     </div>
-                    <h2 className="text-lg font-semibold tracking-tight">Upload Cover Letter (PDF)</h2>
+                    <h2 className="text-lg font-semibold tracking-tight">{t('upload.coverTitle')}</h2>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Optional: Enhance your applications with a personalized cover letter.
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('upload.coverHint')}</p>
                   <label
                     htmlFor="cover-letter"
                     className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl h-40 cursor-pointer transition-all duration-300 border-slate-200 dark:border-slate-700 hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-900/20"
@@ -367,9 +365,7 @@ export default function Dashboard() {
                       <p className="text-sm">{coverLetterFile.name}</p>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        {resumeFile
-                          ? "Click to upload PDF (optional)"
-                          : "Upload resume first to unlock"}
+                        {resumeFile ? t('upload.coverClickOptional') : t('upload.coverLocked')}
                       </p>
                     )}
                   </label>
@@ -390,12 +386,8 @@ export default function Dashboard() {
                           <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
                         </div>
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                        Great! Your Resume is Ready
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-2">
-                        You've successfully uploaded your resume. Now let's find the perfect job matches for you!
-                      </p>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('onboarding.readyTitle')}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-2">{t('onboarding.readyBody')}</p>
                     </CardContent>
                   </Card>
 
@@ -404,7 +396,7 @@ export default function Dashboard() {
                     <CardContent className="p-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-blue-600" />
-                        How SmartApply Works
+                        {t('onboarding.howWorks')}
                       </h3>
 
                       {/* Horizontal layout: 4 steps in a row (responsive) */}
@@ -419,10 +411,8 @@ export default function Dashboard() {
                               <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
-                              <h4 className="font-semibold text-gray-900 dark:text-white">Find Jobs</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Paste job descriptions from LinkedIn, Indeed, or any job board.
-                              </p>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">{t('onboarding.steps.findTitle')}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">{t('onboarding.steps.findBody')}</p>
                             </div>
                           </div>
                         </div>
@@ -437,10 +427,8 @@ export default function Dashboard() {
                               <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div>
-                              <h4 className="font-semibold text-gray-900 dark:text-white">AI Analysis</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-300">
-                                We run an ATS-style scan to match requirements with your resume.
-                              </p>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">{t('onboarding.steps.analysisTitle')}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">{t('onboarding.steps.analysisBody')}</p>
                             </div>
                           </div>
                         </div>
@@ -455,10 +443,8 @@ export default function Dashboard() {
                               <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                              <h4 className="font-semibold text-gray-900 dark:text-white">Get Results</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Receive a tailored resume and cover letter for each job.
-                              </p>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">{t('onboarding.steps.resultsTitle')}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">{t('onboarding.steps.resultsBody')}</p>
                             </div>
                           </div>
                         </div>
@@ -473,10 +459,8 @@ export default function Dashboard() {
                               <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <div>
-                              <h4 className="font-semibold text-gray-900 dark:text-white">Practice Interview</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Prepare with Technical or Behavioral questions tailored to the role.
-                              </p>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">{t('onboarding.steps.practiceTitle')}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">{t('onboarding.steps.practiceBody')}</p>
                             </div>
                           </div>
                         </div>
@@ -487,16 +471,16 @@ export default function Dashboard() {
                   {/* Call to action */}
                   <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl shadow-xl">
                     <CardContent className="p-6 text-center">
-                      <h3 className="text-xl font-semibold mb-2">Ready to Get Started?</h3>
+                      <h3 className="text-xl font-semibold mb-2">{t('onboarding.ctaTitle')}</h3>
                       <p className="mb-4 opacity-90">
-                        Click the
+                        {t('onboarding.ctaBody')}
                         <span className="inline-flex items-center justify-center mx-1 h-6 w-6 rounded-full bg-white/90 text-green-700 shadow-sm align-middle">
                           <Plus className="h-4 w-4" />
                         </span>
-                        (bottom-right) to analyze your first job opportunity.
+                        {t('onboarding.ctaTail')}
                       </p>
                       <div className="flex items-center justify-center gap-2 text-sm opacity-75">
-                        <span>It only takes 30 seconds</span>
+                        <span>{t('onboarding.ctaNote')}</span>
                         <ArrowRight className="h-4 w-4" />
                       </div>
                     </CardContent>
@@ -505,21 +489,19 @@ export default function Dashboard() {
                   {/* Tips section */}
                   <Card className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl shadow-xl border-2 border-amber-200 dark:border-amber-800">
                     <CardContent className="p-6">
-                      <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200 mb-4">
-                        💡 Pro Tips for Best Results
-                      </h3>
+                      <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200 mb-4">💡 {t('tips.title')}</h3>
                       <ul className="space-y-2 text-sm text-amber-700 dark:text-amber-300">
                         <li className="flex items-start gap-2">
                           <span className="text-amber-500 mt-1">•</span>
-                          Copy the complete job description including requirements and responsibilities
+                          {t('tips.tip1')}
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-amber-500 mt-1">•</span>
-                          Include company information when available for better personalization
+                          {t('tips.tip2')}
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-amber-500 mt-1">•</span>
-                          Try multiple job postings to see how your resume adapts to different roles
+                          {t('tips.tip3')}
                         </li>
                       </ul>
                     </CardContent>
@@ -541,9 +523,7 @@ export default function Dashboard() {
           {/* Free credit badge */}
           {!isPremium && freeRemain > 0 && hasResume && (
             <div className="text-center p-3 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800">
-              <p className="text-blue-700 dark:text-blue-300 font-medium">
-                No Jobs Scanned Yet? Start new Job Match now!
-              </p>
+              <p className="text-blue-700 dark:text-blue-300 font-medium">{t('badges.noJobsYet')}</p>
             </div>
           )}
 
@@ -555,7 +535,7 @@ export default function Dashboard() {
         {hasResume && (
           <Button
             size="icon"
-            aria-label="Start a new job scan"
+            aria-label={t('badges.startScanAria')}
             className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full p-0 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-2xl"
             onClick={handleContinue}
           >

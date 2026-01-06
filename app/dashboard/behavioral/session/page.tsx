@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 type TopicKey = "communication" | "leadership" | "team_player";
 
@@ -42,8 +43,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE;
 const TOPIC_CONFIG: Record<
   TopicKey,
   {
-    title: string;
-    blurb: string;
     icon: ComponentType<{ className?: string }>;
     color: {
       text: string;
@@ -55,8 +54,6 @@ const TOPIC_CONFIG: Record<
   }
 > = {
   communication: {
-    title: "Communication",
-    blurb: "Improve clarity, active listening, and concise delivery.",
     icon: Mic,
     color: {
       text: "text-blue-700 dark:text-blue-300",
@@ -67,8 +64,6 @@ const TOPIC_CONFIG: Record<
     },
   },
   leadership: {
-    title: "Leadership",
-    blurb: "Demonstrate ownership, influence, and decision-making.",
     icon: Crown,
     color: {
       text: "text-purple-700 dark:text-purple-300",
@@ -79,8 +74,6 @@ const TOPIC_CONFIG: Record<
     },
   },
   team_player: {
-    title: "Team Player",
-    blurb: "Showcase collaboration, conflict resolution, and empathy.",
     icon: Users,
     color: {
       text: "text-indigo-700 dark:text-indigo-300",
@@ -186,6 +179,8 @@ function usePersistentSpeakingIndicator(active: boolean) {
 }
 
 function SessionContent() {
+  const tb = useTranslations("behavioral");
+  const ts = useTranslations("behavioralSession");
   const sp = useSearchParams();
   const rawTopic = (sp.get("topic") || "").toLowerCase();
   const topic = (
@@ -196,6 +191,9 @@ function SessionContent() {
 
   const cfg = TOPIC_CONFIG[topic];
   const Icon = cfg.icon;
+  const topicKey = topic === "team_player" ? "team" : topic;
+  const localizedTitle = tb(`cards.${topicKey}.title`);
+  const localizedBlurb = tb(`cards.${topicKey}.body`);
 
   // Call and UI state
   const [status, setStatus] = useState<Status>("idle");
@@ -240,7 +238,7 @@ function SessionContent() {
   const FETCH_MAX_WAIT_SECONDS = 240;
   const FETCH_INTERVAL_SECONDS = 30;
 
-  const myLabel = user?.name || user?.email?.split("@")[0] || "You";
+  const myLabel = user?.name || user?.email?.split("@")[0] || ts("you");
   const roleLabel = (r: string): Line["role"] =>
     r === "assistant" ? "AI Interviewer" : "You";
 
@@ -624,7 +622,7 @@ function SessionContent() {
     try {
       // localhost is secure, but surface helpful msg if not
       if (!window.isSecureContext) {
-        showCameraError("Camera requires HTTPS or localhost. Please use https:// or localhost.");
+        showCameraError(ts("cameraErrors.insecureContext"));
         return false;
       }
       // Not all browsers support Permissions API for 'camera'
@@ -633,7 +631,7 @@ function SessionContent() {
         // Cast to avoid TS issues across browsers
         const status = await (navigator as any).permissions.query({ name: "camera" as any });
         if (status.state === "denied") {
-          showCameraError("Camera permission is blocked in the browser. Allow camera in Site settings and reload.");
+          showCameraError(ts("cameraErrors.permissionBlocked"));
           return false;
         }
       }
@@ -688,11 +686,11 @@ function SessionContent() {
         const name = e?.name || "Error";
         const msg = e?.message || "";
         if (name === "NotAllowedError") {
-          showCameraError("Camera access was denied. Click the camera icon in the address bar to allow and reload.", e);
+          showCameraError(ts("cameraErrors.denied"), e);
           return null;
         }
         if (name === "NotReadableError") {
-          showCameraError("Camera is busy (used by another app). Close other apps (Zoom/Teams) and retry.", e);
+          showCameraError(ts("cameraErrors.busy"), e);
           return null;
         }
         if (name === "OverconstrainedError") {
@@ -701,14 +699,14 @@ function SessionContent() {
           continue;
         }
         if (name === "NotFoundError") {
-          showCameraError("No camera device found. Check Windows Privacy settings > Camera.", e);
+          showCameraError(ts("cameraErrors.notFound"), e);
           return null;
         }
         console.warn("getUserMedia failed; trying fallback", name, msg, constraints);
       }
     }
 
-    showCameraError("Couldn't start your camera. Check browser permissions and HTTPS.");
+    showCameraError(ts("cameraErrors.generic"));
     return null;
   };
 
@@ -970,7 +968,7 @@ function SessionContent() {
     interviewTypeRef.current = interview_type;
 
     if (!candidate_name || !user_email || !interview_type) {
-      toast.error("Missing name or email. Please complete your profile and try again.");
+      toast.error(ts("errors.missing"));
       return;
     }
 
@@ -998,7 +996,7 @@ function SessionContent() {
       callOpenRef.current = false;
       if (sendInfoTimeoutRef.current) clearTimeout(sendInfoTimeoutRef.current);
       console.error(e);
-      toast.error("Failed to start session. Please try again.");
+      toast.error(ts("errors.startFail"));
       setStatus("idle");
     }
   };
@@ -1055,10 +1053,10 @@ function SessionContent() {
           {/* Topic header */}
           <div className="text-center space-y-3 mb-12">
             <h1 className="text-2xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              {cfg.title} Practice
+              {ts("header.practice", { topic: localizedTitle })}
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              {cfg.blurb}
+              {localizedBlurb}
             </p>
           </div>
 
@@ -1073,12 +1071,10 @@ function SessionContent() {
               <h2
                 className={`text-2xl font-semibold mb-2 tracking-tight ${cfg.color.text}`}
               >
-                {cfg.title} Session
+                {ts("header.session", { topic: localizedTitle })}
               </h2>
               <p className="text-gray-600 dark:text-gray-300 text-center max-w-2xl mb-8">
-                Start a live simulated interview adapted to this topic. Your
-                camera can be blurred, and you’ll see a live transcript on the
-                right.
+                {ts("header.description")}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -1086,19 +1082,19 @@ function SessionContent() {
                   className={`px-6 py-3 rounded-xl text-white font-semibold shadow-lg transition-all bg-gradient-to-r ${cfg.color.gradientFrom} ${cfg.color.gradientTo} hover:brightness-110`}
                   onClick={handleStart}
                 >
-                  Start Practice
+                  {ts("buttons.start")}
                 </Button>
                 <Link
                   href="/dashboard/behavioral"
                   className="px-6 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm hover:shadow transition-all text-center"
                 >
-                  Back to Topics
+                  {ts("buttons.back")}
                 </Link>
                 <Link
                   href={`/dashboard/behavioral/progress/${topic}`}
                   className="px-6 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm hover:shadow transition-all text-center"
                 >
-                  View detailed progress
+                  {ts("buttons.progress")}
                 </Link>
               </div>
             </div>
@@ -1121,9 +1117,9 @@ function SessionContent() {
                 <div className="relative h-full w-full rounded-2xl overflow-hidden bg-gray-900 ring-1 ring-white/10">
                   {/* LIVE badge */}
                   <div className="absolute top-4 left-4 z-50">
-                    <div className="bg-red-50 px-4 py-2 rounded-xl text-sm font-semibold text-red-600 border border-red-200 flex items-center gap-2 shadow-sm">
+                      <div className="bg-red-50 px-4 py-2 rounded-xl text-sm font-semibold text-red-600 border border-red-200 flex items-center gap-2 shadow-sm">
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                      LIVE <span className="ml-1">{formatTime(timer)}</span>
+                      {ts("status.live")} <span className="ml-1">{formatTime(timer)}</span>
                     </div>
                   </div>
 
@@ -1160,7 +1156,7 @@ function SessionContent() {
                           </span>
                         </div>
                         <p className="text-white text-base font-semibold">
-                          Camera Off
+                          {ts("camera.off")}
                         </p>
                       </div>
                     </div>
@@ -1202,7 +1198,7 @@ function SessionContent() {
                             ? "bg-red-500 hover:bg-red-600 text-white"
                             : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                         }`}
-                        title={isMuted ? "Unmute" : "Mute"}
+                        title={isMuted ? ts("controls.unmute") : ts("controls.mute")}
                       >
                         {isMuted ? (
                           <MicOff className="h-5 w-5" />
@@ -1222,7 +1218,7 @@ function SessionContent() {
                             : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                         }`}
                         title={
-                          isVideoOff ? "Turn camera on" : "Turn camera off"
+                          isVideoOff ? ts("controls.turnOnCamera") : ts("controls.turnOffCamera")
                         }
                       >
                         {isVideoOff ? (
@@ -1238,12 +1234,12 @@ function SessionContent() {
                         size="icon"
                         onClick={cycleBlur}
                         className="rounded-full w-12 h-12 p-0 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors text-xl"
-                        title={`Blur: ${
+                        title={`${ts("controls.blur")}: ${
                           blurLevel === "off"
-                            ? "Off"
+                            ? ts("controls.blurOff")
                             : blurLevel === "low"
-                            ? "Low"
-                            : "High"
+                            ? ts("controls.blurLow")
+                            : ts("controls.blurHigh")
                         }`}
                       >
                         <Droplets className="h-5 w-5" />
@@ -1255,7 +1251,7 @@ function SessionContent() {
                         size="icon"
                         onClick={handleRestart}
                         className="rounded-full w-12 h-12 p-0 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors text-xl"
-                        title="Restart session"
+                        title={ts("controls.restart")}
                       >
                         <RotateCcw className="h-5 w-5" />
                       </Button>
@@ -1266,7 +1262,7 @@ function SessionContent() {
                         size="icon"
                         onClick={handleEnd}
                         className="rounded-full w-12 h-12 p-0 text-xl"
-                        title="End call"
+                        title={ts("controls.end")}
                       >
                         <PhoneOff className="h-5 w-5" />
                       </Button>
@@ -1278,7 +1274,7 @@ function SessionContent() {
                             variant="ghost"
                             size="icon"
                             className="rounded-full w-12 h-12 p-0 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors text-xl"
-                            title="Session info"
+                            title={ts("controls.sessionInfo")}
                           >
                             <Settings className="h-5 w-5" />
                           </Button>
@@ -1286,13 +1282,13 @@ function SessionContent() {
                         <SheetContent className="bg-white">
                           <SheetHeader>
                             <SheetTitle className="font-semibold text-gray-900">
-                              Session Information
+                              {ts("settings.title")}
                             </SheetTitle>
                           </SheetHeader>
                           <div className="mt-6 space-y-4">
                             <div>
                               <label className="text-sm font-semibold text-gray-700">
-                                Topic
+                                {ts("settings.topic")}
                               </label>
                               <p className="text-base font-bold text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200 capitalize">
                                 {topic}
@@ -1300,28 +1296,28 @@ function SessionContent() {
                             </div>
                             <div>
                               <label className="text-sm font-semibold text-gray-700">
-                                Report ID
+                                {ts("settings.reportId")}
                               </label>
                               <p className="text-base font-bold text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
                                 {reportId != null
                                   ? String(reportId)
-                                  : "Not set"}
+                                  : ts("settings.notSet")}
                               </p>
                             </div>
                             <div>
                               <label className="text-sm font-semibold text-gray-700">
-                                Job Title
+                                {ts("settings.jobTitle")}
                               </label>
                               <p className="text-base font-bold text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
-                                {jobtitle || "Not set"}
+                                {jobtitle || ts("settings.notSet")}
                               </p>
                             </div>
                             <div>
                               <label className="text-sm font-semibold text-gray-700">
-                                Company
+                                {ts("settings.company")}
                               </label>
                               <p className="text-base font-bold text-gray-900 bg-gray-50 p-3 rounded-lg mt-1 border border-gray-200">
-                                {companyname || "Not set"}
+                                {companyname || ts("settings.notSet")}
                               </p>
                             </div>
                           </div>
@@ -1338,10 +1334,10 @@ function SessionContent() {
           <aside className="w-full max-w-[420px] bg-white/95 backdrop-blur-sm border-l border-gray-100 shadow-2xl flex flex-col">
             <div className="p-6 border-b border-gray-100 sticky top-0 bg-white/95 z-10">
               <h3 className="font-extrabold text-gray-900 text-xl">
-                Live Transcript
+                {ts("transcript.title")}
               </h3>
               <p className="text-base text-gray-500 mt-1">
-                Real-time conversation transcript
+                {ts("transcript.subtitle")}
               </p>
             </div>
             <div
@@ -1351,7 +1347,7 @@ function SessionContent() {
               {transcript.length === 0 ? (
                 <div className="text-center text-gray-400 mt-12">
                   <p className="text-base">
-                    Transcript will appear here once the conversation starts...
+                    {ts("transcript.empty")}
                   </p>
                 </div>
               ) : (
@@ -1380,7 +1376,7 @@ function SessionContent() {
                     <div className="max-w-[75%]">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-bold text-gray-900 text-base">
-                          {entry.role}
+                          {entry.role === "AI Interviewer" ? ts("labels.ai") : ts("labels.you")}
                         </span>
                         <span className="text-xs text-gray-400">
                           {entry.timestamp}

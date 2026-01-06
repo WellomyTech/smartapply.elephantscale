@@ -14,6 +14,7 @@ import { FileText, Loader2, Pencil, Download, Cpu, User, Trash2 } from 'lucide-r
 import { StatusBar, useStatusBar } from "@/components/ui/status-bar"
 import { formatLocalFromUTC, timeAgoFromUTC } from '@/lib/dates'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
+import { useTranslations } from 'next-intl'
 
 
 interface Report {
@@ -75,6 +76,7 @@ async function archiveReports(reportIds: number[]) {
 export default function JobScanList({ reports }: JobScanListProps) {
   const router = useRouter()
   const { status, showStatus, hideStatus } = useStatusBar()
+  const t = useTranslations('jobList')
 
   // Track applied and interview states in localStorage
   const [appliedMap, setAppliedMap] = useState<{ [id: number]: boolean }>({})
@@ -148,7 +150,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
 
       router.push(`/interview?report_id=${reportId}`)
     } catch (err) {
-      alert('Error generating questions. Please try again.')
+      showStatus(t('errors.generateQuestions'), 'error')
     } finally {
       setGeneratingId(null)
     }
@@ -165,14 +167,14 @@ export default function JobScanList({ reports }: JobScanListProps) {
     localStorage.setItem('report_id', String(reportId))
     localStorage.setItem('job_title', jobTitle || '')
     localStorage.setItem('company_name', companyName || '')
-    router.push('/dashboard/behavioral')
+    router.push('/dashboard/behavioral/session?topic=communication')
   }
 
   const handleMarkAsApplied = (reportId: number) => {
     setAppliedMap(prev => {
       const updated = { ...prev, [reportId]: true }
       postJobStatus(reportId, true, interviewMap[reportId])
-      showStatus('Job status updated', 'success')
+      showStatus(t('status.jobUpdated'), 'success')
       return updated
     })
   }
@@ -181,7 +183,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
     setAppliedMap(prev => {
       const updated = { ...prev, [reportId]: false }
       postJobStatus(reportId, false, false)
-      showStatus('Job status updated', 'success')
+      showStatus(t('status.jobUpdated'), 'success')
       return updated
     })
     setInterviewMap(prev => ({ ...prev, [reportId]: false }))
@@ -189,13 +191,13 @@ export default function JobScanList({ reports }: JobScanListProps) {
 
   const handleInterviewCheckbox = (reportId: number, checked: boolean) => {
     if (!appliedMap[reportId]) {
-      showStatus('Please mark as Applied first.', 'warning')
+      showStatus(t('warnings.markAppliedFirst'), 'warning')
       return
     }
     setInterviewMap(prev => {
       const updated = { ...prev, [reportId]: checked }
       postJobStatus(reportId, appliedMap[reportId], checked)
-      showStatus('Job status updated', 'success')
+      showStatus(t('status.jobUpdated'), 'success')
       return updated
     })
   }
@@ -206,7 +208,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
 
   const handleDownload = async (reportId: number) => {
     try {
-      showStatus('Preparing download…', 'info')
+      showStatus(t('status.preparingDownload'), 'info')
       const res = await fetch(`${API_URL}download-custom-resume-docx?report_id=${encodeURIComponent(reportId)}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const blob = await res.blob()
@@ -218,9 +220,9 @@ export default function JobScanList({ reports }: JobScanListProps) {
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
-      showStatus('Download started', 'success')
+      showStatus(t('status.downloadStarted'), 'success')
     } catch (e) {
-      showStatus('Failed to download resume', 'error')
+      showStatus(t('errors.downloadFailed'), 'error')
     }
   }
 
@@ -287,9 +289,9 @@ export default function JobScanList({ reports }: JobScanListProps) {
         ids.forEach(id => next.delete(id))
         return next
       })
-      showStatus(`Successfully Deleted ${ids.length} ${ids.length === 1 ? 'scan' : 'scans'}`, 'success')
+      showStatus(t('status.deleted', { count: ids.length }), 'success')
     } catch (e) {
-      showStatus('Failed to delete. Try again.', 'error')
+      showStatus(t('errors.deleteFailed'), 'error')
     } finally {
       setArchiving(false)
     }
@@ -304,7 +306,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
           visible={status.visible}
           onClose={hideStatus}
         />
-        <h2 className="text-xl font-semibold text-foreground mb-2">Your Applications</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-2">{t('title')}</h2>
 
         {/* Tabs + bulk actions */}
         <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -315,21 +317,21 @@ export default function JobScanList({ reports }: JobScanListProps) {
               variant={activeTab === 'all' ? 'default' : 'outline'}
               onClick={() => setActiveTab('all')}
             >
-              All Applications ({counts.all})
+              {t('tabs.all')} ({counts.all})
             </Button>
             <Button
               size="sm"
               variant={activeTab === 'applied' ? 'default' : 'outline'}
               onClick={() => setActiveTab('applied')}
             >
-              Applied ({counts.applied})
+              {t('tabs.applied')} ({counts.applied})
             </Button>
             <Button
               size="sm"
               variant={activeTab === 'interview' ? 'default' : 'outline'}
               onClick={() => setActiveTab('interview')}
             >
-              Interview Scheduled ({counts.interview})
+              {t('tabs.interview')} ({counts.interview})
             </Button>
           </div>
 
@@ -341,7 +343,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                 checked={areAllVisibleSelected}
                 onChange={toggleSelectAllVisible}
               />
-              Select all in view
+              {t('bulk.selectAll')}
             </label>
             <Button
               size="sm"
@@ -350,13 +352,13 @@ export default function JobScanList({ reports }: JobScanListProps) {
               onClick={() => {
                 const ids = Array.from(selectedIds)
                 if (ids.length === 0) return
-                const ok = window.confirm(`Delete ${ids.length} ${ids.length === 1 ? 'selected scan' : 'selected scans'}?`)
+                const ok = window.confirm(t('bulk.confirmDelete', {count: ids.length}))
                 if (!ok) return
                 doArchive(ids)
               }}
             >
               {archiving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Delete Selected
+              {t('bulk.deleteSelected')}
             </Button>
           </div>
         </div>
@@ -366,7 +368,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
         {/* Empty state per tab */}
         {filteredReports.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No applications in this view yet.
+            {t('empty')}
           </p>
         ) : (
           <div className="grid gap-8 md:grid-cols-2">
@@ -385,11 +387,11 @@ export default function JobScanList({ reports }: JobScanListProps) {
                           className="h-4 w-4"
                           checked={isSelected}
                           onChange={() => toggleSelect(report.id)}
-                          aria-label={`Select ${report.job_title || 'job'}`}
+                          aria-label={t('aria.selectJob', { title: report.job_title || t('labels.job') })}
                         />
                         <FileText className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
                         <span className="text-lg font-semibold text-blue-700 dark:text-blue-300 break-words">
-                          {report.job_title || 'Untitled role'}
+                          {report.job_title || t('labels.untitledRole')}
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground break-words">
@@ -397,7 +399,9 @@ export default function JobScanList({ reports }: JobScanListProps) {
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
                         {report.created_at
-                          ? <>Scanned: {formatLocalFromUTC(report.created_at)} <span className="opacity-70">({timeAgoFromUTC(report.created_at)})</span></>
+                          ? <>
+                              {t('labels.scanned')} {formatLocalFromUTC(report.created_at)} <span className="opacity-70">({timeAgoFromUTC(report.created_at)})</span>
+                            </>
                           : ''}
                       </div>
                     </div>
@@ -415,15 +419,15 @@ export default function JobScanList({ reports }: JobScanListProps) {
                                 tabIndex={0}
                                 onClick={() => handleUnmarkAsApplied(report.id)}
                                 onKeyDown={e => { if (e.key === 'Enter') handleUnmarkAsApplied(report.id) }}
-                                onMouseEnter={e => e.currentTarget.textContent = 'Mark as Not Applied'}
-                                onMouseLeave={e => e.currentTarget.textContent = 'Applied'}
-                                aria-label="Mark as not applied"
+                                onMouseEnter={e => e.currentTarget.textContent = t('applied.markNotApplied') as unknown as string}
+                                onMouseLeave={e => e.currentTarget.textContent = t('applied.applied') as unknown as string}
+                                aria-label={t('applied.ariaUnmark')}
                               >
-                                Applied
+                                {t('applied.applied')}
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" align="start" className="text-xs">
-                              Click to mark as not applied
+                              {t('applied.tooltipUnmark')}
                             </TooltipContent>
                           </Tooltip>
                         ) : (
@@ -435,11 +439,11 @@ export default function JobScanList({ reports }: JobScanListProps) {
                                 className="text-xs px-3 py-1"
                                 onClick={() => handleMarkAsApplied(report.id)}
                               >
-                                Mark as Applied
+                                {t('applied.mark')}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top" align="start" className="text-xs">
-                              Mark this job as applied
+                              {t('applied.tooltipMark')}
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -451,7 +455,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                               checked={!!interviewMap[report.id]}
                               onChange={e => handleInterviewCheckbox(report.id, e.target.checked)}
                             />
-                            Interview Scheduled
+                            {t('labels.interviewScheduled')}
                           </label>
                         )}
                       </div>
@@ -464,14 +468,14 @@ export default function JobScanList({ reports }: JobScanListProps) {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                aria-label="Download"
+                                aria-label={t('aria.download')}
                                 onClick={() => handleDownload(report.id)}
                               >
                                 <Download className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top" align="end" className="text-xs">
-                              Download resume
+                              {t('tooltips.download')}
                             </TooltipContent>
                           </Tooltip>
                         ) : (
@@ -484,7 +488,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" align="end" className="text-xs">
-                              Please Generate Resume First
+                              {t('tooltips.generateFirst')}
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -494,12 +498,12 @@ export default function JobScanList({ reports }: JobScanListProps) {
                             <Button
                               variant="outline"
                               size="icon"
-                              aria-label="Edit resume info"
+                              aria-label={t('aria.edit')}
                               onClick={() => {
                                 const userEmail =
                                   localStorage.getItem('user_email') || localStorage.getItem('userEmail')
                                 if (!userEmail) {
-                                  alert('User email not found!')
+                                  showStatus(t('errors.noEmail'), 'error')
                                   return
                                 }
                                 router.push(`/job-info/${encodeURIComponent(userEmail)}/${report.id}`)
@@ -509,7 +513,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top" align="end" className="text-xs">
-                            Edit Job Details and Documents
+                            {t('tooltips.editJob')}
                           </TooltipContent>
                         </Tooltip>
 
@@ -518,14 +522,14 @@ export default function JobScanList({ reports }: JobScanListProps) {
                             <Button
                               variant="outline"
                               size="icon"
-                              aria-label="Behavioral interview"
+                              aria-label={t('aria.behavioral')}
                               onClick={() => handleBehavioral(report.id, report.job_title, report.job_company)}
                             >
                               <User className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top" align="end" className="text-xs">
-                            Behavioral Interview Prep
+                            {t('tooltips.behavioralPrep')}
                           </TooltipContent>
                         </Tooltip>
 
@@ -535,7 +539,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                aria-label="Technical interview"
+                                aria-label={t('aria.technical')}
                                 onClick={() => handleInterview(report.id, report.job_title, report.job_company)}
                                 disabled={generatingId === report.id}
                               >
@@ -547,7 +551,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top" align="end" className="text-xs">
-                              {generatingId === report.id ? 'Generating questions…' : 'Technical Interview Prep'}
+                              {generatingId === report.id ? t('status.generatingQuestions') : t('tooltips.technicalPrep')}
                             </TooltipContent>
                           </Tooltip>
                         ) : (
@@ -557,7 +561,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  aria-label="Technical interview (disabled)"
+                                  aria-label={t('aria.technicalDisabled')}
                                   disabled
                                   className="opacity-60 cursor-not-allowed"
                                 >
@@ -566,7 +570,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" align="end" className="text-xs">
-                              First Generate Resume then use this Interview Module
+                              {t('tooltips.technicalDisabled')}
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -577,9 +581,9 @@ export default function JobScanList({ reports }: JobScanListProps) {
                             <Button
                               variant="destructive"
                               size="icon"
-                              aria-label="Delete this scan"
+                              aria-label={t('aria.deleteScan')}
                               onClick={() => {
-                                const ok = window.confirm('Delete this scan?')
+                                const ok = window.confirm(t('confirm.deleteOne'))
                                 if (!ok) return
                                 doArchive([report.id])
                               }}
@@ -589,7 +593,7 @@ export default function JobScanList({ reports }: JobScanListProps) {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top" align="end" className="text-xs">
-                            Delete this scan
+                            {t('tooltips.deleteOne')}
                           </TooltipContent>
                         </Tooltip>
                       </div>
@@ -605,49 +609,49 @@ export default function JobScanList({ reports }: JobScanListProps) {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Resume Info</DialogTitle>
-              <DialogDescription>Details from your previous scan.</DialogDescription>
+              <DialogTitle>{t('dialog.title')}</DialogTitle>
+              <DialogDescription>{t('dialog.description')}</DialogDescription>
             </DialogHeader>
             {loading ? (
               <div className="flex items-center justify-center py-8 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
+                <Loader2 className="h-5 w-5 animate-spin mr-2" /> {t('dialog.loading')}
               </div>
             ) : selectedReport ? (
               <div className="space-y-3">
-                <p><strong>Job Title:</strong> {selectedReport.job_title}</p>
-                <p><strong>Company:</strong> {selectedReport.job_company}</p>
-                <p className="text-sm"><strong>Description:</strong></p>
+                <p><strong>{t('dialog.jobTitle')}</strong> {selectedReport.job_title}</p>
+                <p><strong>{t('dialog.company')}</strong> {selectedReport.job_company}</p>
+                <p className="text-sm"><strong>{t('dialog.descriptionLabel')}</strong></p>
                 <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-sm">
                   {selectedReport.job_description}
                 </pre>
                 <div className="grid gap-3">
                   <div>
-                    <p className="font-medium text-sm">Skills Match</p>
+                    <p className="font-medium text-sm">{t('dialog.skillsMatch')}</p>
                     <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
                       {JSON.stringify(selectedReport.skills_match, null, 2)}
                     </pre>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Gaps</p>
+                    <p className="font-medium text-sm">{t('dialog.gaps')}</p>
                     <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
                       {JSON.stringify(selectedReport.gaps, null, 2)}
                     </pre>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Bonus Points</p>
+                    <p className="font-medium text-sm">{t('dialog.bonusPoints')}</p>
                     <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
                       {JSON.stringify(selectedReport.bonus_points, null, 2)}
                     </pre>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Recommendations</p>
+                    <p className="font-medium text-sm">{t('dialog.recommendations')}</p>
                     <pre className="bg-muted rounded p-3 whitespace-pre-wrap break-words text-xs">
                       {JSON.stringify(selectedReport.recommendations, null, 2)}
                     </pre>
                   </div>
                 </div>
                 <div className="flex justify-end pt-2">
-                  <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
+                  <Button variant="outline" onClick={() => setIsModalOpen(false)}>{t('dialog.close')}</Button>
                 </div>
               </div>
             ) : null}

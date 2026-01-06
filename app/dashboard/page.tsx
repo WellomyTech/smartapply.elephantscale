@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { Sparkles, FileText, Mic } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations("dashboard")
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
       {/* Header */}
       <div className="text-center space-y-3 mb-6">
         <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-          Choose Your Next Step
+          {t("title")}
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-          Accelerate your career journey with AI agents
+          {t("subtitle")}
         </p>
       </div>
 
@@ -23,10 +26,10 @@ export default function HomePage() {
               <FileText className="h-10 w-10 text-blue-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-1 tracking-tight">
-              AI Resume Generaration
+              {t("cards.resume.title")}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
-              Instantly craft an ATS-friendly resume and cover letter with AI agent.
+              {t("cards.resume.description")}
             </p>
           </div>
         </Link>
@@ -38,10 +41,10 @@ export default function HomePage() {
               <Mic className="h-10 w-10 text-emerald-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-emerald-700 dark:text-emerald-300 mb-1 tracking-tight">
-              Technical Interview Agent
+              {t("cards.technical.title")}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
-              Boost your confidence by practicing technical interviews with AI voice agent.
+              {t("cards.technical.description")}
             </p>
           </div>
         </Link>
@@ -53,10 +56,10 @@ export default function HomePage() {
               <Mic className="h-10 w-10 text-rose-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-rose-700 dark:text-rose-300 mb-1 tracking-tight">
-              Behavioral Interview Agent 
+              {t("cards.behavioral.title")}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
-              Ace your behavioral interviews by practicing with AI voice agent.
+              {t("cards.behavioral.description")}
             </p>
           </div>
         </Link>
@@ -69,10 +72,10 @@ export default function HomePage() {
               <FileText className="h-10 w-10 text-blue-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-1 tracking-tight">
-              AI Career Analysis
+              {t("cards.career.title")}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
-              Get personalized career path recommendations with AI-powered insights.
+              {t("cards.career.description")}
             </p>
           </div>
         </Link>

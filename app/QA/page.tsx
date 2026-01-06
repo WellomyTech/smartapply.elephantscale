@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/components/AuthProvider';
+import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   Briefcase,
@@ -25,6 +26,7 @@ const QA_POST_PATH = 'generate-question-answers';
 export default function QAPage() {
   const router = useRouter();
   const { logout } = useAuth();
+  const t = useTranslations('qa');
 
   const [loading, setLoading] = useState(true);
   const [reportId, setReportId] = useState<string | null>(null);
@@ -138,12 +140,10 @@ export default function QAPage() {
           <div className="space-y-2 min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/30 backdrop-blur-sm">
               <Sparkles className="h-4 w-4 text-blue-600" />
-              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                Interview Q&A
-              </span>
+              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{t('badge')}</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Practice Answers Tailored to Your Role
+              {t('title')}
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
               {jobTitle ? (
@@ -160,7 +160,7 @@ export default function QAPage() {
               ) : null}
               {interviewType ? (
                 <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  {interviewType.charAt(0).toUpperCase() + interviewType.slice(1)} Interview
+                  {t('interviewType', { type: interviewType.charAt(0).toUpperCase() + interviewType.slice(1) })}
                 </span>
               ) : null}
             </div>
@@ -175,21 +175,19 @@ export default function QAPage() {
         <Card className="bg-white/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50 shadow-lg rounded-2xl">
           <CardContent className="p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-sm text-slate-600 dark:text-slate-300">
-                These Q&A are generated specifically for your scanned role.
-              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-300">{t('toolbarNote')}</div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={handleRegenerate} className="text-sm">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Regenerate
+                  {t('regenerate')}
                 </Button>
                 <Button variant="outline" onClick={handleCopyAll} className="text-sm">
                   <Clipboard className="h-4 w-4 mr-2" />
-                  Copy All
+                  {t('copyAll')}
                 </Button>
                 <Button onClick={handleDownload} className="text-sm bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white">
                   <Download className="h-4 w-4 mr-2" />
-                  Download .md
+                  {t('download')}
                 </Button>
               </div>
             </div>
@@ -207,7 +205,7 @@ export default function QAPage() {
           </Card>
         ) : parsed.length === 0 ? (
           <Card className="bg-amber-50 border-amber-200 text-amber-800 rounded-2xl">
-            <CardContent className="p-6">No Q&amp;A found from the API.</CardContent>
+            <CardContent className="p-6">{t('empty')}</CardContent>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
@@ -223,10 +221,11 @@ export default function QAPage() {
 
 // Attractive loading skeleton
 function LoadingSkeleton() {
+  const t = useTranslations('qa')
   return (
     <div className="flex flex-col items-center justify-center py-16 space-y-6">
       <div className="w-12 h-12 border-4 border-indigo-500/60 border-t-transparent rounded-full animate-spin" />
-      <p className="text-muted-foreground font-medium">Generating Q&amp;A...</p>
+      <p className="text-muted-foreground font-medium">{t('loading')}</p>
       <div className="w-full max-w-5xl grid gap-4 md:grid-cols-2 mt-2">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="p-5 rounded-2xl border bg-white/70 dark:bg-slate-800/70 shadow-sm">
@@ -241,10 +240,11 @@ function LoadingSkeleton() {
 }
 
 function QACard({ index, q, a }: { index: number; q: string; a: string }) {
+  const t = useTranslations('qa')
   const copyOne = async () => {
     const block = `Q${index}: ${q}\n\n${a}\n`;
     await navigator.clipboard.writeText(block);
-    alert(`Copied Q${index} to clipboard.`);
+    alert(t('copiedOne', { index }));
   };
 
   return (

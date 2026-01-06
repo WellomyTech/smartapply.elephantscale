@@ -1,0 +1,368 @@
+{
+  "app": {
+    "name": "SmartApply",
+    "tagline": "KI-gestützte Jobbewerbungsplattform",
+    "getStarted": "Loslegen",
+    "signinUnlock": "Melde dich an, um dein Karrierepotenzial freizuschalten"
+  },
+  "home": {
+    "heroSubtitle": "Aufbauen. Vorbereiten. Abheben. Job bekommen.",
+    "heroDescription": "Transformiere deine Jobsuche mit KI-gestützter Lebenslauf-Optimierung, Interviewvorbereitung und personalisierten Bewerbungsstrategien.",
+    "features": {
+      "resumeTitle": "KI-Lebenslauf-Builder",
+      "resumeDescription": "Erstelle ATS-optimierte Lebensläufe, die mit KI-Hilfe auf konkrete Stellenanzeigen zugeschnitten sind.",
+      "interviewTitle": "Interview-Training",
+      "interviewDescription": "Übe mit KI-gestützten Probeinterviews und erhalte personalisiertes Feedback.",
+      "matchingTitle": "Job-Matching",
+      "matchingDescription": "Finde die passenden Chancen mit intelligenten Matching-Algorithmen."
+    }
+  },
+  "auth": {
+    "secureOAuth": "Sichere OAuth 2.0-Authentifizierung mit LinkedIn & Google"
+  },
+  "dashboard": {
+    "title": "Wähle deinen nächsten Schritt",
+    "subtitle": "Beschleunige deinen Karriereweg mit KI-Agenten",
+    "cards": {
+      "resume": {
+        "title": "KI-Lebenslauf-Erstellung",
+        "description": "Erstelle sofort einen ATS-freundlichen Lebenslauf und ein Anschreiben mit einem KI-Agenten."
+      },
+      "technical": {
+        "title": "Technischer Interview-Agent",
+        "description": "Stärke dein Selbstvertrauen, indem du technische Interviews mit einem KI-Sprachagenten übst."
+      },
+      "behavioral": {
+        "title": "Behavioral Interview-Agent",
+        "description": "Meistere Behavioral-Interviews, indem du mit einem KI-Sprachagenten übst."
+      },
+      "career": {
+        "title": "KI-Karriereanalyse",
+        "description": "Erhalte personalisierte Karriereempfehlungen mit KI-gestützten Insights."
+      }
+    }
+  }
+  ,
+  "qa": {
+    "badge": "Interview-Fragen & Antworten",
+    "title": "Übe Antworten, die zu deiner Rolle passen",
+    "toolbarNote": "Diese F&A werden speziell für deine gescannte Rolle generiert.",
+    "regenerate": "Neu erzeugen",
+    "copyAll": "Alles kopieren",
+    "download": ".md herunterladen",
+    "loading": "F&A werden generiert...",
+    "empty": "Keine F&A von der API gefunden.",
+    "copiedAll": "Alle F&A in die Zwischenablage kopiert.",
+    "copiedOne": "Q{index} in die Zwischenablage kopiert.",
+    "interviewType": "{type}-Interview"
+  }
+  ,
+  "resume": {
+    "loadingDashboard": "Dashboard wird geladen...",
+    "header": {
+      "title": "Willkommen bei der KI-Lebenslauf-Erstellung, {name}!",
+      "subtitle": "Lade deine Dokumente hoch und lass KI deine Jobsuche verbessern"
+    },
+    "upload": {
+      "resumeTitle": "Lebenslauf hochladen (PDF) *",
+      "resumeClick": "Zum Hochladen der PDF klicken",
+      "continue": "Weiter zum Job Kit",
+      "coverTitle": "Anschreiben hochladen (PDF)",
+      "coverHint": "Optional: Verbessere Bewerbungen mit einem personalisierten Anschreiben.",
+      "coverClickOptional": "Zum Hochladen der PDF klicken (optional)",
+      "coverLocked": "Zuerst Lebenslauf hochladen, um zu entsperren"
+    },
+    "status": {
+      "onlyPdf": "Bitte lade eine PDF-Datei hoch",
+      "sizeLimit": "Dateigröße muss unter 10 MB sein",
+      "resLoading1": "Lebenslauf wird hochgeladen",
+      "resLoading2": "Dokument wird verarbeitet",
+      "resLoading3": "Inhalt wird analysiert",
+      "resLoading4": "Fast fertig",
+      "resSuccess": "Lebenslauf erfolgreich hochgeladen!",
+      "resError": "Lebenslauf-Upload fehlgeschlagen",
+      "coverLoading1": "Anschreiben wird hochgeladen",
+      "coverLoading2": "Dokument wird verarbeitet",
+      "coverLoading3": "Format wird validiert",
+      "coverLoading4": "Upload wird abgeschlossen",
+      "coverSuccess": "Anschreiben erfolgreich hochgeladen! ✨",
+      "coverFail": "Anschreiben-Upload fehlgeschlagen. Bitte erneut versuchen.",
+      "networkError": "Netzwerkfehler. Bitte erneut versuchen.",
+      "redirecting": "Weiterleitung zum Job Kit..."
+    },
+    "onboarding": {
+      "readyTitle": "Super! Dein Lebenslauf ist bereit",
+      "readyBody": "Dein Lebenslauf wurde hochgeladen. Jetzt finden wir passende Jobs!",
+      "howWorks": "So funktioniert SmartApply",
+      "steps": {
+        "findTitle": "Jobs finden",
+        "findBody": "Füge Beschreibungen von LinkedIn, Indeed oder anderen Portalen ein.",
+        "analysisTitle": "KI-Analyse",
+        "analysisBody": "Wir führen einen ATS-ähnlichen Scan durch, um Anforderungen abzugleichen.",
+        "resultsTitle": "Ergebnisse erhalten",
+        "resultsBody": "Erhalte einen angepassten Lebenslauf und ein Anschreiben für jede Stelle.",
+        "practiceTitle": "Interview üben",
+        "practiceBody": "Bereite dich mit technischen oder behavioralen Fragen passend zur Rolle vor."
+      },
+      "ctaTitle": "Bereit, loszulegen?",
+      "ctaBody": "Klicke auf",
+      "ctaTail": "(unten rechts), um deine erste Stelle zu analysieren.",
+      "ctaNote": "Dauert nur 30 Sekunden"
+    },
+    "tips": {
+      "title": "Tipps für beste Ergebnisse",
+      "tip1": "Kopiere die vollständige Beschreibung mit Anforderungen und Aufgaben",
+      "tip2": "Füge Firmendaten hinzu, wenn verfügbar, für bessere Personalisierung",
+      "tip3": "Teste mehrere Stellenanzeigen, um die Anpassung deines CV zu sehen"
+    },
+    "badges": {
+      "noJobsYet": "Noch keine Scans? Starte jetzt ein neues Job-Matching!",
+      "startScanAria": "Neuen Jobscan starten"
+    }
+  }
+  ,
+  "profile": {
+    "title": "Profil",
+    "edit": "Profil bearbeiten",
+    "upgrade": "Upgrade",
+    "badges": {
+      "premium": "Premium",
+      "free": "Kostenlos"
+    },
+    "freeUsed": "Kostenlos genutzt:",
+    "upload": {
+      "limit24h": "Du kannst nur alle 24 Stunden einen Lebenslauf hochladen.",
+      "lastUploaded": "Zuletzt hochgeladen:",
+      "upgradeUnlock": "Upgrade auf <strong>Premium</strong>, um häufigere Uploads freizuschalten.",
+      "passed24h": "Seit deinem letzten Upload sind 24 Stunden vergangen.",
+      "reuploadAllowed": "Du kannst deinen Lebenslauf erneut hochladen, wenn du möchtest.",
+      "upgradeToPremium": "Upgrade auf Premium",
+      "toUploadAgain": "um erneut hochzuladen.",
+      "resumeUploaded": "Lebenslauf hochgeladen",
+      "coverUploaded": "Anschreiben hochgeladen"
+    },
+    "subscription": {
+      "title": "Abonnementdetails",
+      "status": "Status:",
+      "freeUsed": "Verbrauchte Gratisguthaben:",
+      "resumeUploaded": "Lebenslauf hochgeladen:",
+      "coverUploaded": "Anschreiben hochgeladen:",
+      "premiumMember": "Premium-Mitglied",
+      "manageBilling": "Abrechnung verwalten",
+      "cancel": "Abonnement kündigen",
+      "freePlan": "Kostenloser Plan"
+    },
+    "billing": {
+      "portalError": "Abrechnungsportal konnte nicht geöffnet werden. Bitte erneut versuchen.",
+      "cancelConfirm": "Möchtest du dein Abonnement wirklich kündigen?",
+      "cancelError": "Kündigung des Abonnements fehlgeschlagen. Bitte erneut versuchen."
+    },
+    "common": {
+      "uploading": "Wird hochgeladen...",
+      "yes": "Ja",
+      "no": "Nein"
+    }
+  }
+  ,
+  "interview": {
+    "loading": "Job-Scans werden geladen...",
+    "errors": {
+      "noEmail": "Benutzer-E-Mail nicht gefunden!",
+      "fetchFailed": "Berichte konnten nicht abgerufen werden"
+    },
+    "header": {
+      "title": "Technisches Interview-Dashboard",
+      "subtitle": "Generiere rollenbezogene technische Fragen, prüfe Antworten und werde schnell interviewbereit."
+    },
+    "empty": {
+      "ctaTitle": "Bitte führe zuerst einen Job-Scan aus",
+      "ctaBody": "Das Interviewerlebnis wird für eine bestimmte Stelle personalisiert. Beginne mit einem Job-Scan, um passende Fragen und Feedback zu erhalten."
+    },
+    "common": {
+      "startJobScan": "Job-Scan starten"
+    },
+    "what": {
+      "title": "Das erhältst du",
+      "items": {
+        "qa": {"title": "Technische Q&A", "body": "Übe technische Interviews, zugeschnitten auf deinen Scan und deine Seniorität."},
+        "behavioral": {"title": "Behaviorale Szenarien", "body": "Übe STAR-Antworten für Menschen, Prozesse und Führung."},
+        "bank": {"title": "Fragenbank + Feedback", "body": "Erhalte kuratierte Prompts und umsetzbares Feedback basierend auf deinem Scan."},
+        "modes": {"title": "Übungsmodi", "body": "Antworte schreibend oder übe mündlich mit Zeitvorgabe."},
+        "templates": {"title": "Antwortvorlagen", "body": "Nutze bewährte Strukturen (STAR, SOAR) mit rollenspezifischen Beispielen."},
+        "ats": {"title": "ATS- & Rollenabgleich", "body": "Feedback bezieht sich auf die in deinem Scan gefundenen Skills und Keywords."}
+      }
+    },
+    "how": {
+      "title": "So funktioniert's",
+      "steps": {
+        "1": {"title": "1. Job-Scan ausführen", "body": "Füge eine Stellenbeschreibung ein, um ein rollenbezogenes Profil zu erstellen."},
+        "2": {"title": "2. Interviewtyp wählen", "body": "Übe technische oder behaviorale Fragen passend zum Job."},
+        "3": {"title": "3. Feedback erhalten", "body": "Erhalte gezieltes Feedback und verbessere dich schnell."}
+      }
+    },
+    "tips": {
+      "title": "Tipps für beste Ergebnisse",
+      "items": {
+        "1": "Scanne die vollständige Beschreibung (Aufgaben + Anforderungen) für besseren Abgleich.",
+        "2": "Probiere Technical und Behavioral, um Skills und Storytelling abzudecken.",
+        "3": "Übe laut und halte Antworten mit STAR/SOAR strukturiert."
+      }
+    },
+    "final": {
+      "title": "Bereit loszulegen?",
+      "body": "Klicke auf „Job-Scan starten“, um dein persönliches Training zu beginnen."
+    }
+  }
+  ,
+  "behavioral": {
+    "title": "Wähle ein Thema zum Üben",
+    "cards": {
+      "communication": {
+        "title": "Kommunikation",
+        "body": "Verbessere Klarheit, aktives Zuhören und präzise Darstellung."
+      },
+      "leadership": {
+        "title": "Führung",
+        "body": "Zeige Ownership, Einfluss und Entscheidungsfindung."
+      },
+      "team": {
+        "title": "Teamplayer",
+        "body": "Zeige Zusammenarbeit, Konfliktlösung und Empathie."
+      }
+    }
+  }
+  ,
+  "behavioralSession": {
+    "you": "Du",
+    "labels": {"ai": "KI-Interviewer", "you": "Du"},
+    "header": {
+      "practice": "{topic}-Übung",
+      "session": "{topic}-Sitzung",
+      "description": "Starte ein live simuliertes Interview zu diesem Thema. Du kannst die Kamera weichzeichnen und rechts eine Live-Transkription sehen."
+    },
+    "buttons": {
+      "start": "Übung starten",
+      "back": "Zurück zu Themen",
+      "progress": "Details zum Fortschritt anzeigen"
+    },
+    "status": {"live": "LIVE"},
+    "camera": {"off": "Kamera aus"},
+    "controls": {
+      "mute": "Stumm schalten",
+      "unmute": "Stummschaltung aufheben",
+      "turnOnCamera": "Kamera einschalten",
+      "turnOffCamera": "Kamera ausschalten",
+      "blur": "Weichzeichnen",
+      "blurOff": "Aus",
+      "blurLow": "Niedrig",
+      "blurHigh": "Hoch",
+      "restart": "Sitzung neu starten",
+      "end": "Anruf beenden",
+      "sessionInfo": "Sitzungsinfo"
+    },
+    "settings": {
+      "title": "Sitzungsinformationen",
+      "topic": "Thema",
+      "reportId": "Report-ID",
+      "notSet": "Nicht gesetzt",
+      "jobTitle": "Stellentitel",
+      "company": "Unternehmen"
+    },
+    "transcript": {
+      "title": "Live-Transkript",
+      "subtitle": "Transkript des Gesprächs in Echtzeit",
+      "empty": "Das Transkript erscheint hier, sobald das Gespräch beginnt..."
+    },
+    "errors": {
+      "missing": "Name oder E-Mail fehlt. Bitte Profil vervollständigen und erneut versuchen.",
+      "startFail": "Sitzung konnte nicht gestartet werden. Bitte erneut versuchen."
+    },
+    "cameraErrors": {
+      "insecureContext": "Kamera erfordert HTTPS oder localhost. Bitte https:// oder localhost verwenden.",
+      "permissionBlocked": "Kameraberechtigung ist im Browser blockiert. Erlaube die Kamera in den Seiteneinstellungen und lade neu.",
+      "denied": "Zugriff auf die Kamera wurde verweigert. Klicke auf das Kamera-Symbol in der Adressleiste, um zu erlauben und neu zu laden.",
+      "busy": "Kamera ist belegt (von einer anderen App genutzt). Schließe andere Apps (Zoom/Teams) und versuche es erneut.",
+      "notFound": "Kein Kameragerät gefunden. Prüfe Windows-Datenschutzeinstellungen > Kamera.",
+      "generic": "Kamera konnte nicht gestartet werden. Prüfe Browserberechtigungen und HTTPS."
+    }
+  }
+  ,
+  "jobList": {
+    "title": "Deine Bewerbungen",
+    "tabs": {
+      "all": "Alle Bewerbungen",
+      "applied": "Beworben",
+      "interview": "Interview terminiert"
+    },
+    "bulk": {
+      "selectAll": "Alle in Ansicht auswählen",
+      "deleteSelected": "Ausgewählte löschen",
+      "confirmDelete": "{count} ausgewählte Analyse(n) löschen?"
+    },
+    "empty": "Noch keine Bewerbungen in dieser Ansicht.",
+    "labels": {
+      "job": "Job",
+      "untitledRole": "Unbenannte Rolle",
+      "scanned": "Gescant:",
+      "interviewScheduled": "Interview terminiert"
+    },
+    "applied": {
+      "applied": "Beworben",
+      "mark": "Als beworben markieren",
+      "markNotApplied": "Als nicht beworben markieren",
+      "tooltipUnmark": "Klicken, um als nicht beworben zu markieren",
+      "tooltipMark": "Diesen Job als beworben markieren",
+      "ariaUnmark": "Als nicht beworben markieren"
+    },
+    "aria": {
+      "selectJob": "{title} auswählen",
+      "download": "Herunterladen",
+      "edit": "Lebenslauf-Infos bearbeiten",
+      "behavioral": "Behavioral-Interview",
+      "technical": "Technisches Interview",
+      "technicalDisabled": "Technisches Interview (deaktiviert)",
+      "deleteScan": "Diesen Scan löschen"
+    },
+    "tooltips": {
+      "download": "Lebenslauf herunterladen",
+      "generateFirst": "Bitte zuerst Lebenslauf generieren",
+      "editJob": "Stellendetails und Dokumente bearbeiten",
+      "behavioralPrep": "Behavioral-Interview-Vorbereitung",
+      "technicalPrep": "Technische Interview-Vorbereitung",
+      "technicalDisabled": "Erst Lebenslauf generieren, dann dieses Modul nutzen",
+      "deleteOne": "Diesen Scan löschen"
+    },
+    "errors": {
+      "generateQuestions": "Fehler beim Generieren der Fragen. Bitte erneut versuchen.",
+      "downloadFailed": "Lebenslauf konnte nicht heruntergeladen werden",
+      "deleteFailed": "Löschen fehlgeschlagen. Bitte erneut versuchen.",
+      "noEmail": "Benutzer-E-Mail nicht gefunden!"
+    },
+    "warnings": {
+      "markAppliedFirst": "Bitte zuerst als beworben markieren."
+    },
+    "status": {
+      "preparingDownload": "Download wird vorbereitet…",
+      "downloadStarted": "Download gestartet",
+      "jobUpdated": "Jobstatus aktualisiert",
+      "generatingQuestions": "Fragen werden generiert…",
+      "deleted": "Erfolgreich gelöscht: {count, plural, one {1 Analyse} other {# Analysen}}"
+    },
+    "confirm": {
+      "deleteOne": "Diesen Scan löschen?"
+    },
+    "dialog": {
+      "title": "Lebenslauf-Infos",
+      "description": "Details aus deinem vorherigen Scan.",
+      "loading": "Wird geladen…",
+      "jobTitle": "Stellentitel:",
+      "company": "Unternehmen:",
+      "descriptionLabel": "Beschreibung:",
+      "skillsMatch": "Skill-Übereinstimmung",
+      "gaps": "Lücken",
+      "bonusPoints": "Bonuspunkte",
+      "recommendations": "Empfehlungen",
+      "close": "Schließen"
+    }
+  }
+}

@@ -16,11 +16,13 @@ import {
 import InterviewScanList from "@/components/InterviewScanList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function InterviewPage() {
   const router = useRouter();
+  const t = useTranslations("interview");
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export default function InterviewPage() {
           localStorage.getItem("user_email") ||
           localStorage.getItem("userEmail");
         if (!userEmail) {
-          setError("User email not found!");
+          setError(t("errors.noEmail"));
           setLoading(false);
           return;
         }
@@ -54,7 +56,7 @@ export default function InterviewPage() {
           setReports([]);
         }
       } catch {
-        setError("Failed to fetch reports");
+        setError(t("errors.fetchFailed"));
       } finally {
         setLoading(false);
       }
@@ -65,7 +67,7 @@ export default function InterviewPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground">
-        Loading job scans...
+        {t("loading")}
       </div>
     );
   }
@@ -87,11 +89,10 @@ export default function InterviewPage() {
           <span className="text-xs font-medium">Technical Interview Dashboard</span>
         </div> */}
         <h1 className="mt-3 text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-sky-600 bg-clip-text text-transparent">
-          Technical Interview Dashboard
+          {t("header.title")}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Generate role‑aligned technical questions, review answers, and get
-          interview‑ready fast.
+          {t("header.subtitle")}
         </p>
       </div>
 
@@ -105,14 +106,12 @@ export default function InterviewPage() {
                   <Target className="h-6 w-6" />
                 </div>
                 <h2 className="text-lg font-semibold tracking-tight">
-                  Please run a Job Scan first
+                  {t("empty.ctaTitle")}
                 </h2>
               </div>
 
               <p className="text-sm text-muted-foreground mb-6">
-                The interview experience is personalized to a specific job.
-                Start by scanning a job to unlock question sets and feedback
-                aligned with that role.
+                {t("empty.ctaBody")}
               </p>
 
               <Button
@@ -122,7 +121,7 @@ export default function InterviewPage() {
               >
                 <div className="flex items-center gap-2 justify-center w-full">
                   <Sparkles className="h-5 w-5" />
-                  Start a Job Scan
+                  {t("common.startJobScan")}
                 </div>
               </Button>
             </CardContent>
@@ -133,7 +132,7 @@ export default function InterviewPage() {
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-blue-600" />
-                What You’ll Get
+                {t("what.title")}
               </h3>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -142,11 +141,10 @@ export default function InterviewPage() {
                     <Brain className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Technical Q&A
+                    {t("what.items.qa.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Practice technical interviews tailored to your job scan and
-                    seniority.
+                    {t("what.items.qa.body")}
                   </p>
                 </div>
 
@@ -155,11 +153,10 @@ export default function InterviewPage() {
                     <MessageSquare className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Behavioral Scenarios
+                    {t("what.items.behavioral.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Practice STAR-style answers for people, process, and
-                    leadership questions.
+                    {t("what.items.behavioral.body")}
                   </p>
                 </div>
 
@@ -168,11 +165,10 @@ export default function InterviewPage() {
                     <ListChecks className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Question Bank + Feedback
+                    {t("what.items.bank.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Get curated prompts and actionable feedback based on your
-                    job scan.
+                    {t("what.items.bank.body")}
                   </p>
                 </div>
 
@@ -181,10 +177,10 @@ export default function InterviewPage() {
                     <Mic className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Practice Modes
+                    {t("what.items.modes.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Answer by typing, or practice verbally with timed responses.
+                    {t("what.items.modes.body")}
                   </p>
                 </div>
 
@@ -193,11 +189,10 @@ export default function InterviewPage() {
                     <FileText className="h-6 w-6 text-rose-600 dark:text-rose-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Answer Templates
+                    {t("what.items.templates.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Use proven structures (STAR, SOAR) with role-specific
-                    examples.
+                    {t("what.items.templates.body")}
                   </p>
                 </div>
 
@@ -206,11 +201,10 @@ export default function InterviewPage() {
                     <ShieldCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    ATS & Role Alignment
+                    {t("what.items.ats.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Feedback maps to the skills and keywords found in your job
-                    scan.
+                    {t("what.items.ats.body")}
                   </p>
                 </div>
               </div>
@@ -222,7 +216,7 @@ export default function InterviewPage() {
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-blue-600" />
-                How It Works
+                {t("how.title")}
               </h3>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -231,10 +225,10 @@ export default function InterviewPage() {
                     <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                    1. Run a Job Scan
+                    {t("how.steps.1.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Paste a job description to build a role-specific profile.
+                    {t("how.steps.1.body")}
                   </p>
                 </div>
 
@@ -243,11 +237,10 @@ export default function InterviewPage() {
                     <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                    2. Choose Interview Type
+                    {t("how.steps.2.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Practice Technical or Behavioral questions matched to the
-                    job.
+                    {t("how.steps.2.body")}
                   </p>
                 </div>
 
@@ -256,10 +249,10 @@ export default function InterviewPage() {
                     <ListChecks className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                    3. Get Feedback
+                    {t("how.steps.3.title")}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Receive targeted feedback and iterate to improve quickly.
+                    {t("how.steps.3.body")}
                   </p>
                 </div>
               </div>
@@ -270,23 +263,20 @@ export default function InterviewPage() {
           <Card className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl shadow-xl border-2 border-amber-200 dark:border-amber-800">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200 mb-4">
-                💡 Pro Tips for Best Results
+                {t("tips.title")}
               </h3>
               <ul className="space-y-2 text-sm text-amber-700 dark:text-amber-300">
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 mt-1">•</span>
-                  Scan the full job description (responsibilities +
-                  requirements) for better alignment.
+                  {t("tips.items.1")}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 mt-1">•</span>
-                  Try both Technical and Behavioral to cover skills and
-                  storytelling.
+                  {t("tips.items.2")}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 mt-1">•</span>
-                  Practice out loud and keep responses structured using
-                  STAR/SOAR.
+                  {t("tips.items.3")}
                 </li>
               </ul>
             </CardContent>
@@ -296,11 +286,10 @@ export default function InterviewPage() {
           <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl shadow-xl">
             <CardContent className="p-6 text-center">
               <h3 className="text-xl font-semibold mb-2">
-                Ready to Get Started?
+                {t("final.title")}
               </h3>
               <p className="mb-4 opacity-90">
-                Click “Start a Job Scan” to unlock your personalized interview
-                practice.
+                {t("final.body")}
               </p>
               <Button
                 size="lg"
@@ -309,7 +298,7 @@ export default function InterviewPage() {
                 onClick={() => router.push("/job-kit")}
               >
                 <div className="flex items-center gap-2">
-                  Start a Job Scan
+                  {t("common.startJobScan")}
                   <ArrowRight className="h-4 w-4" />
                 </div>
               </Button>

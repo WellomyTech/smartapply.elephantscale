@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { Sparkles, Mic, Crown, Users } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-export default function BehavioralDashboardPage() {
+export default async function BehavioralDashboardPage() {
+  const t = await getTranslations("behavioral");
   return (
     <main className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-6 md:py-20 px-4">
       {/* Header */}
       <div className="text-center space-y-3 mb-12">
         <h1 className="text-2xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-          Choose a Topic to Practice
+          {t("title")}
         </h1>
         {/* <p className="text-lg text-muted-foreground max-w-xl mx-auto">
           Practice behavioral interview topics with AI voice agent
@@ -26,10 +28,10 @@ export default function BehavioralDashboardPage() {
               <Mic className="h-10 w-10 text-blue-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-1 tracking-tight">
-              Communication
+              {t("cards.communication.title")}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
-              Improve clarity, active listening, and concise delivery.
+              {t("cards.communication.body")}
             </p>
           </div>
         </Link>
@@ -44,10 +46,10 @@ export default function BehavioralDashboardPage() {
               <Crown className="h-10 w-10 text-purple-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-purple-700 dark:text-purple-300 mb-1 tracking-tight">
-              Leadership
+              {t("cards.leadership.title")}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
-              Demonstrate ownership, influence, and decision-making.
+              {t("cards.leadership.body")}
             </p>
           </div>
         </Link>
@@ -62,10 +64,10 @@ export default function BehavioralDashboardPage() {
               <Users className="h-10 w-10 text-indigo-600 group-hover:scale-110 transition-transform" />
             </div>
             <h2 className="text-2xl font-semibold text-indigo-700 dark:text-indigo-300 mb-1 tracking-tight">
-              Team Player
+              {t("cards.team.title")}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-center px-6">
-              Showcase collaboration, conflict resolution, and empathy.
+              {t("cards.team.body")}
             </p>
           </div>
         </Link>

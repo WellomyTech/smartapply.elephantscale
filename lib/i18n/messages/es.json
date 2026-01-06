@@ -1,0 +1,368 @@
+{
+  "app": {
+    "name": "SmartApply",
+    "tagline": "Plataforma de solicitudes de empleo impulsada por IA",
+    "getStarted": "Comenzar",
+    "signinUnlock": "Inicia sesión para desbloquear tu potencial profesional"
+  },
+  "home": {
+    "heroSubtitle": "Crea. Prepárate. Destaca. Consigue el empleo.",
+    "heroDescription": "Transforma tu búsqueda de empleo con optimización de CV con IA, preparación de entrevistas y estrategias de postulación personalizadas.",
+    "features": {
+      "resumeTitle": "Creador de CV con IA",
+      "resumeDescription": "Crea currículums optimizados para ATS y adaptados a ofertas específicas con ayuda de la IA.",
+      "interviewTitle": "Preparación de entrevistas",
+      "interviewDescription": "Practica con entrevistas simuladas con IA y recibe feedback personalizado.",
+      "matchingTitle": "Matching de empleos",
+      "matchingDescription": "Encuentra las mejores oportunidades con algoritmos inteligentes de emparejamiento."
+    }
+  },
+  "auth": {
+    "secureOAuth": "Autenticación OAuth 2.0 segura con LinkedIn y Google"
+  },
+  "dashboard": {
+    "title": "Elige tu próximo paso",
+    "subtitle": "Acelera tu carrera con agentes de IA",
+    "cards": {
+      "resume": {
+        "title": "Generación de CV con IA",
+        "description": "Crea al instante un CV y carta de presentación compatibles con ATS con un agente de IA."
+      },
+      "technical": {
+        "title": "Agente de entrevista técnica",
+        "description": "Gana confianza practicando entrevistas técnicas con un agente de voz con IA."
+      },
+      "behavioral": {
+        "title": "Agente de entrevista conductual",
+        "description": "Domina entrevistas conductuales practicando con un agente de voz con IA."
+      },
+      "career": {
+        "title": "Análisis de carrera con IA",
+        "description": "Obtén recomendaciones personalizadas de trayectoria profesional con insights impulsados por IA."
+      }
+    }
+  }
+  ,
+  "qa": {
+    "badge": "Preguntas y Respuestas de Entrevista",
+    "title": "Practica respuestas adaptadas a tu puesto",
+    "toolbarNote": "Estas P&R se generan específicamente para tu rol escaneado.",
+    "regenerate": "Regenerar",
+    "copyAll": "Copiar todo",
+    "download": "Descargar .md",
+    "loading": "Generando P&R...",
+    "empty": "No se encontraron P&R desde la API.",
+    "copiedAll": "Todas las P&R copiadas al portapapeles.",
+    "copiedOne": "Copiado P{index} al portapapeles.",
+    "interviewType": "Entrevista {type}"
+  }
+  ,
+  "resume": {
+    "loadingDashboard": "Cargando panel...",
+    "header": {
+      "title": "Bienvenido a la generación de CV con IA, {name}!",
+      "subtitle": "Sube tus documentos y deja que la IA transforme tu búsqueda de empleo"
+    },
+    "upload": {
+      "resumeTitle": "Subir CV (PDF) *",
+      "resumeClick": "Haz clic para subir PDF",
+      "continue": "Continuar al Job Kit",
+      "coverTitle": "Subir carta de presentación (PDF)",
+      "coverHint": "Opcional: Mejora tus postulaciones con una carta personalizada.",
+      "coverClickOptional": "Haz clic para subir PDF (opcional)",
+      "coverLocked": "Primero sube el CV para habilitar"
+    },
+    "status": {
+      "onlyPdf": "Por favor sube un archivo PDF",
+      "sizeLimit": "El tamaño debe ser menor a 10MB",
+      "resLoading1": "Subiendo CV",
+      "resLoading2": "Procesando documento",
+      "resLoading3": "Analizando contenido",
+      "resLoading4": "Casi listo",
+      "resSuccess": "¡CV subido correctamente!",
+      "resError": "Error al subir el CV",
+      "coverLoading1": "Subiendo carta",
+      "coverLoading2": "Procesando documento",
+      "coverLoading3": "Validando formato",
+      "coverLoading4": "Finalizando subida",
+      "coverSuccess": "¡Carta de presentación subida correctamente! ✨",
+      "coverFail": "Error al subir la carta. Intenta de nuevo.",
+      "networkError": "Error de red. Intenta de nuevo.",
+      "redirecting": "Redirigiendo a Job Kit..."
+    },
+    "onboarding": {
+      "readyTitle": "¡Genial! Tu CV está listo",
+      "readyBody": "Has subido tu CV. ¡Ahora encontremos los mejores empleos para ti!",
+      "howWorks": "Cómo funciona SmartApply",
+      "steps": {
+        "findTitle": "Encontrar empleos",
+        "findBody": "Pega descripciones desde LinkedIn, Indeed u otros portales.",
+        "analysisTitle": "Análisis con IA",
+        "analysisBody": "Hacemos un escaneo tipo ATS para comparar con tu CV.",
+        "resultsTitle": "Obtén resultados",
+        "resultsBody": "Recibe un CV y carta adaptados para cada empleo.",
+        "practiceTitle": "Practica entrevistas",
+        "practiceBody": "Prepárate con preguntas técnicas o conductuales según el rol."
+      },
+      "ctaTitle": "¿Listo para empezar?",
+      "ctaBody": "Haz clic en",
+      "ctaTail": "(abajo a la derecha) para analizar tu primera vacante.",
+      "ctaNote": "Solo toma 30 segundos"
+    },
+    "tips": {
+      "title": "Consejos para mejores resultados",
+      "tip1": "Copia la descripción completa con requisitos y responsabilidades",
+      "tip2": "Incluye información de la empresa cuando sea posible",
+      "tip3": "Prueba varias vacantes para ver cómo se adapta tu CV"
+    },
+    "badges": {
+      "noJobsYet": "¿Sin escaneos aún? ¡Empieza un nuevo Job Match ahora!",
+      "startScanAria": "Iniciar un nuevo análisis de empleo"
+    }
+  }
+  ,
+  "profile": {
+    "title": "Perfil",
+    "edit": "Editar perfil",
+    "upgrade": "Mejorar",
+    "badges": {
+      "premium": "Premium",
+      "free": "Gratis"
+    },
+    "freeUsed": "Usos gratis:",
+    "upload": {
+      "limit24h": "Solo puedes subir un CV una vez cada 24 horas.",
+      "lastUploaded": "Última subida:",
+      "upgradeUnlock": "Mejora a <strong>Premium</strong> para habilitar subidas más frecuentes.",
+      "passed24h": "Han pasado 24 horas desde tu última subida.",
+      "reuploadAllowed": "Puedes volver a subir tu CV si lo deseas.",
+      "upgradeToPremium": "Mejorar a Premium",
+      "toUploadAgain": "para volver a subir.",
+      "resumeUploaded": "CV subido",
+      "coverUploaded": "Carta de presentación subida"
+    },
+    "subscription": {
+      "title": "Detalles de suscripción",
+      "status": "Estado:",
+      "freeUsed": "Créditos gratis usados:",
+      "resumeUploaded": "CV subido:",
+      "coverUploaded": "Carta subida:",
+      "premiumMember": "Miembro Premium",
+      "manageBilling": "Gestionar facturación",
+      "cancel": "Cancelar suscripción",
+      "freePlan": "Plan gratuito"
+    },
+    "billing": {
+      "portalError": "No se pudo abrir el portal de facturación. Inténtalo de nuevo.",
+      "cancelConfirm": "¿Seguro que deseas cancelar tu suscripción?",
+      "cancelError": "No se pudo cancelar la suscripción. Inténtalo de nuevo."
+    },
+    "common": {
+      "uploading": "Subiendo...",
+      "yes": "Sí",
+      "no": "No"
+    }
+  }
+  ,
+  "interview": {
+    "loading": "Cargando escaneos de empleo...",
+    "errors": {
+      "noEmail": "¡Correo del usuario no encontrado!",
+      "fetchFailed": "Error al obtener reportes"
+    },
+    "header": {
+      "title": "Panel de Entrevista Técnica",
+      "subtitle": "Genera preguntas técnicas alineadas al rol, revisa respuestas y prepárate rápido."
+    },
+    "empty": {
+      "ctaTitle": "Primero ejecuta un Job Scan",
+      "ctaBody": "La experiencia de entrevista se personaliza para un puesto específico. Comienza escaneando una vacante para desbloquear conjuntos de preguntas y feedback alineado."
+    },
+    "common": {
+      "startJobScan": "Iniciar Job Scan"
+    },
+    "what": {
+      "title": "Qué obtendrás",
+      "items": {
+        "qa": {"title": "Preguntas y Respuestas Técnicas", "body": "Practica entrevistas técnicas adaptadas a tu escaneo y seniority."},
+        "behavioral": {"title": "Escenarios Conductuales", "body": "Practica respuestas estilo STAR para personas, procesos y liderazgo."},
+        "bank": {"title": "Banco de Preguntas + Feedback", "body": "Recibe prompts seleccionados y feedback accionable basado en tu escaneo."},
+        "modes": {"title": "Modos de práctica", "body": "Responde escribiendo o practica verbalmente con tiempos cronometrados."},
+        "templates": {"title": "Plantillas de Respuesta", "body": "Usa estructuras probadas (STAR, SOAR) con ejemplos específicos del rol."},
+        "ats": {"title": "Alineación ATS y Rol", "body": "El feedback se basa en habilidades y palabras clave encontradas en tu escaneo."}
+      }
+    },
+    "how": {
+      "title": "Cómo funciona",
+      "steps": {
+        "1": {"title": "1. Ejecuta un Job Scan", "body": "Pega una descripción de puesto para crear un perfil específico."},
+        "2": {"title": "2. Elige el tipo de entrevista", "body": "Practica preguntas Técnicas o Conductuales según el puesto."},
+        "3": {"title": "3. Obtén feedback", "body": "Recibe feedback dirigido y mejora rápidamente."}
+      }
+    },
+    "tips": {
+      "title": "Consejos para mejores resultados",
+      "items": {
+        "1": "Escanea la descripción completa (responsabilidades + requisitos) para mejor alineación.",
+        "2": "Prueba Técnica y Conductual para cubrir habilidades y storytelling.",
+        "3": "Practica en voz alta y mantén respuestas estructuradas usando STAR/SOAR."
+      }
+    },
+    "final": {
+      "title": "¿Listo para empezar?",
+      "body": "Haz clic en “Iniciar Job Scan” para desbloquear tu práctica personalizada."
+    }
+  }
+  ,
+  "behavioral": {
+    "title": "Elige un tema para practicar",
+    "cards": {
+      "communication": {
+        "title": "Comunicación",
+        "body": "Mejora la claridad, la escucha activa y la concisión."
+      },
+      "leadership": {
+        "title": "Liderazgo",
+        "body": "Demuestra ownership, influencia y toma de decisiones."
+      },
+      "team": {
+        "title": "Trabajo en equipo",
+        "body": "Muestra colaboración, resolución de conflictos y empatía."
+      }
+    }
+  }
+  ,
+  "behavioralSession": {
+    "you": "Tú",
+    "labels": {"ai": "Entrevistador IA", "you": "Tú"},
+    "header": {
+      "practice": "Práctica de {topic}",
+      "session": "Sesión de {topic}",
+      "description": "Inicia una entrevista simulada en vivo adaptada a este tema. Puedes difuminar la cámara y verás una transcripción en vivo a la derecha."
+    },
+    "buttons": {
+      "start": "Comenzar práctica",
+      "back": "Volver a temas",
+      "progress": "Ver progreso detallado"
+    },
+    "status": {"live": "EN VIVO"},
+    "camera": {"off": "Cámara apagada"},
+    "controls": {
+      "mute": "Silenciar",
+      "unmute": "Activar micrófono",
+      "turnOnCamera": "Encender cámara",
+      "turnOffCamera": "Apagar cámara",
+      "blur": "Desenfoque",
+      "blurOff": "Apagado",
+      "blurLow": "Bajo",
+      "blurHigh": "Alto",
+      "restart": "Reiniciar sesión",
+      "end": "Finalizar llamada",
+      "sessionInfo": "Información de la sesión"
+    },
+    "settings": {
+      "title": "Información de la sesión",
+      "topic": "Tema",
+      "reportId": "ID de reporte",
+      "notSet": "No definido",
+      "jobTitle": "Título del puesto",
+      "company": "Empresa"
+    },
+    "transcript": {
+      "title": "Transcripción en vivo",
+      "subtitle": "Transcripción de la conversación en tiempo real",
+      "empty": "La transcripción aparecerá aquí cuando comience la conversación..."
+    },
+    "errors": {
+      "missing": "Falta nombre o correo. Completa tu perfil e inténtalo de nuevo.",
+      "startFail": "No se pudo iniciar la sesión. Inténtalo de nuevo."
+    },
+    "cameraErrors": {
+      "insecureContext": "La cámara requiere HTTPS o localhost. Usa https:// o localhost.",
+      "permissionBlocked": "El permiso de cámara está bloqueado en el navegador. Permite la cámara en la configuración del sitio y recarga.",
+      "denied": "Se denegó el acceso a la cámara. Haz clic en el ícono de cámara en la barra de direcciones para permitir y recargar.",
+      "busy": "La cámara está ocupada (usada por otra app). Cierra otras apps (Zoom/Teams) e inténtalo de nuevo.",
+      "notFound": "No se encontró ningún dispositivo de cámara. Revisa la configuración de Privacidad de Windows > Cámara.",
+      "generic": "No se pudo iniciar la cámara. Revisa permisos del navegador y HTTPS."
+    }
+  }
+  ,
+  "jobList": {
+    "title": "Tus postulaciones",
+    "tabs": {
+      "all": "Todas las postulaciones",
+      "applied": "Postulado",
+      "interview": "Entrevista programada"
+    },
+    "bulk": {
+      "selectAll": "Seleccionar todo en vista",
+      "deleteSelected": "Eliminar seleccionados",
+      "confirmDelete": "¿Eliminar {count} análisis seleccionados?"
+    },
+    "empty": "Aún no hay postulaciones en esta vista.",
+    "labels": {
+      "job": "puesto",
+      "untitledRole": "Puesto sin título",
+      "scanned": "Escaneado:",
+      "interviewScheduled": "Entrevista programada"
+    },
+    "applied": {
+      "applied": "Postulado",
+      "mark": "Marcar como postulado",
+      "markNotApplied": "Marcar como no postulado",
+      "tooltipUnmark": "Haz clic para marcar como no postulado",
+      "tooltipMark": "Marca este empleo como postulado",
+      "ariaUnmark": "Marcar como no postulado"
+    },
+    "aria": {
+      "selectJob": "Seleccionar {title}",
+      "download": "Descargar",
+      "edit": "Editar información del CV",
+      "behavioral": "Entrevista conductual",
+      "technical": "Entrevista técnica",
+      "technicalDisabled": "Entrevista técnica (deshabilitado)",
+      "deleteScan": "Eliminar este análisis"
+    },
+    "tooltips": {
+      "download": "Descargar CV",
+      "generateFirst": "Primero genera el CV",
+      "editJob": "Editar detalles del puesto y documentos",
+      "behavioralPrep": "Preparación de entrevista conductual",
+      "technicalPrep": "Preparación de entrevista técnica",
+      "technicalDisabled": "Primero genera el CV y luego usa este módulo",
+      "deleteOne": "Eliminar este análisis"
+    },
+    "errors": {
+      "generateQuestions": "Error al generar preguntas. Inténtalo de nuevo.",
+      "downloadFailed": "Error al descargar el CV",
+      "deleteFailed": "No se pudo eliminar. Inténtalo de nuevo.",
+      "noEmail": "¡Correo del usuario no encontrado!"
+    },
+    "warnings": {
+      "markAppliedFirst": "Primero marca como postulado."
+    },
+    "status": {
+      "preparingDownload": "Preparando descarga…",
+      "downloadStarted": "Descarga iniciada",
+      "jobUpdated": "Estado del empleo actualizado",
+      "generatingQuestions": "Generando preguntas…",
+      "deleted": "Eliminado correctamente {count, plural, one {1 análisis} other {# análisis}}"
+    },
+    "confirm": {
+      "deleteOne": "¿Eliminar este análisis?"
+    },
+    "dialog": {
+      "title": "Información del CV",
+      "description": "Detalles de tu análisis anterior.",
+      "loading": "Cargando…",
+      "jobTitle": "Título del puesto:",
+      "company": "Empresa:",
+      "descriptionLabel": "Descripción:",
+      "skillsMatch": "Coincidencia de habilidades",
+      "gaps": "Brechas",
+      "bonusPoints": "Puntos extra",
+      "recommendations": "Recomendaciones",
+      "close": "Cerrar"
+    }
+  }
+}

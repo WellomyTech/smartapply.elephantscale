@@ -9,10 +9,14 @@ import LinkedInLoginButton from '@/components/LinkedInButton'
 import GoogleButton from '@/components/GoogleButton'
 import { Briefcase, Loader2, Sparkles, Zap, Target, Users } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { useTranslations } from 'next-intl'
 
 export default function HomePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const tApp = useTranslations('app')
+  const tHome = useTranslations('home')
+  const tAuth = useTranslations('auth')
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -35,18 +39,18 @@ export default function HomePage() {
         <div className="text-center space-y-8 mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
             <Sparkles className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">AI-Powered Job Application Platform</span>
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{tApp('tagline')}</span>
           </div>
           
           <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              SmartApply
+              {tApp('name')}
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              Build. Prepare. Perform. Get Hired.
+              {tHome('heroSubtitle')}
             </p>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Transform your job search with AI-powered resume optimization, interview preparation, and personalized application strategies.
+              {tHome('heroDescription')}
             </p>
           </div>
         </div>
@@ -58,9 +62,9 @@ export default function HomePage() {
               <div className="w-12 h-12 mx-auto rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                 <Zap className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold">AI Resume Builder</h3>
+              <h3 className="text-lg font-semibold">{tHome('features.resumeTitle')}</h3>
               <p className="text-sm text-muted-foreground">
-                Create ATS-optimized resumes tailored to specific job descriptions with AI assistance.
+                {tHome('features.resumeDescription')}
               </p>
             </CardContent>
           </Card>
@@ -70,9 +74,9 @@ export default function HomePage() {
               <div className="w-12 h-12 mx-auto rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Target className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold">Interview Prep</h3>
+              <h3 className="text-lg font-semibold">{tHome('features.interviewTitle')}</h3>
               <p className="text-sm text-muted-foreground">
-                Practice with AI-powered mock interviews and get personalized feedback.
+                {tHome('features.interviewDescription')}
               </p>
             </CardContent>
           </Card>
@@ -82,9 +86,9 @@ export default function HomePage() {
               <div className="w-12 h-12 mx-auto rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
                 <Users className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold">Job Matching</h3>
+              <h3 className="text-lg font-semibold">{tHome('features.matchingTitle')}</h3>
               <p className="text-sm text-muted-foreground">
-                Find the perfect opportunities with intelligent job matching algorithms.
+                {tHome('features.matchingDescription')}
               </p>
             </CardContent>
           </Card>
@@ -98,9 +102,9 @@ export default function HomePage() {
                 <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4">
                   <Briefcase className="h-8 w-8 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold">Get Started</h2>
+                <h2 className="text-2xl font-bold">{tApp('getStarted')}</h2>
                 <p className="text-muted-foreground">
-                  Sign in to unlock your career potential
+                  {tApp('signinUnlock')}
                 </p>
               </div>
 
@@ -108,7 +112,7 @@ export default function HomePage() {
                 <LinkedInLoginButton />
                 <GoogleButton />
                 <p className="text-xs text-muted-foreground">
-                  🔒 Secure OAuth 2.0 authentication with LinkedIn & Google
+                  🔒 {tAuth('secureOAuth')}
                 </p>
               </div>
             </CardContent>

@@ -1,0 +1,368 @@
+{
+  "app": {
+    "name": "SmartApply",
+    "tagline": "Plateforme de candidature pilotée par l'IA",
+    "getStarted": "Commencer",
+    "signinUnlock": "Connectez-vous pour libérer votre potentiel professionnel"
+  },
+  "home": {
+    "heroSubtitle": "Construisez. Préparez-vous. Performez. Soyez embauché.",
+    "heroDescription": "Transformez votre recherche d'emploi avec l'optimisation de CV par IA, la préparation aux entretiens et des stratégies de candidature personnalisées.",
+    "features": {
+      "resumeTitle": "Créateur de CV IA",
+      "resumeDescription": "Créez des CV optimisés ATS et adaptés à des offres spécifiques avec l'aide de l'IA.",
+      "interviewTitle": "Préparation aux entretiens",
+      "interviewDescription": "Entraînez-vous avec des entretiens simulés par IA et recevez des retours personnalisés.",
+      "matchingTitle": "Matching d'emplois",
+      "matchingDescription": "Trouvez les meilleures opportunités avec des algorithmes intelligents de matching."
+    }
+  },
+  "auth": {
+    "secureOAuth": "Authentification OAuth 2.0 sécurisée avec LinkedIn et Google"
+  },
+  "dashboard": {
+    "title": "Choisissez votre prochaine étape",
+    "subtitle": "Accélérez votre parcours professionnel avec des agents IA",
+    "cards": {
+      "resume": {
+        "title": "Génération de CV IA",
+        "description": "Créez instantanément un CV et une lettre de motivation compatibles ATS avec un agent IA."
+      },
+      "technical": {
+        "title": "Agent d'entretien technique",
+        "description": "Gagnez en confiance en vous entraînant aux entretiens techniques avec un agent vocal IA."
+      },
+      "behavioral": {
+        "title": "Agent d'entretien comportemental",
+        "description": "Réussissez vos entretiens comportementaux en vous entraînant avec un agent vocal IA."
+      },
+      "career": {
+        "title": "Analyse de carrière IA",
+        "description": "Obtenez des recommandations personnalisées de parcours de carrière grâce à des insights IA."
+      }
+    }
+  }
+  ,
+  "qa": {
+    "badge": "Questions-Réponses d'entretien",
+    "title": "Entraînez des réponses adaptées à votre poste",
+    "toolbarNote": "Ces Q&R sont générées spécifiquement pour votre rôle analysé.",
+    "regenerate": "Régénérer",
+    "copyAll": "Tout copier",
+    "download": "Télécharger .md",
+    "loading": "Génération des Q&R...",
+    "empty": "Aucune Q&R trouvée depuis l'API.",
+    "copiedAll": "Toutes les Q&R ont été copiées dans le presse-papiers.",
+    "copiedOne": "Q{index} copiée dans le presse-papiers.",
+    "interviewType": "Entretien {type}"
+  }
+  ,
+  "resume": {
+    "loadingDashboard": "Chargement du tableau de bord...",
+    "header": {
+      "title": "Bienvenue dans la génération de CV par IA, {name} !",
+      "subtitle": "Téléversez vos documents et laissez l'IA transformer votre recherche d'emploi"
+    },
+    "upload": {
+      "resumeTitle": "Téléverser le CV (PDF) *",
+      "resumeClick": "Cliquer pour téléverser un PDF",
+      "continue": "Continuer vers Job Kit",
+      "coverTitle": "Téléverser la lettre de motivation (PDF)",
+      "coverHint": "Optionnel : Améliorez vos candidatures avec une lettre personnalisée.",
+      "coverClickOptional": "Cliquer pour téléverser un PDF (optionnel)",
+      "coverLocked": "Téléversez d'abord le CV pour déverrouiller"
+    },
+    "status": {
+      "onlyPdf": "Veuillez téléverser un fichier PDF",
+      "sizeLimit": "La taille doit être inférieure à 10 Mo",
+      "resLoading1": "Téléversement du CV",
+      "resLoading2": "Traitement du document",
+      "resLoading3": "Analyse du contenu",
+      "resLoading4": "Presque terminé",
+      "resSuccess": "CV téléversé avec succès !",
+      "resError": "Échec du téléversement du CV",
+      "coverLoading1": "Téléversement de la lettre",
+      "coverLoading2": "Traitement du document",
+      "coverLoading3": "Validation du format",
+      "coverLoading4": "Finalisation",
+      "coverSuccess": "Lettre de motivation téléversée avec succès ! ✨",
+      "coverFail": "Échec du téléversement de la lettre. Réessayez.",
+      "networkError": "Erreur réseau. Réessayez.",
+      "redirecting": "Redirection vers Job Kit..."
+    },
+    "onboarding": {
+      "readyTitle": "Génial ! Votre CV est prêt",
+      "readyBody": "Votre CV a été téléversé. Trouvons maintenant les meilleurs postes pour vous !",
+      "howWorks": "Comment fonctionne SmartApply",
+      "steps": {
+        "findTitle": "Trouver des offres",
+        "findBody": "Collez des descriptions depuis LinkedIn, Indeed ou autres sites.",
+        "analysisTitle": "Analyse IA",
+        "analysisBody": "Nous effectuons une analyse de type ATS pour faire correspondre votre CV.",
+        "resultsTitle": "Obtenir des résultats",
+        "resultsBody": "Recevez un CV et une lettre adaptés à chaque offre.",
+        "practiceTitle": "S'entraîner à l'entretien",
+        "practiceBody": "Préparez-vous avec des questions techniques ou comportementales selon le poste."
+      },
+      "ctaTitle": "Prêt à commencer ?",
+      "ctaBody": "Cliquez sur",
+      "ctaTail": "(en bas à droite) pour analyser votre première offre.",
+      "ctaNote": "Cela ne prend que 30 secondes"
+    },
+    "tips": {
+      "title": "Conseils pour de meilleurs résultats",
+      "tip1": "Copiez la description complète avec exigences et responsabilités",
+      "tip2": "Incluez des informations sur l'entreprise si possible",
+      "tip3": "Testez plusieurs offres pour voir comment votre CV s'adapte"
+    },
+    "badges": {
+      "noJobsYet": "Pas encore d'analyse ? Lancez un Job Match maintenant !",
+      "startScanAria": "Démarrer une nouvelle analyse d'emploi"
+    }
+  }
+  ,
+  "profile": {
+    "title": "Profil",
+    "edit": "Modifier le profil",
+    "upgrade": "Passer en Premium",
+    "badges": {
+      "premium": "Premium",
+      "free": "Gratuit"
+    },
+    "freeUsed": "Gratuit utilisé :",
+    "upload": {
+      "limit24h": "Vous ne pouvez téléverser un CV qu'une fois toutes les 24 heures.",
+      "lastUploaded": "Dernier téléversement :",
+      "upgradeUnlock": "Passez en <strong>Premium</strong> pour des téléversements plus fréquents.",
+      "passed24h": "24 heures se sont écoulées depuis votre dernier téléversement.",
+      "reuploadAllowed": "Vous pouvez retéléverser votre CV si vous le souhaitez.",
+      "upgradeToPremium": "Passer en Premium",
+      "toUploadAgain": "pour téléverser à nouveau.",
+      "resumeUploaded": "CV téléversé",
+      "coverUploaded": "Lettre de motivation téléversée"
+    },
+    "subscription": {
+      "title": "Détails de l'abonnement",
+      "status": "Statut :",
+      "freeUsed": "Crédits gratuits utilisés :",
+      "resumeUploaded": "CV téléversé :",
+      "coverUploaded": "Lettre téléversée :",
+      "premiumMember": "Membre Premium",
+      "manageBilling": "Gérer la facturation",
+      "cancel": "Annuler l'abonnement",
+      "freePlan": "Offre gratuite"
+    },
+    "billing": {
+      "portalError": "Impossible d'ouvrir le portail de facturation. Réessayez.",
+      "cancelConfirm": "Êtes-vous sûr de vouloir annuler votre abonnement ?",
+      "cancelError": "Échec de l'annulation de l'abonnement. Réessayez."
+    },
+    "common": {
+      "uploading": "Téléversement...",
+      "yes": "Oui",
+      "no": "Non"
+    }
+  }
+  ,
+  "interview": {
+    "loading": "Chargement des analyses d'emploi...",
+    "errors": {
+      "noEmail": "E-mail utilisateur introuvable !",
+      "fetchFailed": "Échec de récupération des rapports"
+    },
+    "header": {
+      "title": "Tableau de bord Entretien Technique",
+      "subtitle": "Générez des questions techniques alignées au poste, révisez vos réponses et préparez-vous rapidement."
+    },
+    "empty": {
+      "ctaTitle": "Veuillez d'abord lancer un Job Scan",
+      "ctaBody": "L'expérience d'entretien est personnalisée pour un poste précis. Commencez par analyser une offre pour débloquer des questions et retours adaptés."
+    },
+    "common": {
+      "startJobScan": "Lancer un Job Scan"
+    },
+    "what": {
+      "title": "Ce que vous obtiendrez",
+      "items": {
+        "qa": {"title": "Q&R Techniques", "body": "Entraînez des entretiens techniques adaptés à votre analyse et votre séniorité."},
+        "behavioral": {"title": "Scénarios comportementaux", "body": "Entraînez des réponses de type STAR pour personnes, processus et leadership."},
+        "bank": {"title": "Banque de questions + Retours", "body": "Recevez des prompts sélectionnés et des retours actionnables basés sur votre analyse."},
+        "modes": {"title": "Modes d'entraînement", "body": "Répondez par écrit ou entraînez-vous à l'oral avec temps limité."},
+        "templates": {"title": "Modèles de réponse", "body": "Utilisez des structures éprouvées (STAR, SOAR) avec des exemples spécifiques."},
+        "ats": {"title": "Alignement ATS & Rôle", "body": "Les retours se basent sur les compétences et mots-clés de votre analyse."}
+      }
+    },
+    "how": {
+      "title": "Comment ça marche",
+      "steps": {
+        "1": {"title": "1. Lancer un Job Scan", "body": "Collez une offre pour créer un profil spécifique au poste."},
+        "2": {"title": "2. Choisir le type d'entretien", "body": "Entraînez des questions Techniques ou Comportementales adaptées au poste."},
+        "3": {"title": "3. Obtenir des retours", "body": "Recevez des retours ciblés et itérez pour progresser rapidement."}
+      }
+    },
+    "tips": {
+      "title": "Conseils pour de meilleurs résultats",
+      "items": {
+        "1": "Analysez l'offre complète (responsabilités + exigences) pour un meilleur alignement.",
+        "2": "Testez Technique et Comportemental pour couvrir compétences et storytelling.",
+        "3": "Pratiquez à voix haute et gardez des réponses structurées (STAR/SOAR)."
+      }
+    },
+    "final": {
+      "title": "Prêt à commencer ?",
+      "body": "Cliquez sur “Lancer un Job Scan” pour débloquer votre entraînement personnalisé."
+    }
+  }
+  ,
+  "behavioral": {
+    "title": "Choisissez un thème à pratiquer",
+    "cards": {
+      "communication": {
+        "title": "Communication",
+        "body": "Améliorez clarté, écoute active et concision."
+      },
+      "leadership": {
+        "title": "Leadership",
+        "body": "Démontrez ownership, influence et prise de décision."
+      },
+      "team": {
+        "title": "Esprit d'équipe",
+        "body": "Mettez en avant collaboration, résolution de conflits et empathie."
+      }
+    }
+  }
+  ,
+  "behavioralSession": {
+    "you": "Vous",
+    "labels": {"ai": "Interviewer IA", "you": "Vous"},
+    "header": {
+      "practice": "Entraînement {topic}",
+      "session": "Session {topic}",
+      "description": "Lancez un entretien simulé en direct adapté à ce thème. Vous pouvez flouter la caméra et voir une transcription en direct à droite."
+    },
+    "buttons": {
+      "start": "Commencer l'entraînement",
+      "back": "Retour aux thèmes",
+      "progress": "Voir le progrès détaillé"
+    },
+    "status": {"live": "EN DIRECT"},
+    "camera": {"off": "Caméra éteinte"},
+    "controls": {
+      "mute": "Couper le son",
+      "unmute": "Rétablir le son",
+      "turnOnCamera": "Allumer la caméra",
+      "turnOffCamera": "Éteindre la caméra",
+      "blur": "Flou",
+      "blurOff": "Désactivé",
+      "blurLow": "Faible",
+      "blurHigh": "Élevé",
+      "restart": "Redémarrer la session",
+      "end": "Terminer l'appel",
+      "sessionInfo": "Infos session"
+    },
+    "settings": {
+      "title": "Informations de session",
+      "topic": "Sujet",
+      "reportId": "ID du rapport",
+      "notSet": "Non défini",
+      "jobTitle": "Intitulé du poste",
+      "company": "Entreprise"
+    },
+    "transcript": {
+      "title": "Transcription en direct",
+      "subtitle": "Transcription de la conversation en temps réel",
+      "empty": "La transcription apparaîtra ici quand la conversation commence..."
+    },
+    "errors": {
+      "missing": "Nom ou e-mail manquant. Complétez votre profil et réessayez.",
+      "startFail": "Échec du démarrage de la session. Réessayez."
+    },
+    "cameraErrors": {
+      "insecureContext": "La caméra nécessite HTTPS ou localhost. Utilisez https:// ou localhost.",
+      "permissionBlocked": "L'autorisation caméra est bloquée dans le navigateur. Autorisez-la dans les paramètres du site puis rechargez.",
+      "denied": "Accès à la caméra refusé. Cliquez sur l'icône caméra dans la barre d'adresse pour autoriser et recharger.",
+      "busy": "La caméra est occupée (utilisée par une autre application). Fermez les autres apps (Zoom/Teams) et réessayez.",
+      "notFound": "Aucun appareil photo trouvé. Vérifiez les paramètres de confidentialité Windows > Caméra.",
+      "generic": "Impossible de démarrer la caméra. Vérifiez les permissions du navigateur et HTTPS."
+    }
+  }
+  ,
+  "jobList": {
+    "title": "Vos candidatures",
+    "tabs": {
+      "all": "Toutes les candidatures",
+      "applied": "Postulé",
+      "interview": "Entretien planifié"
+    },
+    "bulk": {
+      "selectAll": "Tout sélectionner dans la vue",
+      "deleteSelected": "Supprimer la sélection",
+      "confirmDelete": "Supprimer {count} analyse(s) sélectionnée(s) ?"
+    },
+    "empty": "Aucune candidature dans cette vue pour l'instant.",
+    "labels": {
+      "job": "poste",
+      "untitledRole": "Poste sans titre",
+      "scanned": "Scanné :",
+      "interviewScheduled": "Entretien planifié"
+    },
+    "applied": {
+      "applied": "Postulé",
+      "mark": "Marquer comme postulé",
+      "markNotApplied": "Marquer comme non postulé",
+      "tooltipUnmark": "Cliquer pour marquer comme non postulé",
+      "tooltipMark": "Marquer ce poste comme postulé",
+      "ariaUnmark": "Marquer comme non postulé"
+    },
+    "aria": {
+      "selectJob": "Sélectionner {title}",
+      "download": "Télécharger",
+      "edit": "Modifier les infos du CV",
+      "behavioral": "Entretien comportemental",
+      "technical": "Entretien technique",
+      "technicalDisabled": "Entretien technique (désactivé)",
+      "deleteScan": "Supprimer cette analyse"
+    },
+    "tooltips": {
+      "download": "Télécharger le CV",
+      "generateFirst": "Veuillez générer le CV d'abord",
+      "editJob": "Modifier les détails du poste et documents",
+      "behavioralPrep": "Préparation entretien comportemental",
+      "technicalPrep": "Préparation entretien technique",
+      "technicalDisabled": "Générez d'abord le CV puis utilisez ce module",
+      "deleteOne": "Supprimer cette analyse"
+    },
+    "errors": {
+      "generateQuestions": "Erreur lors de la génération des questions. Réessayez.",
+      "downloadFailed": "Échec du téléchargement du CV",
+      "deleteFailed": "Échec de la suppression. Réessayez.",
+      "noEmail": "E-mail utilisateur introuvable !"
+    },
+    "warnings": {
+      "markAppliedFirst": "Veuillez d'abord marquer comme postulé."
+    },
+    "status": {
+      "preparingDownload": "Préparation du téléchargement…",
+      "downloadStarted": "Téléchargement démarré",
+      "jobUpdated": "Statut du poste mis à jour",
+      "generatingQuestions": "Génération des questions…",
+      "deleted": "Supprimé avec succès {count, plural, one {1 analyse} other {# analyses}}"
+    },
+    "confirm": {
+      "deleteOne": "Supprimer cette analyse ?"
+    },
+    "dialog": {
+      "title": "Infos du CV",
+      "description": "Détails de votre analyse précédente.",
+      "loading": "Chargement…",
+      "jobTitle": "Intitulé du poste :",
+      "company": "Entreprise :",
+      "descriptionLabel": "Description :",
+      "skillsMatch": "Correspondance des compétences",
+      "gaps": "Lacunes",
+      "bonusPoints": "Points bonus",
+      "recommendations": "Recommandations",
+      "close": "Fermer"
+    }
+  }
+}

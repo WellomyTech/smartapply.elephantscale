@@ -1,0 +1,368 @@
+{
+  "app": {
+    "name": "SmartApply",
+    "tagline": "AI-Powered Job Application Platform",
+    "getStarted": "Get Started",
+    "signinUnlock": "Sign in to unlock your career potential"
+  },
+  "home": {
+    "heroSubtitle": "Build. Prepare. Perform. Get Hired.",
+    "heroDescription": "Transform your job search with AI-powered resume optimization, interview preparation, and personalized application strategies.",
+    "features": {
+      "resumeTitle": "AI Resume Builder",
+      "resumeDescription": "Create ATS-optimized resumes tailored to specific job descriptions with AI assistance.",
+      "interviewTitle": "Interview Prep",
+      "interviewDescription": "Practice with AI-powered mock interviews and get personalized feedback.",
+      "matchingTitle": "Job Matching",
+      "matchingDescription": "Find the perfect opportunities with intelligent job matching algorithms."
+    }
+  },
+  "auth": {
+    "secureOAuth": "Secure OAuth 2.0 authentication with LinkedIn & Google"
+  },
+  "dashboard": {
+    "title": "Choose Your Next Step",
+    "subtitle": "Accelerate your career journey with AI agents",
+    "cards": {
+      "resume": {
+        "title": "AI Resume Generation",
+        "description": "Instantly craft an ATS-friendly resume and cover letter with an AI agent."
+      },
+      "technical": {
+        "title": "Technical Interview Agent",
+        "description": "Boost your confidence by practicing technical interviews with an AI voice agent."
+      },
+      "behavioral": {
+        "title": "Behavioral Interview Agent",
+        "description": "Ace your behavioral interviews by practicing with an AI voice agent."
+      },
+      "career": {
+        "title": "AI Career Analysis",
+        "description": "Get personalized career path recommendations with AI-powered insights."
+      }
+    }
+  }
+  ,
+  "qa": {
+    "badge": "Interview Q&A",
+    "title": "Practice Answers Tailored to Your Role",
+    "toolbarNote": "These Q&A are generated specifically for your scanned role.",
+    "regenerate": "Regenerate",
+    "copyAll": "Copy All",
+    "download": "Download .md",
+    "loading": "Generating Q&A...",
+    "empty": "No Q&A found from the API.",
+    "copiedAll": "All Q&A copied to clipboard.",
+    "copiedOne": "Copied Q{index} to clipboard.",
+    "interviewType": "{type} Interview"
+  }
+  ,
+  "resume": {
+    "loadingDashboard": "Loading dashboard...",
+    "header": {
+      "title": "Welcome to AI Resume Generation, {name}!",
+      "subtitle": "Upload your documents and let AI transform your job search experience"
+    },
+    "upload": {
+      "resumeTitle": "Upload Resume (PDF) *",
+      "resumeClick": "Click to upload PDF",
+      "continue": "Continue to Job Kit",
+      "coverTitle": "Upload Cover Letter (PDF)",
+      "coverHint": "Optional: Enhance your applications with a personalized cover letter.",
+      "coverClickOptional": "Click to upload PDF (optional)",
+      "coverLocked": "Upload resume first to unlock"
+    },
+    "status": {
+      "onlyPdf": "Please upload a PDF file",
+      "sizeLimit": "File size must be less than 10MB",
+      "resLoading1": "Uploading resume",
+      "resLoading2": "Processing document",
+      "resLoading3": "Analyzing content",
+      "resLoading4": "Almost done",
+      "resSuccess": "Resume uploaded successfully!",
+      "resError": "Failed to upload resume",
+      "coverLoading1": "Uploading cover letter",
+      "coverLoading2": "Processing document",
+      "coverLoading3": "Validating format",
+      "coverLoading4": "Finalizing upload",
+      "coverSuccess": "Cover letter uploaded successfully! ✨",
+      "coverFail": "Cover letter upload failed. Try again.",
+      "networkError": "Network error. Try again.",
+      "redirecting": "Redirecting to Job Kit..."
+    },
+    "onboarding": {
+      "readyTitle": "Great! Your Resume is Ready",
+      "readyBody": "You've successfully uploaded your resume. Now let's find the perfect job matches for you!",
+      "howWorks": "How SmartApply Works",
+      "steps": {
+        "findTitle": "Find Jobs",
+        "findBody": "Paste job descriptions from LinkedIn, Indeed, or any job board.",
+        "analysisTitle": "AI Analysis",
+        "analysisBody": "We run an ATS-style scan to match requirements with your resume.",
+        "resultsTitle": "Get Results",
+        "resultsBody": "Receive a tailored resume and cover letter for each job.",
+        "practiceTitle": "Practice Interview",
+        "practiceBody": "Prepare with Technical or Behavioral questions tailored to the role."
+      },
+      "ctaTitle": "Ready to Get Started?",
+      "ctaBody": "Click the",
+      "ctaTail": "(bottom-right) to analyze your first job opportunity.",
+      "ctaNote": "It only takes 30 seconds"
+    },
+    "tips": {
+      "title": "Pro Tips for Best Results",
+      "tip1": "Copy the complete job description including requirements and responsibilities",
+      "tip2": "Include company information when available for better personalization",
+      "tip3": "Try multiple job postings to see how your resume adapts to different roles"
+    },
+    "badges": {
+      "noJobsYet": "No Jobs Scanned Yet? Start new Job Match now!",
+      "startScanAria": "Start a new job scan"
+    }
+  }
+  ,
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit Profile",
+    "upgrade": "Upgrade",
+    "badges": {
+      "premium": "Premium",
+      "free": "Free"
+    },
+    "freeUsed": "Free Used:",
+    "upload": {
+      "limit24h": "You can only upload a resume once every 24 hours.",
+      "lastUploaded": "Last uploaded:",
+      "upgradeUnlock": "Upgrade to <strong>Premium</strong> to unlock more frequent uploads.",
+      "passed24h": "24 hours have passed since your last upload.",
+      "reuploadAllowed": "You can re-upload your resume if you like.",
+      "upgradeToPremium": "Upgrade to Premium",
+      "toUploadAgain": "to upload again.",
+      "resumeUploaded": "Resume uploaded",
+      "coverUploaded": "Cover letter uploaded"
+    },
+    "subscription": {
+      "title": "Subscription Details",
+      "status": "Status:",
+      "freeUsed": "Free Credits Used:",
+      "resumeUploaded": "Resume Uploaded:",
+      "coverUploaded": "Cover Letter Uploaded:",
+      "premiumMember": "Premium Member",
+      "manageBilling": "Manage billing",
+      "cancel": "Cancel subscription",
+      "freePlan": "Free Plan"
+    },
+    "billing": {
+      "portalError": "Failed to open billing portal. Please try again.",
+      "cancelConfirm": "Are you sure you want to cancel your subscription?",
+      "cancelError": "Failed to cancel subscription. Please try again."
+    },
+    "common": {
+      "uploading": "Uploading...",
+      "yes": "Yes",
+      "no": "No"
+    }
+  }
+  ,
+  "interview": {
+    "loading": "Loading job scans...",
+    "errors": {
+      "noEmail": "User email not found!",
+      "fetchFailed": "Failed to fetch reports"
+    },
+    "header": {
+      "title": "Technical Interview Dashboard",
+      "subtitle": "Generate role‑aligned technical questions, review answers, and get interview‑ready fast."
+    },
+    "empty": {
+      "ctaTitle": "Please run a Job Scan first",
+      "ctaBody": "The interview experience is personalized to a specific job. Start by scanning a job to unlock question sets and feedback aligned with that role."
+    },
+    "common": {
+      "startJobScan": "Start a Job Scan"
+    },
+    "what": {
+      "title": "What You’ll Get",
+      "items": {
+        "qa": {"title": "Technical Q&A", "body": "Practice technical interviews tailored to your job scan and seniority."},
+        "behavioral": {"title": "Behavioral Scenarios", "body": "Practice STAR-style answers for people, process, and leadership questions."},
+        "bank": {"title": "Question Bank + Feedback", "body": "Get curated prompts and actionable feedback based on your job scan."},
+        "modes": {"title": "Practice Modes", "body": "Answer by typing, or practice verbally with timed responses."},
+        "templates": {"title": "Answer Templates", "body": "Use proven structures (STAR, SOAR) with role-specific examples."},
+        "ats": {"title": "ATS & Role Alignment", "body": "Feedback maps to the skills and keywords found in your job scan."}
+      }
+    },
+    "how": {
+      "title": "How It Works",
+      "steps": {
+        "1": {"title": "1. Run a Job Scan", "body": "Paste a job description to build a role-specific profile."},
+        "2": {"title": "2. Choose Interview Type", "body": "Practice Technical or Behavioral questions matched to the job."},
+        "3": {"title": "3. Get Feedback", "body": "Receive targeted feedback and iterate to improve quickly."}
+      }
+    },
+    "tips": {
+      "title": "Pro Tips for Best Results",
+      "items": {
+        "1": "Scan the full job description (responsibilities + requirements) for better alignment.",
+        "2": "Try both Technical and Behavioral to cover skills and storytelling.",
+        "3": "Practice out loud and keep responses structured using STAR/SOAR."
+      }
+    },
+    "final": {
+      "title": "Ready to Get Started?",
+      "body": "Click “Start a Job Scan” to unlock your personalized interview practice."
+    }
+  }
+  ,
+  "behavioral": {
+    "title": "Choose a Topic to Practice",
+    "cards": {
+      "communication": {
+        "title": "Communication",
+        "body": "Improve clarity, active listening, and concise delivery."
+      },
+      "leadership": {
+        "title": "Leadership",
+        "body": "Demonstrate ownership, influence, and decision-making."
+      },
+      "team": {
+        "title": "Team Player",
+        "body": "Showcase collaboration, conflict resolution, and empathy."
+      }
+    }
+  }
+  ,
+  "behavioralSession": {
+    "you": "You",
+    "labels": {"ai": "AI Interviewer", "you": "You"},
+    "header": {
+      "practice": "{topic} Practice",
+      "session": "{topic} Session",
+      "description": "Start a live simulated interview adapted to this topic. Your camera can be blurred, and you’ll see a live transcript on the right."
+    },
+    "buttons": {
+      "start": "Start Practice",
+      "back": "Back to Topics",
+      "progress": "View detailed progress"
+    },
+    "status": {"live": "LIVE"},
+    "camera": {"off": "Camera Off"},
+    "controls": {
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "turnOnCamera": "Turn camera on",
+      "turnOffCamera": "Turn camera off",
+      "blur": "Blur",
+      "blurOff": "Off",
+      "blurLow": "Low",
+      "blurHigh": "High",
+      "restart": "Restart session",
+      "end": "End call",
+      "sessionInfo": "Session info"
+    },
+    "settings": {
+      "title": "Session Information",
+      "topic": "Topic",
+      "reportId": "Report ID",
+      "notSet": "Not set",
+      "jobTitle": "Job Title",
+      "company": "Company"
+    },
+    "transcript": {
+      "title": "Live Transcript",
+      "subtitle": "Real-time conversation transcript",
+      "empty": "Transcript will appear here once the conversation starts..."
+    },
+    "errors": {
+      "missing": "Missing name or email. Please complete your profile and try again.",
+      "startFail": "Failed to start session. Please try again."
+    },
+    "cameraErrors": {
+      "insecureContext": "Camera requires HTTPS or localhost. Please use https:// or localhost.",
+      "permissionBlocked": "Camera permission is blocked in the browser. Allow camera in Site settings and reload.",
+      "denied": "Camera access was denied. Click the camera icon in the address bar to allow and reload.",
+      "busy": "Camera is busy (used by another app). Close other apps (Zoom/Teams) and retry.",
+      "notFound": "No camera device found. Check Windows Privacy settings > Camera.",
+      "generic": "Couldn't start your camera. Check browser permissions and HTTPS."
+    }
+  }
+  ,
+  "jobList": {
+    "title": "Your Applications",
+    "tabs": {
+      "all": "All Applications",
+      "applied": "Applied",
+      "interview": "Interview Scheduled"
+    },
+    "bulk": {
+      "selectAll": "Select all in view",
+      "deleteSelected": "Delete Selected",
+      "confirmDelete": "Delete {count} selected scan(s)?"
+    },
+    "empty": "No applications in this view yet.",
+    "labels": {
+      "job": "job",
+      "untitledRole": "Untitled role",
+      "scanned": "Scanned:",
+      "interviewScheduled": "Interview Scheduled"
+    },
+    "applied": {
+      "applied": "Applied",
+      "mark": "Mark as Applied",
+      "markNotApplied": "Mark as Not Applied",
+      "tooltipUnmark": "Click to mark as not applied",
+      "tooltipMark": "Mark this job as applied",
+      "ariaUnmark": "Mark as not applied"
+    },
+    "aria": {
+      "selectJob": "Select {title}",
+      "download": "Download",
+      "edit": "Edit resume info",
+      "behavioral": "Behavioral interview",
+      "technical": "Technical interview",
+      "technicalDisabled": "Technical interview (disabled)",
+      "deleteScan": "Delete this scan"
+    },
+    "tooltips": {
+      "download": "Download resume",
+      "generateFirst": "Please Generate Resume First",
+      "editJob": "Edit Job Details and Documents",
+      "behavioralPrep": "Behavioral Interview Prep",
+      "technicalPrep": "Technical Interview Prep",
+      "technicalDisabled": "First Generate Resume then use this Interview Module",
+      "deleteOne": "Delete this scan"
+    },
+    "errors": {
+      "generateQuestions": "Error generating questions. Please try again.",
+      "downloadFailed": "Failed to download resume",
+      "deleteFailed": "Failed to delete. Try again.",
+      "noEmail": "User email not found!"
+    },
+    "warnings": {
+      "markAppliedFirst": "Please mark as Applied first."
+    },
+    "status": {
+      "preparingDownload": "Preparing download…",
+      "downloadStarted": "Download started",
+      "jobUpdated": "Job status updated",
+      "generatingQuestions": "Generating questions…",
+      "deleted": "Successfully deleted {count, plural, one {1 scan} other {# scans}}"
+    },
+    "confirm": {
+      "deleteOne": "Delete this scan?"
+    },
+    "dialog": {
+      "title": "Resume Info",
+      "description": "Details from your previous scan.",
+      "loading": "Loading…",
+      "jobTitle": "Job Title:",
+      "company": "Company:",
+      "descriptionLabel": "Description:",
+      "skillsMatch": "Skills Match",
+      "gaps": "Gaps",
+      "bonusPoints": "Bonus Points",
+      "recommendations": "Recommendations",
+      "close": "Close"
+    }
+  }
+}

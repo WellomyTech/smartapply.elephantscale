@@ -8,6 +8,7 @@ import { User, Pencil, FileText, Upload, BadgeCheck } from "lucide-react";
 import { formatLocalFromUTC } from "@/lib/dates";
 import { useRouter } from "next/navigation";
 import PricingModal from "@/components/PricingButtons";
+import { useTranslations } from "next-intl";
 
 type Profile = {
   name: string;
@@ -21,6 +22,8 @@ type Profile = {
 };
 
 export default function ProfilePage() {
+  const t = useTranslations("profile");
+  const rs = useTranslations("resume");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -94,11 +97,11 @@ export default function ProfilePage() {
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file");
+      setError(rs("status.onlyPdf"));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setError("File size must be less than 10MB");
+      setError(rs("status.sizeLimit"));
       return;
     }
 
@@ -123,7 +126,7 @@ export default function ProfilePage() {
       setResumeFile(file);
       window.location.reload(); // Reload page on success
     } catch (err) {
-      setError("Failed to upload resume");
+      setError(rs("status.resError"));
     } finally {
       setUploading(false);
     }
@@ -135,11 +138,11 @@ export default function ProfilePage() {
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file");
+      setError(rs("status.onlyPdf"));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setError("File size must be less than 10MB");
+      setError(rs("status.sizeLimit"));
       return;
     }
 
@@ -164,7 +167,7 @@ export default function ProfilePage() {
       setCoverLetterFile(file);
       window.location.reload(); // Reload page on success
     } catch (err) {
-      setError("Failed to upload cover letter");
+      setError(rs("status.coverFail"));
     } finally {
       setUploading(false);
     }
@@ -184,13 +187,13 @@ export default function ProfilePage() {
       const { url } = await rsp.json();
       window.location.href = url;
     } catch (e) {
-      setBillingError("Failed to open billing portal. Please try again.");
+      setBillingError(t("billing.portalError"));
       setBillingBusy(false);
     }
   }
 
   async function cancelSubscription() {
-    const ok = window.confirm("Are you sure you want to cancel your subscription?");
+    const ok = window.confirm(t("billing.cancelConfirm"));
     if (!ok) return;
 
     try {
@@ -228,7 +231,7 @@ export default function ProfilePage() {
       setProfile((p) => (p ? { ...p, is_premium: false } : p));
       setBillingBusy(false);
     } catch (e) {
-      setBillingError("Failed to cancel subscription. Please try again.");
+      setBillingError(t("billing.cancelError"));
       setBillingBusy(false);
     }
   }
@@ -240,16 +243,16 @@ export default function ProfilePage() {
         <Card className="shadow-lg border border-gray-100 bg-white/90">
           <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4 p-6">
             <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-              <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Profile</span>
+              <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{t("title")}</span>
             </h1>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="gap-2">
                 <Pencil className="w-4 h-4" />
-                Edit Profile
+                {t("edit")}
               </Button>
               {!profile?.is_premium && (
                 <Button size="sm" className="gap-2" onClick={() => setPricingOpen(true)}>
-                  Upgrade
+                  {t("upgrade")}
                 </Button>
               )}
             </div>
@@ -281,10 +284,10 @@ export default function ProfilePage() {
               <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
                   <BadgeCheck className="w-4 h-4" />
-                  {profile?.is_premium ? "Premium" : "Free"}
+                  {profile?.is_premium ? t("badges.premium") : t("badges.free")}
                 </div>
                 <div className="text-xs text-gray-500">
-                  Free Used: <span className="font-semibold text-gray-700">{profile?.free_used ?? "—"}</span>
+                  {t("freeUsed")} <span className="font-semibold text-gray-700">{profile?.free_used ?? "—"}</span>
                 </div>
               </div>
             </CardContent>
@@ -299,39 +302,41 @@ export default function ProfilePage() {
                   <div className="p-2 rounded-lg bg-blue-100">
                     <FileText className="h-5 w-5" />
                   </div>
-                  <h2 className="text-lg font-semibold">Upload Resume (PDF) *</h2>
+                  <h2 className="text-lg font-semibold">{rs("upload.resumeTitle")}</h2>
                 </div>
                 {/* 24 hour and premium logic */}
                 {profile?.last_resume_uploaded && !canUploadResume(profile.last_resume_uploaded) ? (
                   <div className="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                    You can only upload a resume once every 24 hours.<br />
-                    Last uploaded: <span className="font-semibold">{formatLocalFromUTC(profile.last_resume_uploaded)}</span>
+                    {t("upload.limit24h")}<br />
+                    {t("upload.lastUploaded")} <span className="font-semibold">{formatLocalFromUTC(profile.last_resume_uploaded)}</span>
                     {!profile?.is_premium && (
                       <div className="mt-2 text-red-700 flex items-center gap-2">
-                        Upgrade to <span className="font-bold">Premium</span> to unlock more frequent uploads.
-                        <Button size="sm" variant="secondary" onClick={() => setPricingOpen(true)}>Upgrade</Button>
+                        {t.rich("upload.upgradeUnlock", {
+                          strong: (chunks) => <span className="font-bold">{chunks}</span>,
+                        })}
+                        <Button size="sm" variant="secondary" onClick={() => setPricingOpen(true)}>{t("upgrade")}</Button>
                       </div>
                     )}
                   </div>
                 ) : profile?.last_resume_uploaded && canUploadResume(profile.last_resume_uploaded) ? (
                   profile?.is_premium ? (
                     <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
-                      24 hours have passed since your last upload.<br />
-                      You can re-upload your resume if you like.
+                      {t("upload.passed24h")}<br />
+                      {t("upload.reuploadAllowed")}
                     </div>
                   ) : (
                     <div className="text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                      24 hours have passed since your last upload.<br />
-                      <span className="font-semibold">Upgrade to Premium</span> to upload again.
+                      {t("upload.passed24h")}<br />
+                      <span className="font-semibold">{t("upload.upgradeToPremium")}</span> {t("upload.toUploadAgain")}
                       <div className="mt-2">
-                        <Button size="sm" onClick={() => setPricingOpen(true)}>Upgrade</Button>
+                        <Button size="sm" onClick={() => setPricingOpen(true)}>{t("upgrade")}</Button>
                       </div>
                     </div>
                   )
                 ) : null}
                 {profile?.has_resume && (
                   <div className="text-center p-3 rounded-lg bg-green-50 border border-green-200">
-                    <p className="text-green-700 font-medium text-sm">✓ Resume uploaded</p>
+                    <p className="text-green-700 font-medium text-sm">✓ {t("upload.resumeUploaded")}</p>
                   </div>
                 )}
                 <label
@@ -358,10 +363,10 @@ export default function ProfilePage() {
                   ) : (
                     <p className={`text-sm text-muted-foreground`}>
                       {profile?.has_resume
-                        ? "Resume uploaded"
+                        ? t("upload.resumeUploaded")
                         : uploading
-                        ? "Uploading..."
-                        : "Click to upload PDF"}
+                        ? t("common.uploading")
+                        : rs("upload.resumeClick")}
                     </p>
                   )}
                 </label>
@@ -380,7 +385,7 @@ export default function ProfilePage() {
                   <div className="p-2 rounded-lg bg-purple-100">
                     <Upload className="h-5 w-5" />
                   </div>
-                  <h2 className="text-lg font-semibold">Upload Cover Letter (PDF)</h2>
+                  <h2 className="text-lg font-semibold">{rs("upload.coverTitle")}</h2>
                 </div>
                 <label
                   htmlFor="cover-letter"
@@ -404,12 +409,12 @@ export default function ProfilePage() {
                   ) : (
                     <p className={`text-sm text-muted-foreground`}>
                       {!profile?.has_resume
-                        ? "Upload resume first to unlock"
+                        ? rs("upload.coverLocked")
                         : profile?.has_cover_letter
-                        ? "Cover letter uploaded"
+                        ? t("upload.coverUploaded")
                         : uploading
-                        ? "Uploading..."
-                        : "Click to upload PDF (optional)"}
+                        ? t("common.uploading")
+                        : rs("upload.coverClickOptional")}
                     </p>
                   )}
                 </label>
@@ -426,27 +431,27 @@ export default function ProfilePage() {
           <Card className="bg-white/80 shadow-xl border border-gray-100">
             <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Subscription Details</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{t("subscription.title")}</h3>
                 <ul className="text-gray-700 text-base space-y-1">
                   <li>
-                    <span className="font-semibold">Status:</span>{" "}
+                    <span className="font-semibold">{t("subscription.status")}</span>{" "}
                     {profile?.is_premium ? (
-                      <span className="text-green-600 font-bold">Premium</span>
+                      <span className="text-green-600 font-bold">{t("badges.premium")}</span>
                     ) : (
-                      <span className="text-gray-500">Free</span>
+                      <span className="text-gray-500">{t("badges.free")}</span>
                     )}
                   </li>
                   <li>
-                    <span className="font-semibold">Free Credits Used:</span>{" "}
+                    <span className="font-semibold">{t("subscription.freeUsed")}</span>{" "}
                     {profile?.free_used ?? "—"}
                   </li>
                   <li>
-                    <span className="font-semibold">Resume Uploaded:</span>{" "}
-                    {profile?.has_resume ? "Yes" : "No"}
+                    <span className="font-semibold">{t("subscription.resumeUploaded")}</span>{" "}
+                    {profile?.has_resume ? t("common.yes") : t("common.no")}
                   </li>
                   <li>
-                    <span className="font-semibold">Cover Letter Uploaded:</span>{" "}
-                    {profile?.has_cover_letter ? "Yes" : "No"}
+                    <span className="font-semibold">{t("subscription.coverUploaded")}</span>{" "}
+                    {profile?.has_cover_letter ? t("common.yes") : t("common.no")}
                   </li>
                 </ul>
               </div>
@@ -454,14 +459,14 @@ export default function ProfilePage() {
                 {profile?.is_premium ? (
                   <>
                     <span className="px-4 py-2 rounded-full bg-green-100 text-green-700 font-semibold text-sm flex items-center gap-2">
-                      <BadgeCheck className="w-4 h-4" /> Premium Member
+                      <BadgeCheck className="w-4 h-4" /> {t("subscription.premiumMember")}
                     </span>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={openBillingPortal} disabled={billingBusy}>
-                        Manage billing
+                        {t("subscription.manageBilling")}
                       </Button>
                       <Button variant="destructive" size="sm" onClick={cancelSubscription} disabled={billingBusy}>
-                        Cancel subscription
+                        {t("subscription.cancel")}
                       </Button>
                     </div>
                     {billingError && <p className="text-sm text-red-600">{billingError}</p>}
@@ -469,9 +474,9 @@ export default function ProfilePage() {
                 ) : (
                   <div className="flex items-center gap-2">
                     <span className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
-                      Free Plan
+                      {t("subscription.freePlan")}
                     </span>
-                    <Button size="sm" onClick={() => setPricingOpen(true)}>Upgrade</Button>
+                    <Button size="sm" onClick={() => setPricingOpen(true)}>{t("upgrade")}</Button>
                   </div>
                 )}
               </div>
