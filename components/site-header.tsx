@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
-import { LogOut, User } from "lucide-react"
+import { LogOut, Sparkles, User, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/components/AuthProvider"
 import DashboardButton from "@/components/DashboardButton"
@@ -96,7 +96,7 @@ export default function SiteHeader() {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mt-3 rounded-2xl border bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/65
                     flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-3">
-          {/* Left: Logo */}
+          {/* Left: Logo + (mobile actions) */}
           <div className="flex items-center gap-3">
             <Image
               src="/elephantscale-logo.png"
@@ -106,18 +106,78 @@ export default function SiteHeader() {
               height={40}
               className="h-10 w-auto cursor-pointer"
             />
-          </div>
 
-          {/* Right: Dashboard + Profile + Logout */}
-          {!isHome && (
-            <div className="flex flex-wrap gap-2 sm:flex-nowrap items-center">
-             
-              {/* Profile Button */}
+            {/* Mobile actions: Profile, Home, Logout (icon-only, placed next to logo) */}
+            <div className="flex items-center gap-2 sm:hidden">
+              {/* Profile */}
               <Button
                 variant="ghost"
+                size="icon"
+                className="w-9 h-9 rounded-full p-0 flex items-center justify-center border border-gray-200 shadow-sm"
+                onClick={handleProfileClick}
+                title="Profile"
+                aria-label="Profile"
+              >
+                {avatar ? (
+                  <Image
+                    src={avatar}
+                    alt="Profile"
+                    width={32}
+                    height={32}
+                    className="rounded-full object-cover w-8 h-8"
+                  />
+                ) : (
+                  <span className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                    {getInitial()}
+                  </span>
+                )}
+              </Button>
+
+              {/* Home */}
+              <Link href="/dashboard" aria-label="Dashboard">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="rounded-full w-9 h-9"
+                  title="Dashboard"
+                >
+                  <Home className="h-4 w-4" />
+                </Button>
+              </Link>
+
+              {/* Logout */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleLogout}
+                className="rounded-full w-9 h-9"
+                title="Logout"
+                aria-label="Logout"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Center: App badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
+            <Sparkles className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              SmartApply
+            </span>
+          </div>
+
+          {/* Right: Dashboard + Profile + Logout (desktop/tablet only) */}
+          {!isHome && (
+            <div className="hidden sm:flex items-center gap-2 sm:flex-nowrap">
+              {/* Profile (desktop) */}
+              <Button
+                variant="ghost"
+                size="icon"
                 className="w-10 h-10 rounded-full p-0 flex items-center justify-center border border-gray-200 shadow-sm hover:shadow-md transition"
                 onClick={handleProfileClick}
                 title="Profile"
+                aria-label="Profile"
               >
                 {avatar ? (
                   <Image
@@ -133,8 +193,19 @@ export default function SiteHeader() {
                   </span>
                 )}
               </Button>
-               <DashboardButton className="w-full sm:w-auto" />
-              <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">
+
+              {/* Dashboard (desktop) */}
+              <div className="hidden sm:inline-flex">
+                <DashboardButton />
+              </div>
+
+              {/* Logout (desktop) */}
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="hidden sm:inline-flex"
+                title="Logout"
+              >
                 <LogOut className="mr-2 h-4 w-4" /> Logout
               </Button>
             </div>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { User, Pencil, FileText, Upload, BadgeCheck } from "lucide-react";
 import { formatLocalFromUTC } from "@/lib/dates";
 import { useRouter } from "next/navigation";
+import PricingModal from "@/components/PricingButtons";
 
 type Profile = {
   name: string;
@@ -29,6 +30,9 @@ export default function ProfilePage() {
   const router = useRouter(); // <-- Add this
   const resumeInputRef = useRef<HTMLInputElement | null>(null);
   const coverLetterInputRef = useRef<HTMLInputElement | null>(null);
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [billingBusy, setBillingBusy] = useState(false);
+  const [billingError, setBillingError] = useState<string | null>(null);
 
   useEffect(() => {
     // Get email from localStorage
@@ -166,6 +170,69 @@ export default function ProfilePage() {
     }
   };
 
+  async function openBillingPortal() {
+    try {
+      setBillingError(null);
+      setBillingBusy(true);
+      const email = localStorage.getItem("user_email") || profile?.email || "";
+      const rsp = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!rsp.ok) throw new Error("portal_failed");
+      const { url } = await rsp.json();
+      window.location.href = url;
+    } catch (e) {
+      setBillingError("Failed to open billing portal. Please try again.");
+      setBillingBusy(false);
+    }
+  }
+
+  async function cancelSubscription() {
+    const ok = window.confirm("Are you sure you want to cancel your subscription?");
+    if (!ok) return;
+
+    try {
+      setBillingError(null);
+      setBillingBusy(true);
+
+      const email = localStorage.getItem("user_email") || profile?.email || "";
+      if (!email) throw new Error("no_email");
+
+      // Optional: try to cancel on Stripe (ignore errors)
+      try {
+        await fetch("/api/stripe/cancel-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+      } catch (_) {
+        // ignore
+      }
+
+      // Required: mark premium=false in your backend
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "";
+      const rsp = await fetch(`${apiBase}update-premium`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          user_email: email,
+          is_premium: "false",
+        }).toString(),
+      });
+
+      if (!rsp.ok) throw new Error("update_premium_failed");
+
+      // Reflect locally
+      setProfile((p) => (p ? { ...p, is_premium: false } : p));
+      setBillingBusy(false);
+    } catch (e) {
+      setBillingError("Failed to cancel subscription. Please try again.");
+      setBillingBusy(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#e0e7ef] to-[#f1f5f9] flex flex-col py-8 md:py-12">
       {/* Profile Title Card */}
@@ -175,10 +242,17 @@ export default function ProfilePage() {
             <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
               <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Profile</span>
             </h1>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Pencil className="w-4 h-4" />
-              Edit Profile
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Pencil className="w-4 h-4" />
+                Edit Profile
+              </Button>
+              {!profile?.is_premium && (
+                <Button size="sm" className="gap-2" onClick={() => setPricingOpen(true)}>
+                  Upgrade
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -233,8 +307,9 @@ export default function ProfilePage() {
                     You can only upload a resume once every 24 hours.<br />
                     Last uploaded: <span className="font-semibold">{formatLocalFromUTC(profile.last_resume_uploaded)}</span>
                     {!profile?.is_premium && (
-                      <div className="mt-2 text-red-700">
+                      <div className="mt-2 text-red-700 flex items-center gap-2">
                         Upgrade to <span className="font-bold">Premium</span> to unlock more frequent uploads.
+                        <Button size="sm" variant="secondary" onClick={() => setPricingOpen(true)}>Upgrade</Button>
                       </div>
                     )}
                   </div>
@@ -248,6 +323,9 @@ export default function ProfilePage() {
                     <div className="text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
                       24 hours have passed since your last upload.<br />
                       <span className="font-semibold">Upgrade to Premium</span> to upload again.
+                      <div className="mt-2">
+                        <Button size="sm" onClick={() => setPricingOpen(true)}>Upgrade</Button>
+                      </div>
                     </div>
                   )
                 ) : null}
@@ -374,19 +452,36 @@ export default function ProfilePage() {
               </div>
               <div className="flex flex-col items-center gap-2">
                 {profile?.is_premium ? (
-                  <span className="px-4 py-2 rounded-full bg-green-100 text-green-700 font-semibold text-sm flex items-center gap-2">
-                    <BadgeCheck className="w-4 h-4" /> Premium Member
-                  </span>
+                  <>
+                    <span className="px-4 py-2 rounded-full bg-green-100 text-green-700 font-semibold text-sm flex items-center gap-2">
+                      <BadgeCheck className="w-4 h-4" /> Premium Member
+                    </span>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={openBillingPortal} disabled={billingBusy}>
+                        Manage billing
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={cancelSubscription} disabled={billingBusy}>
+                        Cancel subscription
+                      </Button>
+                    </div>
+                    {billingError && <p className="text-sm text-red-600">{billingError}</p>}
+                  </>
                 ) : (
-                  <span className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
-                    Free Plan
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
+                      Free Plan
+                    </span>
+                    <Button size="sm" onClick={() => setPricingOpen(true)}>Upgrade</Button>
+                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
+
+      {/* Pricing modal */}
+      <PricingModal open={pricingOpen} onOpenChange={setPricingOpen} />
     </main>
   );
 }

@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const code = url.searchParams.get("code");
 
   // Use absolute URL for base
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   if (!provider || !code) {
     return NextResponse.redirect(`${baseUrl}/?error=missing_params`);
