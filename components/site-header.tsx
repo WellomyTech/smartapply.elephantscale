@@ -92,19 +92,18 @@ export default function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-transparent">
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mt-3 rounded-2xl border bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/65
-                    flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-3">
-          {/* Left: Logo + (mobile actions) */}
+    <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+      <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
+        <div className="flex items-center justify-between py-4">
+          {/* Left: Logo */}
           <div className="flex items-center gap-3">
             <Image
               src="/wellomy-logo.webp"
-              alt="WellomyTech"
+              alt="SmartApply by WellomyTech"
               onClick={handleSymbol}
-              width={100}
+              width={120}
               height={40}
-              className="h-10 w-auto cursor-pointer"
+              className="h-8 w-auto cursor-pointer"
             />
 
             {/* Mobile actions: Profile, Home, Logout (icon-only, placed next to logo) */}
@@ -159,16 +158,32 @@ export default function SiteHeader() {
             </div>
           </div>
 
-          {/* Center: App badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/20 backdrop-blur-sm">
-            <Sparkles className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-              SmartApply
-            </span>
+          {/* Center: App name/logo */}
+          <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-800 shadow-lg">
+              <Sparkles className="h-4 w-4 text-white" />
+              <span className="text-lg font-bold text-white tracking-tight">
+                SmartApply
+              </span>
+            </div>
           </div>
 
-          {/* Right: Dashboard + Profile + Logout (desktop/tablet only) */}
-          {!isHome && (
+          {/* Right: Login button (home page) or Dashboard + Profile + Logout (other pages) */}
+          {isHome ? (
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => {
+                  const loginSection = document.getElementById('login');
+                  if (loginSection) {
+                    loginSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
+                className="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg px-6 shadow-lg"
+              >
+                Sign in
+              </Button>
+            </div>
+          ) : (
             <div className="hidden sm:flex items-center gap-2 sm:flex-nowrap">
               {/* Profile (desktop) */}
               <Button
