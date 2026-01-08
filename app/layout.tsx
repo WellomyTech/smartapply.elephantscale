@@ -90,6 +90,11 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  icons: {
+    icon: '/wellomy-favicon.png',
+    shortcut: '/wellomy-favicon.png',
+    apple: '/wellomy-favicon.png',
+  },
 }
 
 import { Poppins } from 'next/font/google'

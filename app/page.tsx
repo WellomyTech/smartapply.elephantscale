@@ -8,6 +8,11 @@ import Image from 'next/image'
 import { useAuth } from '@/components/AuthProvider'
 import LinkedInLoginButton from '@/components/LinkedInButton'
 import GoogleButton from '@/components/GoogleButton'
+import HeroGoogleButton from '@/components/HeroGoogleButton'
+import HeroLinkedInButton from '@/components/HeroLinkedInButton'
+import AnimatedCounter from '@/components/AnimatedCounter'
+import AnimatedArrow from '@/components/AnimatedArrow'
+import ConfettiStep from '@/components/ConfettiStep'
 import { Briefcase, Loader2, Sparkles, Zap, Target, Users, FileText, Mic, Brain, CheckCircle, ArrowRight, TrendingUp, Clock, Shield, Star } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -145,19 +150,40 @@ export default function HomePage() {
           />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center space-y-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
-              <span className="text-xs font-medium text-white/90">Powered by AI</span>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Content */}
+            <div className="space-y-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+                <span className="text-xs font-medium text-white/90">Powered by AI</span>
+              </div>
+              
+              <div className="space-y-6">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
+                  Land your dream job
+                </h1>
+                <p className="text-lg md:text-xl text-blue-100 max-w-xl leading-relaxed font-light">
+                  AI resume optimization, technical & behavioral interview coaching, and job matching
+                </p>
+              </div>
             </div>
-            
-            <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1]">
-                Land your dream job
-              </h1>
-              <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed font-light">
-                AI-powered resume builder, interview prep, and job matching—all in one platform
-              </p>
+
+            {/* Right Side - CTA and Social Login */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-8 shadow-2xl">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-2">Get Started for Free</h3>
+                  <p className="text-sm text-blue-100/80">No credit card required</p>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Google Login Button */}
+                  <HeroGoogleButton />
+
+                  {/* LinkedIn Login Button */}
+                  <HeroLinkedInButton />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -185,8 +211,8 @@ export default function HomePage() {
             </div>
             
             <div className="grid md:grid-cols-3 gap-8">
-            <div className="group">
-              <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200">
+            <div className="group h-full">
+              <div className="h-full p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 flex flex-col">
                 <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center mb-6">
                   <FileText className="h-6 w-6 text-white dark:text-slate-900" />
                 </div>
@@ -211,8 +237,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="group">
-              <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200">
+            <div className="group h-full">
+              <div className="h-full p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 flex flex-col">
                 <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center mb-6">
                   <Mic className="h-6 w-6 text-white dark:text-slate-900" />
                 </div>
@@ -237,8 +263,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="group">
-              <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200">
+            <div className="group h-full">
+              <div className="h-full p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 flex flex-col">
                 <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center mb-6">
                   <Target className="h-6 w-6 text-white dark:text-slate-900" />
                 </div>
@@ -263,8 +289,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="group">
-              <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200">
+            <div className="group h-full">
+              <div className="h-full p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 flex flex-col">
                 <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center mb-6">
                   <Brain className="h-6 w-6 text-white dark:text-slate-900" />
                 </div>
@@ -289,8 +315,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="group">
-              <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200">
+            <div className="group h-full">
+              <div className="h-full p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 flex flex-col">
                 <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center mb-6">
                   <Users className="h-6 w-6 text-white dark:text-slate-900" />
                 </div>
@@ -315,8 +341,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="group">
-              <div className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200">
+            <div className="group h-full">
+              <div className="h-full p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 flex flex-col">
                 <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center mb-6">
                   <Zap className="h-6 w-6 text-white dark:text-slate-900" />
                 </div>
@@ -356,7 +382,8 @@ export default function HomePage() {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-4 gap-8">
+            <div className="grid md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] gap-4 items-center">
+              {/* Step 1 */}
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center">
                   <span className="text-2xl font-bold text-white dark:text-slate-900">1</span>
@@ -367,6 +394,10 @@ export default function HomePage() {
                 </p>
               </div>
 
+              {/* Arrow 1 */}
+              <AnimatedArrow />
+
+              {/* Step 2 */}
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center">
                   <span className="text-2xl font-bold text-white dark:text-slate-900">2</span>
@@ -377,6 +408,10 @@ export default function HomePage() {
                 </p>
               </div>
 
+              {/* Arrow 2 */}
+              <AnimatedArrow />
+
+              {/* Step 3 */}
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center">
                   <span className="text-2xl font-bold text-white dark:text-slate-900">3</span>
@@ -387,15 +422,15 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white dark:text-slate-900">4</span>
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Practice & apply</h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  Prepare with AI interview practice and apply
-                </p>
-              </div>
+              {/* Arrow 3 */}
+              <AnimatedArrow />
+
+              {/* Step 4 - With Confetti */}
+              <ConfettiStep 
+                stepNumber={4}
+                title="Land your job! 🎉"
+                description="Prepare with AI interview practice and apply with confidence"
+              />
             </div>
           </div>
         </section>
@@ -414,15 +449,27 @@ export default function HomePage() {
             <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-white/20 dark:border-slate-700/20 shadow-xl p-12">
             <div className="grid grid-cols-3 gap-8 text-center">
               <div>
-                <div className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-2">10x</div>
+                <AnimatedCounter 
+                  end={10} 
+                  suffix="x" 
+                  className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-2"
+                />
                 <div className="text-sm text-slate-600 dark:text-slate-400">Faster applications</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-2">95%</div>
+                <AnimatedCounter 
+                  end={95} 
+                  suffix="%" 
+                  className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-2"
+                />
                 <div className="text-sm text-slate-600 dark:text-slate-400">ATS pass rate</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-2">50k+</div>
+                <AnimatedCounter 
+                  end={50} 
+                  suffix="k+" 
+                  className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-2"
+                />
                 <div className="text-sm text-slate-600 dark:text-slate-400">Jobs landed</div>
               </div>
             </div>

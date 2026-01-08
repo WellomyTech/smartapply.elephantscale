@@ -168,22 +168,8 @@ export default function SiteHeader() {
             </div>
           </div>
 
-          {/* Right: Login button (home page) or Dashboard + Profile + Logout (other pages) */}
-          {isHome ? (
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => {
-                  const loginSection = document.getElementById('login');
-                  if (loginSection) {
-                    loginSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }
-                }}
-                className="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg px-6 shadow-lg"
-              >
-                Sign in
-              </Button>
-            </div>
-          ) : (
+          {/* Right: Dashboard + Profile + Logout (logged in pages only) */}
+          {!isHome && (
             <div className="hidden sm:flex items-center gap-2 sm:flex-nowrap">
               {/* Profile (desktop) */}
               <Button
